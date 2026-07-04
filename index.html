@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🍕 BT Exam Prep</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#21306b">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+/* ===== PREMIUM CORPORATE COLOR PALETTE & DARK MODE ===== */
+:root {
+  --ph-red: #CC0000;
+  --ph-dark-red: #8B0000;
+  --corp-navy: #21306b;
+  --corp-blue: #0b71b4;
+  --corp-green: #92c150;
+  
+  /* Light Theme */
+  --bg-color: #F8FAFC;
+  --card-bg: #FFFFFF;
+  --text-main: #334155;
+  --text-muted: #64748B;
+  --border-light: rgba(0,0,0,0.06);
+  --opt-bg: #F1F5F9;
+  --nav-bar: rgba(255, 255, 255, 0.9);
+  --bottom-fade: linear-gradient(to top, rgba(248, 250, 252, 1) 75%, transparent);
+  
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 4px 12px rgba(33, 48, 107, 0.05);
+  --shadow-md: 0 8px 24px rgba(33, 48, 107, 0.08);
+  --shadow-hover: 0 12px 32px rgba(33, 48, 107, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #0F172A;
+    --card-bg: #1E293B;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --border-light: rgba(255,255,255,0.08);
+    --opt-bg: #334155;
+    --nav-bar: rgba(15, 23, 42, 0.9);
+    --bottom-fade: linear-gradient(to top, rgba(15, 23, 42, 1) 75%, transparent);
+    
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.6);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+
+button { outline: none; border: none; font-family: inherit; }
+
+/* ===== SCREENS ===== */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.animate-in { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* ===== HOME SCREEN (No Scroll, 4-Row layout) ===== */
+#home { height: 100vh; height: 100dvh; overflow: hidden; background: var(--bg-color); }
+.home-hero { flex: 0 0 clamp(20vh, 25vh, 25vh); width: 100%; text-align: center; background: linear-gradient(135deg, var(--corp-navy) 0%, #172554 100%); position: relative; overflow: hidden; padding: 10px 15px; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.home-hero::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at top right, rgba(11, 113, 180, 0.2) 0%, transparent 60%); pointer-events: none; }
+.sound-toggle-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: #FFF; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: 0.2s; z-index: 2; }
+.sound-toggle-btn:active { transform: scale(0.95); }
+.hero-logo { font-size: clamp(32px, 8vh, 48px); line-height: 1; display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); margin-bottom: 6px; }
+.hero-title { font-size: clamp(20px, 5vh, 26px); font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 4px; }
+.hero-tagline { font-size: clamp(11px, 2.5vh, 13px); color: rgba(255, 255, 255, 0.8); line-height: 1.2; font-weight: 400; margin-bottom: 10px; }
+.badge-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.badge { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 4px 10px; font-size: 10px; color: #FFFFFF; backdrop-filter: blur(8px); }
+.badge b { color: var(--corp-green); font-weight: 700; }
+
+.home-content { flex: 1; display: flex; flex-direction: column; padding: 16px 20px; width: 100%; max-width: 600px; margin: 0 auto; overflow: hidden; }
+
+/* Resume Banner */
+#resume-banner { display: none; background: linear-gradient(135deg, var(--corp-navy), var(--corp-blue)); color: #FFF; border-radius: 16px; padding: 12px 16px; align-items: center; justify-content: space-between; margin-bottom: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(11, 113, 180, 0.3); flex-shrink: 0; transition: transform 0.2s; }
+#resume-banner:active { transform: scale(0.98); }
+.rb-info { display: flex; flex-direction: column; }
+.rb-title { font-size: 13px; font-weight: 800; }
+.rb-sub { font-size: 10px; opacity: 0.9; margin-top: 2px; }
+.rb-icon { font-size: 20px; }
+
+.home-section-label { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+
+/* 4-Row Grid */
+.paper-grid { flex: 1; display: grid; grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
+.paper-card { display: flex; flex-direction: row; align-items: center; background: var(--card-bg); border-radius: var(--radius-md); padding: 10px 14px; gap: 14px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+.paper-card:active { transform: scale(0.96); }
+.paper-card:hover { box-shadow: var(--shadow-md); border-color: rgba(11, 113, 180, 0.3); }
+
+.pc-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+.pc-strip.red { background: var(--ph-red); }
+.pc-strip.gold { background: var(--warning); }
+.pc-strip.green { background: var(--corp-green); }
+.pc-strip.purple { background: #8B5CF6; }
+
+.pc-icon-wrap { flex: 0 0 auto; width: clamp(40px, 6vh, 48px); height: clamp(40px, 6vh, 48px); border-radius: 12px; background: var(--opt-bg); display: flex; align-items: center; justify-content: center; font-size: clamp(20px, 3vh, 24px); }
+.pc-meta { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.pc-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.pc-title { font-size: clamp(14px, 2.2vh, 16px); font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-tag { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; white-space: nowrap; }
+.pc-tag.blue-tag { background: rgba(11, 113, 180, 0.1); color: var(--corp-blue); }
+.pc-tag.gold-tag { background: rgba(245, 158, 11, 0.1); color: #D97706; }
+.pc-tag.green-tag { background: rgba(146, 193, 80, 0.15); color: #4D7C0F; }
+.pc-tag.purple-tag { background: rgba(139, 92, 246, 0.1); color: #7C3AED; }
+
+.pc-desc { font-size: clamp(10px, 1.6vh, 12px); color: var(--text-muted); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 6px; }
+.pc-bottom-row { display: flex; align-items: center; justify-content: space-between; }
+.pc-subtitle { font-size: clamp(9px, 1.5vh, 11px); font-weight: 600; color: var(--text-muted); }
+.pc-diff { font-size: clamp(9px, 1.5vh, 11px); font-weight: 700; color: var(--text-muted); }
+
+.home-footer { flex: 0 0 auto; text-align: center; padding: 12px 0 4px; }
+.home-footer-text { font-size: 10px; color: var(--text-muted); font-weight: 600; opacity: 0.7; }
+
+/* ===== QUIZ SCREEN ===== */
+#quiz { padding: 0; background: var(--bg-color); }
+.quiz-bar { position: sticky; top: 0; z-index: 100; background: var(--nav-bar); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); }
+.quiz-top { display: flex; align-items: stretch; gap: 12px; padding: 12px 20px; max-width: 600px; margin: 0 auto; }
+.quiz-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.quiz-paper-label { font-size: 13px; font-weight: 800; color: var(--corp-blue); text-transform: uppercase; letter-spacing: 0.5px; }
+.quiz-q-info { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 600; }
+.score-pill { background: var(--corp-navy); border-radius: var(--radius-sm); padding: 8px 16px; text-align: center; flex-shrink: 0; box-shadow: var(--shadow-sm); }
+.score-pill .sp-num { font-size: 16px; font-weight: 800; color: #FFFFFF; display: block; }
+.score-pill .sp-lbl { font-size: 10px; color: rgba(255,255,255,0.7); display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+.prog-bar { height: 4px; background: var(--border-light); }
+.prog-fill { height: 100%; background: var(--corp-blue); transition: width 0.4s ease; border-radius: 0 4px 4px 0; }
+.timer-bar { height: 3px; background: transparent; }
+.timer-fill { height: 100%; border-radius: 0 3px 3px 0; transition: width 1s linear; }
+.timer-fill.ok { background: var(--corp-green); }
+.timer-fill.warn { background: var(--warning); }
+.timer-fill.crit { background: var(--danger); }
+
+.quiz-body { flex: 1; overflow-y: auto; padding: 24px 20px 220px; max-width: 600px; margin: 0 auto; width: 100%; }
+
+.q-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.q-badge { background: var(--card-bg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--text-main); }
+.translate-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--card-bg); border: 1.5px solid var(--corp-blue); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--corp-blue); cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+.translate-btn:active { transform: scale(0.96); }
+.translate-btn.active { background: var(--corp-blue); color: #FFFFFF; }
+
+.q-text { font-size: clamp(17px, 5vw, 22px); font-weight: 800; line-height: 1.5; color: var(--text-main); margin-bottom: 20px; }
+.timer-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+.timer-icon { font-size: 18px; }
+
+@keyframes blinkScale { 0%, 100% { opacity: 1; transform: scale(1.25); } 50% { opacity: 0.3; transform: scale(1.25); } }
+.timer-val { font-size: 16px; font-weight: 700; transition: color 0.3s; display: inline-block; transform-origin: left center; }
+.timer-val.ok { color: var(--corp-green); }
+.timer-val.warn { color: var(--warning); }
+.timer-val.crit { color: var(--danger); animation: blinkScale 1s infinite; }
+
+.opts { display: flex; flex-direction: column; gap: 12px; }
+.opt-btn { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 16px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 16px; width: 100%; transition: all 0.2s ease; box-shadow: var(--shadow-sm); user-select: none; }
+.opt-btn:active:not(:disabled) { transform: scale(0.98); }
+.opt-btn:hover:not(:disabled) { border-color: var(--corp-blue); box-shadow: var(--shadow-md); }
+.opt-letter { width: 34px; height: 34px; min-width: 34px; border-radius: 50%; background: var(--opt-bg); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: var(--text-main); transition: all 0.2s; }
+.opt-text { font-size: clamp(14px, 4vw, 16px); color: var(--text-main); line-height: 1.5; flex: 1; font-weight: 600; }
+.opt-btn.correct { background: rgba(146, 193, 80, 0.1); border-color: var(--corp-green); box-shadow: 0 4px 12px rgba(146, 193, 80, 0.15); }
+.opt-btn.correct .opt-letter { background: var(--corp-green); color: #fff; }
+.opt-btn.correct .opt-text { color: var(--corp-green); filter: brightness(0.8); }
+.opt-btn.wrong { background: rgba(239, 68, 68, 0.08); border-color: var(--danger); }
+.opt-btn.wrong .opt-letter { background: var(--danger); color: #fff; }
+.opt-btn.wrong .opt-text { color: var(--danger); }
+.opt-btn:disabled { cursor: default; opacity: 0.9; }
+
+.result-card { background: var(--card-bg); border-radius: var(--radius-md); padding: 20px; margin-top: 24px; animation: fadeUp 0.3s ease; box-shadow: var(--shadow-sm); }
+.result-card.correct-card { border-left: 6px solid var(--corp-green); }
+.result-card.wrong-card { border-left: 6px solid var(--danger); }
+.result-card.timeout-card { border-left: 6px solid var(--warning); }
+.rc-title { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.rc-title.correct-t { color: var(--corp-green); }
+.rc-title.wrong-t { color: var(--danger); }
+.rc-title.timeout-t { color: var(--warning); }
+.rc-eng { font-size: 15px; color: var(--text-main); line-height: 1.6; margin-bottom: 12px; font-weight: 600; white-space: pre-line; }
+.rc-si { font-size: 14px; line-height: 1.6; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-light); font-weight: 500; white-space: pre-line; }
+
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bottom-fade); padding: 20px 20px 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-width: 600px; margin: 0 auto; z-index: 10;}
+.home-btn, .reset-btn, .prev-btn { background: var(--card-bg); border: 1px solid var(--border-light); color: var(--text-main); border-radius: var(--radius-md); padding: 14px 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); text-align: center; }
+.home-btn:active, .reset-btn:active, .prev-btn:active:not(:disabled) { filter: brightness(0.95); }
+.prev-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.next-btn { grid-column: span 3; background: var(--corp-navy); color: #fff; border-radius: var(--radius-md); padding: 16px 20px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; display: none; box-shadow: 0 8px 20px rgba(33, 48, 107, 0.25); }
+.next-btn.show { display: block; }
+.next-btn:active { transform: scale(0.98); box-shadow: 0 4px 12px rgba(33, 48, 107, 0.2); }
+
+/* ===== RESULTS SCREEN ===== */
+#results { align-items: center; justify-content: center; padding: 2vh 20px; background: var(--card-bg); overflow: hidden; }
+.res-wrap { width: 100%; max-width: 480px; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+.res-emoji { font-size: min(10vh, 60px); margin-bottom: min(1.5vh, 12px); filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1)); line-height: 1; }
+.res-title { font-size: min(4.5vh, 26px); font-weight: 800; color: var(--text-main); margin-bottom: min(1vh, 8px); line-height: 1; }
+.res-sub { font-size: min(3vh, 15px); color: var(--text-muted); font-weight: 600; margin-bottom: 0; }
+.score-ring-wrap { display: flex; justify-content: center; margin: min(3vh, 24px) 0; }
+.score-ring { width: min(22vh, 150px); height: min(22vh, 150px); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.05); }
+.score-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(var(--corp-green) 0deg, var(--corp-blue) var(--deg, 0deg), var(--opt-bg) var(--deg, 0deg)); transition: 1s ease-out; }
+.score-ring::after { content: ''; position: absolute; inset: min(1.5vh, 12px); border-radius: 50%; background: var(--card-bg); box-shadow: var(--shadow-sm); }
+.sr-num { font-size: min(6vh, 38px); font-weight: 800; color: var(--text-main); position: relative; z-index: 1; line-height: 1; }
+.sr-total { font-size: min(2.5vh, 14px); color: var(--text-muted); position: relative; z-index: 1; margin-top: 4px; font-weight: 700; }
+.grade-badge { text-align: center; padding: min(2vh, 14px); border-radius: var(--radius-md); font-size: min(3.5vh, 15px); font-weight: 800; margin-bottom: min(2.5vh, 20px); box-shadow: var(--shadow-sm); }
+.grade-A { background: rgba(146, 193, 80, 0.1); color: #4D7C0F; border: 1px solid rgba(146, 193, 80, 0.2); }
+.grade-B { background: rgba(11, 113, 180, 0.1); color: var(--corp-blue); border: 1px solid rgba(11, 113, 180, 0.2); }
+.grade-C { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: min(2vh, 10px); margin-bottom: min(3vh, 24px); }
+.stat-box { background: var(--bg-color); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: min(2vh, 12px); text-align: center; }
+.stat-num { font-size: min(4vh, 22px); font-weight: 800; display: block; margin-bottom: 2px; }
+.stat-lbl { font-size: min(2.5vh, 12px); color: var(--text-muted); font-weight: 700; }
+.res-actions { display: flex; flex-direction: column; gap: min(1.5vh, 10px); }
+.btn-prim, .btn-dl, .btn-sec { padding: min(2vh, 14px); border-radius: var(--radius-md); font-size: min(3.5vh, 15px); font-weight: 800; cursor: pointer; transition: all 0.2s; }
+.btn-prim { background: var(--ph-red); color: #fff; box-shadow: 0 4px 16px rgba(204, 0, 0, 0.2); }
+.btn-prim:active { transform: scale(0.98); }
+.btn-dl { background: var(--corp-navy); color: #fff; box-shadow: var(--shadow-md); }
+.btn-sec { background: var(--card-bg); border: 1px solid var(--border-light); color: var(--text-main); }
+.btn-sec:active { filter: brightness(0.95); }
+
+/* ===== REVIEW SCREEN ===== */
+#review { background: var(--bg-color); padding: 0; }
+.review-body { flex: 1; overflow-y: auto; padding: 24px 20px; max-width: 600px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+.rev-card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+.rev-q-num { font-size: 13px; font-weight: 800; color: var(--corp-blue); margin-bottom: 8px; }
+.rev-q { font-size: 16px; font-weight: 800; color: var(--text-main); line-height: 1.5; margin-bottom: 16px; }
+.rev-ans { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.rev-ans-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; line-height: 1.4; }
+.rev-ans-row.wrong { background: rgba(239, 68, 68, 0.08); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+.rev-ans-row.correct { background: rgba(146, 193, 80, 0.1); color: var(--corp-green); border: 1px solid rgba(146, 193, 80, 0.2); filter: brightness(0.9); }
+.rev-exp { background: var(--bg-color); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text-main); line-height: 1.5; font-weight: 500; border: 1px solid var(--border-light); white-space: pre-line; }
+.rev-si { background: var(--bg-color); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text-main); line-height: 1.5; font-weight: 500; border: 1px solid var(--border-light); margin-top: 8px; white-space: pre-line; }
+.review-header { position: sticky; top: 0; z-index: 10; background: var(--nav-bar); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto; width: 100%; }
+.rev-title { font-size: 18px; font-weight: 800; color: var(--text-main); }
+.btn-close-rev { background: var(--card-bg); border: 1px solid var(--border-light); color: var(--text-main); font-weight: 700; padding: 8px 16px; border-radius: 20px; font-size: 13px; }
+
+/* ===== MODAL ===== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 24px; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: var(--card-bg); border-radius: 24px; padding: 32px 24px 24px; max-width: 340px; width: 100%; box-shadow: 0 24px 48px rgba(0,0,0,0.4); text-align: center; border: 1px solid var(--border-light); }
+.modal-icon { font-size: 48px; margin-bottom: 16px; }
+.modal-title { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; }
+.modal-msg { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; font-weight: 600; }
+.modal-actions { display: flex; flex-direction: column; gap: 10px; }
+.modal-btn-confirm { background: var(--corp-navy); color: #fff; border-radius: var(--radius-md); padding: 14px; font-size: 15px; font-weight: 800; cursor: pointer; }
+.modal-btn-cancel { background: var(--bg-color); color: var(--text-main); border-radius: var(--radius-md); padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; border: 1px solid var(--border-light); }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(11, 113, 180, 0.3); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="home" class="screen active">
+  <div class="home-hero animate-in">
+    <button class="sound-toggle-btn" id="sound-toggle" onclick="toggleSound()">🔊 Sound On</button>
+    <span class="hero-logo">🍕</span>
+    <div class="hero-title">BT Exam Prep</div>
+    <div class="hero-tagline">Buddy Trainer Mock Questions</div>
+    <div class="badge-row">
+      <div class="badge">⏱️ <b>1 min</b> / Question</div>
+      <div class="badge">🔀 Shuffled</div>
+    </div>
+  </div>
+
+  <div class="home-content animate-in">
+    <div id="resume-banner" onclick="resumeSavedSession()">
+      <div class="rb-info">
+        <span class="rb-title">Resume Previous Session?</span>
+        <span class="rb-sub" id="rb-subtitle">You have an unfinished paper.</span>
+      </div>
+      <span class="rb-icon">▶</span>
+    </div>
+
+    <div class="home-section-label">Select Exam Paper</div>
+
+    <div class="paper-grid">
+      <!-- Row 1 -->
+      <div class="paper-card" onclick="startPaper('questions')">
+        <div class="pc-strip red"></div>
+        <div class="pc-icon-wrap"><span class="pc-icon-big">📋</span></div>
+        <div class="pc-meta">
+          <div class="pc-title-row">
+            <div class="pc-title">Past Papers</div>
+            <div class="pc-tag blue-tag">40 Qs</div>
+          </div>
+          <div class="pc-desc">BT Assessment 2021 &amp; 2022 exam papers.</div>
+          <div class="pc-bottom-row">
+            <div class="pc-subtitle">Past Paper</div>
+            <div class="pc-diff">⭐ Foundation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="paper-card" onclick="startPaper('paper1')">
+        <div class="pc-strip gold"></div>
+        <div class="pc-icon-wrap"><span class="pc-icon-big">📝</span></div>
+        <div class="pc-meta">
+          <div class="pc-title-row">
+            <div class="pc-title">Model Paper 1</div>
+            <div class="pc-tag gold-tag">50 Qs</div>
+          </div>
+          <div class="pc-desc">Based on BT Special PSM 2024 standards.</div>
+          <div class="pc-bottom-row">
+            <div class="pc-subtitle">PSM 2024</div>
+            <div class="pc-diff">⭐⭐ Intermediate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="paper-card" onclick="startPaper('paper2')">
+        <div class="pc-strip green"></div>
+        <div class="pc-icon-wrap"><span class="pc-icon-big">🎯</span></div>
+        <div class="pc-meta">
+          <div class="pc-title-row">
+            <div class="pc-title">Model Paper 2</div>
+            <div class="pc-tag green-tag">50 Qs</div>
+          </div>
+          <div class="pc-desc">Food safety, CHAMPS, and delivery grids.</div>
+          <div class="pc-bottom-row">
+            <div class="pc-subtitle">Operations</div>
+            <div class="pc-diff">⭐⭐⭐ Advanced</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="paper-card" onclick="startPaper('paper3')">
+        <div class="pc-strip purple"></div>
+        <div class="pc-icon-wrap"><span class="pc-icon-big">🚀</span></div>
+        <div class="pc-meta">
+          <div class="pc-title-row">
+            <div class="pc-title">Model Paper 3</div>
+            <div class="pc-tag purple-tag">45 Qs</div>
+          </div>
+          <div class="pc-desc">Expert randomized questions.</div>
+          <div class="pc-bottom-row">
+            <div class="pc-subtitle">Randomized questions</div>
+            <div class="pc-diff">⭐⭐⭐⭐ Expert</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-footer">
+      <div class="home-footer-text">Designed & developed by Udaya Saman - 0719698799</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="quiz" class="screen">
+  <div class="quiz-bar">
+    <div class="quiz-top">
+      <div class="quiz-info">
+        <div class="quiz-paper-label" id="quiz-paper-label">Questions</div>
+        <div class="quiz-q-info" id="quiz-q-info">Question 1 of 40</div>
+      </div>
+      <div class="score-pill">
+        <span class="sp-num" id="score-display">0%</span>
+        <span class="sp-lbl">Score</span>
+      </div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="timer-bar"><div class="timer-fill ok" id="timer-fill" style="width:100%"></div></div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="q-header-row">
+      <div class="q-badge" id="q-badge">Q1 · Questions</div>
+      <button class="translate-btn" id="translate-btn" onclick="toggleTranslate()">🇱🇰 සිංහල</button>
+    </div>
+    
+    <div class="q-text" id="q-text">Loading...</div>
+    
+    <div class="timer-row">
+      <span class="timer-icon">⏱️</span>
+      <span class="timer-val ok" id="timer-val">1:00</span>
+    </div>
+    <div class="opts" id="opts"></div>
+    <div id="result-area"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="home-btn" onclick="goHome()">🏠 Home</button>
+    <button class="reset-btn" onclick="confirmReset()">↺ Reset</button>
+    <button class="prev-btn" id="prev-btn" onclick="goPrevQuestion()">← Back</button>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">ඊළඟ ප්‍රශ්නය →</button>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="results" class="screen">
+  <div class="res-wrap animate-in">
+    <div class="res-emoji" id="res-emoji">🏆</div>
+    <div class="res-title" id="res-title">විශිෂ්ට ප්‍රතිඵලයක්!</div>
+    <div class="res-sub" id="res-sub">BT Exam සූදානම ✓</div>
+    
+    <div class="score-ring-wrap">
+      <div class="score-ring" id="score-ring">
+        <span class="sr-num" id="sr-num">0</span>
+        <span class="sr-total" id="sr-total">/ 40</span>
+      </div>
+    </div>
+    <div class="grade-badge" id="grade-badge"></div>
+    
+    <div class="stat-grid">
+      <div class="stat-box"><span class="stat-num" id="r-correct" style="color:var(--corp-green)">0</span><div class="stat-lbl">✅ නිවැරදි (Correct)</div></div>
+      <div class="stat-box"><span class="stat-num" id="r-wrong" style="color:var(--danger)">0</span><div class="stat-lbl">❌ වැරදි (Wrong)</div></div>
+      <div class="stat-box"><span class="stat-num" id="r-pct" style="color:var(--corp-blue)">0%</span><div class="stat-lbl">📊 Score %</div></div>
+      <div class="stat-box"><span class="stat-num" id="r-skip" style="color:var(--warning)">0</span><div class="stat-lbl">⏰ Skip/Timeout</div></div>
+    </div>
+    
+    <div class="res-actions">
+      <button class="btn-prim" onclick="showReview()">🔍 Review Answers</button>
+      <button class="btn-dl" onclick="retryPaper()">🔄 නැවත try කරන්න</button>
+      <button class="btn-sec" onclick="goHome()">🏠 Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW SCREEN -->
+<div id="review" class="screen">
+  <div class="review-header">
+    <div class="rev-title">🔍 Review Answers</div>
+    <button class="btn-close-rev" onclick="showScreen('results')">Close ✕</button>
+  </div>
+  <div class="review-body" id="review-body">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="custom-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">⚠️</div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// Don't change below content
+// ══════════════════════════════════════════════════════════════
+const PAPERS = {
+questions: {
+  title:"⭐ Foundation Questions",
+  qs:[
+    {q:"How many grams of oil should we pump for small / medium / large dough?",si_q:"small / medium / large ඩෝ සඳහා පිළිවෙලින් oil කොපමණ ප්‍රමාණයක් යෙදිය යුතුද?",opts:["10g / 20g / 30g","30g / 20g / 10g","22g / 11g / 6g","44g / 22g / 11g"],ans:0,exp:"small = 10g, medium = 20g, large = 30g of oil pump.",si:"• small dough එකට <b>10g</b>, \n• medium dough එකට <b>20g</b>, \n• large dough එකට 30g. \n\nSmall සිට Large දක්වා: 10-20-30 ලෙස මතක තබාගන්න."},
+    {q:"Why do we twist and press for each dough during panning?",si_q:"පෑන් කිරීමේදී ඩෝ twist කර press කරන්නේ ඇයි?",opts:["Absorb oil into the dough","Remove air on the dough","Remove air between dough and pan","Adjust the dough when cook"],si_opts:["ඩෝ එකට Oil උරා ගැනීමට","ඩෝ එක මතුපිට ඇති වාතය ඉවත් කිරීමට","ඩෝ එක සහ පෑන් එක අතර ඇති වාතය ඉවත් කිරීමට","පිසීමේදී ඩෝ එක සකස් වීමට"],ans:2,exp:"The answer is Remove air between dough and pan.",si:"Pan එකේ oil add කළ පසු dough තබනවිට, dough සහ pan අතර air bubbles ඇතිවෙනවා. ඒවා ඉවත් කිරීම සඳහා twist & press කරනවා."},
+    {q:"What is the shelf life for Pre sauced & Pre topped Pan Dough?",si_q:"Pre-sauced සහ Pre-topped Pan Dough වල shelf life එක කොපමණද?",opts:["4 hours / 4 hours","2 hours / 2 hours","4 hours / 2 hours","2 hours / 4 hours"],ans:2,exp:"Pre sauced Pan Dough = 4 hours. Pre topped Pan Dough = 2 hours.",si:"Pre sauced කළ pan dough එකක shelf life එක පැය 4ක් වේ. Pre topped කළ Pan Dough එකක shelf life එක පැය 2ක් පමණයි."},
+    {q:"What is the correct order of the 3-compartment sink?",si_q:"3-sink එකේ නිවැරදි පිළිවෙල කුමක්ද?",opts:["Wash (Hot water) → Sanitize (P3 bath) → Rinse (Running hot water)","Wash (All-purpose bath) → Rinse (Running hot water) → Sanitize (Mikro Chlor bath)","Sanitize (All-purpose bath) → Wash (Superkleen) → Rinse (Kleen Hands)","Wash (Rinse Dry bath) → Rinse (Running hot water) → Sanitize (Mikro Chlor bath)"],si_opts:["Wash → Sanitize → Rinse","Wash → Rinse → Sanitize","Sanitize → Wash → Rinse","Wash (Rinse Dry) → Rinse → Sanitize"],ans:1,exp:"Wash (All-purpose/Superkleen) → Rinse (Running hot water) → Sanitize (Mikro Chlor bath).",si:"3-sink ක්‍රමය: <b>W-R-S</b>. \n• <b>Wash</b> (All-purpose), \n• <b>Rinse</b> (hot water), \n• <b>Sanitize</b> (Mikro Chlor). \n\n3-sink, <b>WRS</b> ලෙස මතක තබාගන්න."},
+    {q:"What are the ingredients of the white sauce?",si_q:"White sauce වලට භාවිතා කරන අමුද්‍රව්‍ය මොනවාද?",opts:["Milk 1L, Flour 50g, Soya Oil 50g, Salt 18g","Milk 1L, Flour 100g, Cream Cheese 50g, Salt 18g","Milk 1L, Flour 50g, Unsalted butter 50g, Salt 15g","Milk 1L, Flour 100g, Cream Cheese 100g, Salt 18g"],ans:0,exp:"White sauce: Milk 1L + Wheat Flour 50g + Soya Oil 50g + Salt 18g.",si:"<b>White sauce</b> batch එකක් සෑදීමට use කරන්නේ \n\n• Fresh Milk <b>1L</b>, \n• Wheat Flour <b>50g</b>, \n• Soya Oil <b>50g</b>, \n• Salt <b>18g</b>."},
+    {q:"What is upselling?",si_q:"Upselling යනු කුමක්ද?",opts:["Suggesting and selling appetizers","Suggesting an upgrade of the given order to increase the value","Sell something stored on shelves by suggesting to the customer","Sell something in addition to the order"],si_opts:["Appetizers විකිණීමට යෝජනා කිරීම","Order එකේ වටිනාකම වැඩි කිරීමට upgrade එකක් යෝජනා කිරීම","රාක්කවල ඇති දෙයක් විකිණීම","Order එකට අමතරව වෙනත් යමක් විකිණීම"],ans:1,exp:"Upselling : Suggesting an upgrade to increase the order value (e.g. Medium pizza → Large pizza).",si:"<b>Upselling</b> කියන්නේ, customer order කරන දෙයට upgrade එකක් suggest කිරීම මඟින් <b>Order එකේ වටිනාකම (value) වැඩිකරගැනීමයි</b>. \n\nනිදසුනක් ලෙස Medium pizza එකක් order කරන customer කෙනෙකුට Large pizza එකක් suggest කිරීම."},
+    {q:"Select the Category 2 complaints:",si_q:"Category 2 යටතට ගැනෙන පැමිණිලි (complaints) මොනවාද?",opts:["Customer injury / Dirty table / Order delay","Wrong order / Customer injury / Alleged food poisoning","Alleged food poisoning / Customer injury / Foreign object","Foreign object / Customer injury / Dirty Tables"],si_opts:["පාරිභෝගිකයන්ට සිදුවන තුවාල / අපිරිසිදු මේස / ඇණවුම් ප්‍රමාදවීම","වැරදි order එකක් ලබාදීම / පාරිභෝගිකයන්ට සිදුවන තුවාල / ආහාර විෂවීම්","ආහාර විෂවීම් / පාරිභෝගිකයන්ට සිදුවන තුවාල / ආහාරයේ බාහිර ද්‍රව්‍ය තිබීම","ආහාරයේ බාහිර ද්‍රව්‍ය තිබීම / පාරිභෝගිකයන්ට සිදුවන තුවාල / අපිරිසිදු මේස"],ans:2,exp:"Category 2 = Alleged food poisoning, Customer injury, Foreign object - serious complaints needing immediate manager action.",si:"<b>Category 2 complaints</b> වන්නේ, \n\n• ආහාර විෂවීම් \n• පාරිභෝගිකයන්ට සිදුවන තුවාල \n• ආහාරයේ බාහිර ද්‍රව්‍ය තිබීම \n\n<span style='color:red'>මෙවැනි serious complaints ක්ෂණිකව manager ට දැන්විය යුතුය.</span>"},
+    {q:"What does H2OP stand for?",si_q:"H2OP යන්නෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Hustle / Hospitality / Own the zone / Passion for Product","Hustle / Hospitality / Own the zone / Vision for the Product","Hustle / Hospitality / Own the delivery grid / Passion for Product","Hustle / Hospitality / Own the zone / Product mania"],ans:0,exp:"H2OP = Hustle + Hospitality + Own the Zone + Passion for Product.",si:"• <b>H = Hustle</b> (ඉක්මනින් සේවාව සැපයීම), \n• <b>H = Hospitality</b> (Customerට නැවත පැමිණීමට සිතෙන ආකාරයේ service එකක් ලබාදීම), \n• <b>O = Own the Zone</b> (තමාගේ සේවාවේ BEST වීම), \n• <b>P = Passion for Product</b> (තම පවුලේ අයට සාදන කෑමක් සේ සියලුම products සෑදීම). \n\n<span style='color:green'>මෙය Pizza Hut service concept එකයි.</span>"},
+    {q:"What is the current service charge percentage for eat-in & delivery?",si_q:"Eat-in සහ delivery සඳහා දැනට ඇති service charge ප්‍රතිශතය කොපමණද?",opts:["7.5%","10%","5%","6.5%"],ans:0,exp:"Service charge = 7.5% for eat-in and delivery orders.",si:"Restaurant එකේ කෑමට (eat-in) සහ delivery orders යන දෙකටම <b>7.5%</b>ක service charge එකක් අය කරයි. මෙසේ අයකරගන්නා service charge එක staff එක අතර බෙදී යයි."},
+    {q:"What is the dough weight of Large / Medium / Small?",si_q:"Large / Medium / Small ඩෝ වල බර කොපමණද?",opts:["400g / 250g / 150g","450g / 250g / 150g","450g / 250g / 140g","475g / 275g / 175g"],ans:2,exp:"Large = 450g, Medium = 250g, Small = 140g pan dough weights.",si:"<b>Pan dough වල බර</b> \n\n• Large : 450g \n• Medium : 250g \n• Small : 140g"},
+    {q:"What is the weight of Large / Medium Thin Crust Dough?",si_q:"Large සහ Medium Thin Crust ඩෝ වල බර කොපමණද?",opts:["180g / 120g","200g / 150g","250g / 140g","205g / 185g"],ans:2,exp:"Thin Crust: Large = 250g, Medium = 140g.",si:"<b>Thin Crust dough වල බර</b> \n• Large : 250g \n• Medium : 140g \n\nLarge Thin Crust සඳහා medium pan ඩෝ එකත් Regular Thin Crust සඳහා small pan ඩෝ එකත් use කරනවා."},
+    {q:"How many small / Medium / Large pans can we stack in Proofer?",si_q:"Proofer එකේ පෑන්ස් කීයක් එකක් මත එකක් තැබිය හැකිද?",opts:["5","6","4","7"],ans:0,exp:"Maximum 5 pans can be stacked in the Proofer.",si:"Proofer එකේ <b>උපරිම pans 5ක්</b> එක මත එක තියන්න පුළුවන්. <span style='color:green'>Small, Medium සහ Large යන සියලුම dough සඳහා මෙය අදාළ වේ.</span> 5ට වඩා තැබූ විට food safety සහ proofing ගැටළු ඇතිවෙනවා."},
+    {q:"An empty pan should be kept on top after dough is proofed and kept in cool room. True or False?",si_q:"ඩෝ proof වූ පසු cool room එකේ තැබීමේදී උඩින් හිස් පෑන් එකක් තැබිය යුතුයි. මෙය සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - An empty pan must be placed on top of proofed dough to prevent drying out in the cool room.",si:"<b>මෙය සත්‍ය වේ.</b> Cool room එකේ dough වියළී යාම වළක්වාගැනීමට empty pan එකක් stack එකේ උඩම ඇති separator එක උඩින් තැබිය යුතුය. මෙය standard best practice එකකි."},
+    {q:"If dough is over proofed what should we do?",si_q:"ඩෝ එකක් over proof වී ඇත්නම් අප කළ යුත්තේ කුමක්ද?",opts:["Pre top for pizza immediately","Make pizza for team members and Discard","Discard, Record the discard","Pre top, Make pizza, Record the discard"],si_opts:["වහාම පීසා එකට toppings දැමීම","Team Membersලාට පීසා සාදා discard ලෙස සටහන් කිරීම","Discard කර, එය සටහන් කිරීම","Pre top කර, පීසා සාදා, discard ලෙස සටහන් කිරීම"],ans:2,exp:"Over proofed dough: Discard it, Record the discard in the log.",si:"Over proofed ඩෝ ඇති විට එය <b>discard කර dough book එකේ සටහන් කළ යුතුයි</b>."},
+    {q:"What is the shelf life for Pre sauce & Pre cheese on Pan Dough / Thin Crust?",si_q:"Pan Dough සහ Thin Crust මත Pre sauce & Pre cheese කළ පසු shelf life කොපමණද?",opts:["4 hrs / 4 hrs","2 hrs / 2 hrs","4 hrs / 2 hrs","2 hrs / 4 hrs"],ans:2,exp:"Pan Dough pre sauce shelf life = 4 hrs. Thin Crust pre sauce shelf life = 2 hrs.",si:"Pan Dough එකට sauce සහ cheese දැමූ විට shelf life එක 4 hours වේ. Thin Crust සඳහා එය 2 hours වේ."},
+    {q:"Pre topped pizza is necessary for peak times. True or False?",si_q:"Peak times සඳහා pre-topped පීසා අත්‍යවශ්‍ය වේ. මෙය සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - Pre topped pizza IS necessary for peak times to ensure fast service.",si:"<b>සත්‍යයි.</b> Peak times වලදී(busy වෙලාවල) කෙටි කාලයක් තුළ වැඩි orders ප්‍රමාණයක් පැමිණෙන නිසා pre topped pizza ready කරගෙන තියාගන්න ඕනේ. මෙය speed එක maintain කරගැනීමට ඉතා වැදගත් වෙනවා."},
+    {q:"A pastry brush is required to spread oil to pans. True or False?",si_q:"පෑන් වල තෙල් ආලේප කිරීමට pastry brush එකක් අවශ්‍ය වේ. සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - A pastry brush is required.",si:"<b>සත්‍යයි.</b> Oil pump එකෙන් oil add කළ පසු, pan එක පුරා oil spread කිරීම සඳහා Pastry brush එකක් භාවිතා කරනවා."},
+    {q:"When vegetable sanitizing how long should it be kept in sanitize, soak chill & drain?",si_q:"එළවළු Sanitize කිරීමේදී Sanitize, Chill, සහ Drain කරන කාලයන් කොපමණද?",opts:["3 min, 5 min, 10 min","5 min, 5 min, 10 min","10 min, 5 min, 3 min","3 min, 5 min, 5 min"],ans:0,exp:"Vegetable sanitizing: Sanitize = 3 min, Soak/Chill = 5 min, Drain = 10 min.",si:"<b>නිවැරදි ක්‍රමය:</b> \n\n• Sanitize - 3 min \n• Chill/Soak - 5 min \n• Drain - 10 min. \n\nTotal = 18 min. \n\nFood safety සඳහා මේ ක්‍රමය follow කරනවා."},
+    {q:"What are the Mikro Chlor dilutions for duster management? (Wettex bath / Spray bottle)",si_q:"ඩස්ටර් සඳහා Mikro Chlor මිශ්‍ර කරන ප්‍රමාණයන් මොනවාද? (Wettex බාස්කට් එක / ස්ප්‍රේ බෝතලය)",opts:["10g per 1L / 5g per 1L","10g per 1L / 10g per 1L","8g per 1L / 5g per 1L","10g per 1L / 8g per 1L"],ans:3,exp:"Mikro Chlor: Wettex bath = 10g per 1 Liter, Spray bottle = 8g per 1 Liter.",si:"• <b>Wettex bath</b> සඳහා වතුර ලීටරයකට Mikro Chlor <b>ග්‍රෑම් 10</b> ක්ද, \n<b>Spray bottle</b> සඳහා වතුර ලීටරයකට Mikro Chlor <b>ග්‍රෑම් 8</b> ක්ද යොදාගනී. Spray bottle එකේ සාන්ද්‍රණය අඩුයි."},
+    {q:"Why are Green chili and Jalapeno added to the Pizza last?",si_q:"Green chili සහ Jalapeno පීසා එකට අවසානයේ එකතු කරන්නේ ඇයි?",opts:["To prevent cross contamination","They need to be baked well","They are treated as garnishes","To leave more room for other toppings"],si_opts:["Cross contamination වැළැක්වීමට","හොඳින් බේක් වීමට","ඒවා Garnishes (සරසන ද්‍රව්‍ය) ලෙස සලකන බැවින්","අනෙක් toppings වලට ඉඩ දීමට"],ans:2,exp:"Green chili and Jalapeno are added last because they are treated as garnishes.",si:"Green chili හා Jalapeno, <b><span style='color:green'>garnishes</span></b> ලෙස සලකනවා. ඒ නිසා pizza හදද්දී අවසානයට add කරනවා."},
+    {q:"How many slices of Pepperoni for Small / Medium /Large Pan Pizza?",si_q:"Small / Medium / Large Pan Pizza සඳහා Pepperoni පෙති කීයක් යොදයිද?",opts:["12 / 24 / 36","10 / 20 / 30","12 / 24 / 48","10 / 20 / 40"],ans:2,exp:"Pepperoni: Small = 12, Medium = 24, Large = 48 slices.",si:"<b>Beef Pepperoni pizza සෑදීමේදී</b> \n\n• small සඳහා Pepperoni slices 12කුත්, \n• medium සඳහා Pepperoni slices 24කුත්, \n• large  සඳහා Pepperoni slices 48කුත් යොදයි."},
+    {q:"How do we top a Large Thin Crust, Sausage crust pizza?",si_q:"Large Thin Crust සහ Sausage crust pizza එකක් top කරන්නේ කෙසේද?",opts:["Sauce – Large spoodle / Topping and veg – Regular cup / Cheese – Purple cup","Sauce – Large spoodle / Topping and veg – Large cup / Cheese – Purple cup","Sauce – Large spoodle / Topping and veg – Large cup / Cheese – Yellow cup","Sauce – Large spoodle / Topping and veg – Regular cup / Cheese – Yellow cup"],ans:0,exp:"Large Thin Crust/Sausage/Stuffed: Sauce=Large spoodle, Topping&veg=Regular cup, Cheese=Purple cup.",si:"Large Thin Crust සහ Sausage crust සඳහා <span style='color:green'>Sauce</span> දැමීමට <b>Large spoodle</b> එකත්, <span style='color:green'>Toppings & veg</span> දැමීම සඳහා <b>Regular cup</b> එකත්, <span style='color:green'>Cheese</span> සඳහා <b>Purple cup</b> එකත් භාවිතා කරයි."},
+    {q:"What is the maximum level an insert on the make table should be filled?",si_q:"Make table එකේ insert එකක් පිරවිය යුතු උපරිම මට්ටම කුමක්ද?",opts:["1/2 of the insert","3/5th of the insert","3/4th of the insert","Full of the insert"],si_opts:["අඩක් (1/2)","3/5 ක්","තුන් කාලක් (3/4)","සම්පූර්ණයෙන්ම"],ans:2,exp:"Make table inserts should be filled to a maximum of 3/4 (three quarters) of the insert.",si:"<span style='color:blue'><b>Make table එකේ insert උපරිම 3/4 (තුන් කාලක්) ප්‍රමාණයට fill කරනවා.</b></span> Fullම fill කරන්නේ නෑ. එම ප්‍රමාණයට fill කිරීමෙන් temperature සහ food safety maintain කිරීම අරමුණ වෙනවා."},
+    {q:"If a customer asks Extra Cheese for Large pizza, how much should we add?",si_q:"Large පීසා එකකට Extra Cheese ඉල්ලුවහොත් කොපමණ ප්‍රමාණයක් යෙදිය යුතුද?",opts:["1/2 Purple cup","2 Purple cups","1/4 Purple cup","1 Purple cup"],ans:3,exp:"Extra Cheese for Large pizza = 1 Purple cup.",si:"Large pizza එකට Extra Cheese, <b>Purple cup එකක්</b> add කරනවා."},
+    {q:"Pan Sauce should always be made with ice water. True or False?",si_q:"Pan Sauce සැමවිටම අයිස් වතුරෙන් සෑදිය යුතුය. සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - Pan sauce must be made with ice water to maintain proper temperature.",si:"සත්‍යයි. Pan sauce හදාගන්නට ice water (වතුරට ice cubes දාල) use කරනවා. <span style='color:green'>ඒ මගින් sauce එකේ temperature maintain කරනවා.</span>"},
+    {q:"What is the MRD of ALL toppings in the Make table?",si_q:"Make table හි ඇති සියලුම toppings වල MRD කුමක්ද?",opts:["24 Hrs","12 Hrs","EOS (End of Session)","EOD (End of Day)"],si_opts:["පැය 24","පැය 12","EOS (සෙෂන් එක අවසන් වනතුරු)","EOD (දවස අවසානය තෙක්)"],ans:3,exp:"All make table toppings MRD = EOD (End of Day).",si:"<b>Make table toppings</b> සියල්ලේ MRD = EOD (End of day)."},
+    {q:"How much Garlic Butter for one Cheesy Garlic Bread portion?",si_q:"Cheesy Garlic Bread පෝෂන් එකක් සඳහා Garlic Butter කොපමණ යොදයිද?",opts:["1 Large Spoodle","2 Regular Spoodle","2 Small Spoodle","2 Small Cup"],ans:1,exp:"Cheesy Garlic Bread: 2 Regular Spoodles of Garlic Butter.",si:"<b>Cheesy Garlic Bread</b> පෝෂන් එකක් සඳහා Garlic butter, <b>Regular Spoodles 2ක්</b> යොදාගනී."},
+    {q:"How can you melt garlic butter for easy application on Garlic bread?",si_q:"Garlic bread වල ගෑමට පහසු වන පරිදි Garlic butter දියකර ගන්නේ (melt කර ගන්නේ) කෙසේද?",opts:["Half oven pass in a pan","Place butter in pan and keep on stove","Placed in a container and place in boiling water pan","By leaving it in room temperature"],si_opts:["පෑන් එකක දමා අවන් එකේ භාගයක් යැවීමෙන්","බටර් පෑන් එකක දමා ලිප මත තැබීමෙන්","කන්ටේනරයක දමා උතුරන වතුර පෑන් එකක තැබීමෙන්","කාමර උෂ්ණත්වයේ තැබීමෙන්"],ans:2,exp:"Melt garlic butter: Place it in a container and put that in a boiling water pan (bain-marie/double boiler method).",si:"Garlic butter melt කිරීමට container එකකට දමා, එම container එක boiling water pan එකක දමනවා. <span style='color:green'>මෙය <b>bain-marie</b> (double boiler) method එක ලෙස හඳුන්වනවා.</span>"},
+    {q:"What is the weight of a Chocolate melt lava cake?",si_q:"Chocolate melt lava cake එකක බර කොපමණද?",opts:["85g +/- 10","85g +/- 5","90g +/- 10","90g +/- 5"],ans:3,exp:"Chocolate melt lava cake weight = 90g +/- 5g.",si:"Chocolate melt lava cake එකක බර <b>ග්‍රෑම් 90ක්</b> විය යුතුය. මෙය ග්‍රෑම් 5ක් අඩු හෝ වැඩි විය හැකිය.<span style='color:green'><b>(90g +/- 5g)</b></span>"},
+    {q:"What is the Buddy Trainer training process?",si_q:"Buddy Trainer (BT) පුහුණු කිරීමේ ක්‍රියාවලිය කුමක්ද?",opts:["Prepare, Show & Tell, Follow up, Expert","Introduction, Prepare, Show & Tell, Follow up","Prepare, Show & Tell, Guide and Practice, Follow up","Introduction, Show & Tell, Guide and practice, Expert"],ans:2,exp:"BT training process: Prepare → Show & Tell → Guide and Practice → Follow Up. (4 steps)",si:"1) <b>Prepare</b> (සූදානම් කිරීම) \n2) <b>Show & Tell</b> (පෙන්වීම සහ කීම) \n3) <b>Guide and Practice</b> (මඟ පෙන්වමින් practice කිරීම) \n4) <b>Follow Up</b> (පසු විපරම). \n\nBuddy Trainer training process සඳහා steps 4කින් යුත් මේ ක්‍රමය follow කරනවා."},
+    {q:"What are the Pizza Hut Goals?",si_q:"Pizza Hut හි ප්‍රධාන අරමුණු (Goals) මොනවාද?",opts:["Make it easier for everyone to get a better pizza","Most loved Fastest Growing brand","Win on value, Win on taste, Wow the customer","Give every customer reason to return"],si_opts:["හැමෝටම හොඳ පීසා එකක් ගැනීමට පහසු කිරීම","වඩාත්ම ආදරය දිනාගත් සන්නාමය වීම","Win on value, Win on taste, Wow the customer","ආපසු පැමිණීමට හේතුවක් දීම"],ans:2,exp:"Pizza Hut Goal = Win on value, Win on taste, Wow the customer.",si:"Pizza Hut SL ප්‍රධාන ඉලක්ක: <span style='color:green'><b>Win on value, Win on taste, Wow the customer.</b></span>"},
+    {q:"BBQ chicken wings portion - how many wings?",si_q:"BBQ chicken wings පෝෂන් එකකට කෑලි කීයක් අඩංගුද?",opts:["8 pieces","12 pieces","6 pieces","10 pieces"],ans:2,exp:"BBQ chicken wings portion: 6 pieces",si:"BBQ chicken wings portion: <b>6 pieces</b>."},
+    {q:"How are WING IT portions served for dine-in? (6 pieces / 12 pieces / 24 pieces)",si_q:"Dine-in සඳහා WING IT පෝෂන් (කෑලි 6 / 12 / 24) පිළිගන්වන්නේ කෙසේද?",opts:["Platter, Platter, Platter","Small Platter, Medium Platter, Large Platter","Platter, Platter, Large WING IT Box","Platter, Small Wing IT Box, Large Wing IT Box"],ans:0,exp:"WING IT dine-in serving: All the sizes served in platters.",si:"Dine-in ගන්න විට WING IT portions 3 ම <b>Platter</b> වල serve කරනවා."},
+    {q:"What must we do to give outstanding CHAMPS experience for delivery?",si_q:"Delivery සඳහා විශිෂ්ට CHAMPS අත්දැකීමක් දීමට අප කුමක් කළ යුතුද?",opts:["Deliver within promised time and correct temperature only","Ensure accuracy only","Promised time, accuracy, correct temperature, well-presented package","Deliver within correct temperature only"],si_opts:["පොරොන්දු වූ වේලාවට දීම සහ නිවැරදි උෂ්ණත්වය පමණි","නිවැරදි බව සහතික කිරීම පමණි","වේලාව, නිවැරදි බව, උෂ්ණත්වය, සහ පෙනුම","නිවැරදි උෂ්ණත්වයට දීම පමණි"],ans:2,exp:"Outstanding CHAMPS delivery = ALL: Promised time + Accuracy + Correct temperature + Well-presented package.",si:"<b>CHAMPS delivery experience එකක් සඳහා:</b> \n\n(1) Promised time එකට deliver කිරීම \n(2) Order accuracy \n(3) Correct temperature, සහ \n(4) Well-presented package \nයන සියලුම කරුණු වැදගත් වේ."},
+    {q:"What does C.A.R.E. stand for?",si_q:"C.A.R.E. යන්නෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Courtesy / Apologize / Respect / Enthusiasm","CHAMPS / Attentiveness / Respect / Enthusiasm","Courtesy / Attentiveness / Respect / Enthusiasm","Courtesy / Attentiveness / Repeat / Enthusiasm"],ans:2,exp:"C.A.R.E. = Courtesy / Attentiveness / Respect / Enthusiasm.",si:"<b>C.A.R.E.</b> : \n\n• C : Courtesy \n• A : Attentiveness \n• R : Respect \n• E : Enthusiasm. \n\nමෙය customer service සංකල්පයයි"},
+    {q:"Which audit happens twice a year in your restaurant without a white card visit?",si_q:"'White card/Wild card' නිරීක්ෂණයකින් තොරව වසරකට දෙවරක් ඔබේ ආපනශාලාවේ සිදුවන විගණනය (audit) කුමක්ද?",opts:["3rd Party ACE","FER","TMTS","STAR"],si_opts:["3rd Party ACE","FER","TMTS","STAR"],ans:0,exp:"The 3rd Party ACE audit happens twice a year without a white card visit.",si:"<b>3rd Party ACE audit</b> එක white card visit එකක් නොමැතිව <b>වසරකට දෙවරක්</b> සිදුවේ."},
+    {q:"What are the HutBot shift check times? (Morning check deadline)",si_q:"HutBot හි උදෑසන Check එක (Morning setup) කළයුතු අවසන් වේලාව කුමක්ද?",opts:["Before 11:00 AM","Before 9:00 AM","Before 10:00 AM","Before 12:00 PM"],ans:0,exp:"HutBot Morning setup/prep check = Before 11:00 AM.",si:"HutBot morning check <b>උදෑසන 11ට පෙර</b> සම්පූර්ණ විය යුතුයි. \n\n• Day Shift : 11 AM \n• Review : 3.10 PM \n\n• Night Shift : 5.15 PM \n• Review : 2.10 AM"},
+	{q:"Assign the driver not more than how many orders?",si_q:"එක් රයිඩර් කෙනෙකුට උපරිම වශයෙන් ඇණවුම් කීයක් ලබාදිය හැකිද?",opts:["1 order","2 orders","3 orders","4 orders"],ans:0,exp:"Only 1 order per driver assignment.",si:"<b>Delivery Rider කෙනෙකුට වරකට රැගෙන යාමට අවසර ඇත්තේ එක් order එකක් පමණයි.</b> 1 ට වඩා assign කරන්නේ නෑ. නමුත් තෙල් ප්‍රශ්න මතුවන සමහර කාලවලදී <span style='color:green'>Double dispatch</span> concept එක තාවකාලිකව enable කිරීම තුළින් වරකට orders 2ක් රැගෙන යාමට ridersලට අවස්ථාව සලසනවා."},
+    {q:"How many pizzas can be carried per delivery pouch?",si_q:"Delivery pouch එකක වරකට පීසා කීයක් ගෙන යා හැකිද?",opts:["1","2","3","4"],ans:1,exp:"Maximum 2 pizzas per delivery pouch.",si:"<b>Delivery pouch එකක වරකට උපරිම pizzas 2ක් රැගෙන යාමට පුළුවනි.</b> 2 ට වඩා ගත්තොත් pizzaවල temperature එකට සහ quality එකට affect වෙනවා."},
+    {q:"What is HutBot?",si_q:"HutBot යනු කුමක්ද?",opts:["A Pizza Hut mobile app for restaurant operations improvement","A customer ordering chatbot","A delivery tracking system","A temperature tracking system"],si_opts:["Pizza Hutහි මෙහෙයුම් දියුණු කිරීම සඳහා වූ ජංගම යෙදුමක්","පාරිභෝගිකයින් ඇණවුම් කරන chatbot එකක්","Delivery tracking පද්ධතියක්","Temperature tracking පද්ධතියක්"],ans:0,exp:"Pizza Hut mobile app collecting data from GES, Fleet Management (Speed), ACE(Audits), YUM(Hut University) to provide restaurant-specific improvement tasks.",si:"<b>HutBot යනු Pizza Hut mobile app එකයි.</b> එමඟින් YUM data analyze කරලා, outlet එකේ improvement එක සඳහා අවශ්‍ය specific tasks දෙනවා."}
+  ]
+},
+paper1: {
+  title:"⭐⭐ Intermediate Questions",
+  qs:[
+    {q:"What does ACE stand for in Pizza Hut?",si_q:"Pizza Hut හි ACE යන්නෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Assured Customer Experience","Audit Customer Excellence","Area Control Evaluation","Assured Chef Excellence"],ans:0,exp:"ACE = Assured Customer Experience. It is the outsourced audit done by NSF (National Sanitation Foundation).",si:"<b>ACE = Assured Customer Experience</b>. \n\n<b>NSF</b> (National Sanitation Foundation) ලෙස හඳුන්වන outsourced company එක විසින් මේ audit එක සිදු කරනවා."},
+    {q:"ACE audit is conducted by which outsourced company?",si_q:"ACE audit එක සිදුකරන බාහිර සමාගම කුමක්ද?",opts:["NSF (National Sanitation Foundation)","ISO Certification Body","Yum! Internal Auditors","PWC Sri Lanka"],ans:0,exp:"ACE is the only outsourced audit, done by NSF.",si:"<b>NSF(National Sanitation Foundation)</b> ලෙස හඳුන්වන company එක විසින් ACE audit එක සිදු කරනවා. Outsource කර සිදුකරන එකම audit එකද මෙයයි."},
+    {q:"How many core visit types are there for ACs (Area Coaches)?",si_q:"Area Coach විසින් ප්‍රධාන visit වර්ග කීයක් සිදුකරයිද?",opts:["2","3","4","5"],ans:1,exp:"3 core visits: Taste Visit, Speed Visit, ACE Self Evaluation Visit.",si:"Area Coach විසින් සිදුකරන ප්‍රධාන <b>visit types 3</b> කි . \n\n(1) Taste Visit \n(2) Speed Visit \n(3) ACE Self Evaluation Visit."},
+    {q:"What does the BSC stand for?",si_q:"BSC යනු කුමක්ද?",opts:["Business Score Card","Balanced Score Card","Brand Standard Check","Basic Service Criteria"],ans:1,exp:"BSC = Balanced Score Card - measures performance across 4 areas.",si:"<b>BSC = Balanced Score Card</b>. \n\nමෙහිදී Outlet එකක performance එක <b>areas 3ක්</b> ඔස්සේ measure කරනවා. එම areas වන්නේ, <span style='color:green'><b>\n• Customer \n• Sales \n• EBITDA</b></span>"},
+    {q:"What are the 3 main components of BSC and their weightings?",si_q:"BSC හි ප්‍රධාන කොටස් 3 සහ ඒවායේ බර තැබීම් (Weightings) මොනවාද?",opts:["Customer 50% / Sales 35% / EBITDA 15%","Customer 60% / Sales 25% / EBITDA 15%","Customer 25% / Sales 50% / EBITDA 25%","Customer 50% / Sales 30% / EBITDA 20%"],ans:0,exp:"BSC Weightings: Customer (50%), Sales (35%), EBITDA (15%).",si:"BSC Weightings: Customer (50%), Sales (35%), EBITDA (15%)."},
+    {q:"What does GES measure?",si_q:"GES මගින් මනින්නේ කුමක්ද?",opts:["Guest Experience Score","General Efficiency Standard","Gross Earnings Summary","Guest Evaluation Survey"],ans:0,exp:"Guest Experience Score - measures customer satisfaction via surveys.",si:"Guest Experience Score (මෙය OSI ලෙසත් හඳුන්වනවා). මෙමඟින් Customer satisfaction එක measure කරනවා."},
+    {q:"What is the TOP BOX calculation?",si_q:"TOP BOX ගණනය කිරීම යනු කුමක්ද?",opts:["% of customers who selected Highly Satisfied","% of customers who selected Satisfied or Highly Satisfied","(5★ % + 4★ %) - (2★ % + 1★ %)","% of customers who selected Highly Satisfied - % of customers Dissatisfied"],si_opts:["'Highly Satisfied' ලෙස තේරූ පාරිභෝගික ප්‍රතිශතය","'Satisfied' හෝ 'Highly Satisfied' ලෙස තේරූ ප්‍රතිශතය","(5★ % + 4★ %) - (2★ % + 1★ %)","Highly Satisfied' තේරූ පාරිභෝගික ප්‍රතිශතය - අතෘප්තිමත් ප්‍රතිශතය"],ans:0,exp:"TOP BOX = % of customers who selected 'Highly Satisfied' (rating 5).",si:"TOP BOX = 'Highly Satisfied' <b>(5/5) select කළ customers ප්‍රතිශතය</b>."},
+    {q:"What does OSAT mean?",si_q:"OSAT යනු කුමක්ද?",opts:["Overall Satisfaction score","Overall System Achievement Target","Outlet Sales Achievement Target","Overall Staff Assessment Test"],ans:0,exp:"OSAT = (5+4) - (2+1) = Top Two Box minus Bottom Two Box.",si:"<b>OSAT:</b> (5 star % + 4 star %) ratings වලින් (2 star % + 1 star %) ratings අඩු කරාම ලැබෙන ප්‍රතිශතය"},
+    {q:"In BSC, what percentage weight does SSTG Score have within the Sales component?",si_q:"BSC හි Sales කොටස (35) තුළ SSTG Score සඳහා ඇති ලකුණු ප්‍රමාණය කොපමණද?",opts:["10 out of 35","25 out of 35","15 out of 35","20 out of 35"],ans:0,exp:"SSTG Score = 10 points within Sales (35 total). Sales Score = 25 points.",si:"Sales component තුළ <b>points 35ක්</b> වේ. ඉන් SSTG Score සඳහා points 10ක්ද, Sales Score සඳහා points 25ක්ද වේ."},
+    {q:"What does H2OP stand for?",si_q:"H2OP යනු කුමක්ද?",opts:["Hustle / Hospitality / Own the Zone / Passion for Product","Hustle / Hospitality / Own the Grid / Passion for People","Hustle / Hospitality / Own the Zone / Passion for People","Health / Hospitality / Own the Zone / Passion for Product"],ans:0,exp:"H2OP = Hustle + Hospitality + Own the Zone + Passion for Product.",si:"<b>H2OP:</b> \n\n• H : Hustle \n• H : Hospitality \n• O : Own the Zone \n• P : Passion for Product"},
+    {q:"What does TMTS stand for?",si_q:"TMTS යනු කුමක්ද?",opts:["Team Member Training Score","Team Member Task Standard","Training Management Tracking System","Team Member Testing Score"],ans:0,exp:"TMTS = Team Member Training Score - measures training quality in the outlet.",si:"<b>TMTS = Team Member Training Score</b>. \n\nමෙමඟින් Team Membersලගේ training quality measure කරනවා."},
+    {q:"What is the Dragontail system used for?",si_q:"Dragontail පද්ධතිය භාවිතා කරන්නේ කුමක් සඳහාද?",opts:["Delivery order management and GPS tracking","Customer ordering online","Stock management","Staff scheduling"],si_opts:["Delivery orders කළමනාකරණය සහ GPS Tracking සඳහා","අන්තර්ජාලය හරහා ඇණවුම් කිරීමට","Stock manage කිරීමට","Shift සැකසීමට"],ans:0,exp:"Dragontail = delivery order management system with GPS tracking for riders and customers.",si:"<b>Dragontail</b> : delivery order manage කිරීමට සහ Rider track කිරීමට මෙම system එක භාවිතා කරයි."},
+    {q:"In Dragontail, what does OTD U12 mean?",si_q:"Dragontail හි OTD U12 යනු කුමක්ද?",opts:["Time from order hitting store to rider exiting store fence within 12 mins","Total delivery time under 12 minutes","Order to door under 12 minutes","Prepare the order within 12 minutes"],si_opts:["ඇණවුම ලැබී විනාඩි 12ක් ඇතුළත රයිඩර් outlet සීමාවෙන් පිටවීම","මුළු ඩිලිවරි කාලය විනාඩි 12ට අඩු වීම","විනාඩි 12න් order එක deliver කිරීම","විනාඩි 12ක් ඇතුළත order එක සකස් කිරීම"],ans:0,exp:"OTD U12 = Order hits store → rider exits the geo-fence of the store. Target: under 12 minutes.",si:"<b>OTD U12</b> : ඇණවුම ලැබී විනාඩි 12ක් ඇතුළත රයිඩර් outlet සීමාවෙන් පිටවීම."},
+    {q:"In Dragontail, what does 'Rack Time' measure?",si_q:"Dragontail හි 'Rack Time' මගින් මනින්නේ කුමක්ද?",opts:["Time from order bumped from Expo KDS to rider dispatched","Time pizza spends in the oven","Time from order placed to delivery","Time rider spends at customer location"],si_opts:["Expo KDS(Cut table) එකෙන් Bump කළ මොහොතේ සිට රයිඩර් පිටත් වන තෙක් කාලය","පීසා එක අවන් වීමට ගතවන කාලය","Order එක ලැබුණු මොහොතේ සිට ඩිලිවරි කිරීම දක්වා කාලය","Customerගේ location එකේදී order එක hand over කිරීමට රයිඩර්ට ගතවන කාලය"],ans:0,exp:"Rack Time = from order bumped from Expo KDS(Cut Table) to order dispatched to rider.",si:"<b>Rack Time</b> : Cut table එකෙන් bump කර riderට dispatch කිරීම දක්වා කාලය."},
+    {q:"What is Hut University?",si_q:"Hut University යනු කුමක්ද?",opts:["Online learning platform for Pizza Hut team members","A physical university for Pizza Hut employees","The training kitchen at HQ","Pizza Hut's recruitment portal"],si_opts:["Pizza Hut team members සඳහා වන අන්තර්ජාල ඉගෙනුම් platform එකකි","Pizza Hut සේවකයින් සඳහා ඇති විශ්වවිද්‍යාලයක්","ප්‍රධාන කාර්යාලයේ ඇති training kitchen එක","Pizza Hut සඳහා employees බඳවා ගැනීමේ portal එකයි"],ans:0,exp:"Hut University = online learning platform for Pizza Hut team members with WBTs(Web Based Trainings), eCSLs(PH Wiki), and assessments.",si:"<b>Hut University</b> : Pizza Hut team members සඳහා වන, WBTs(වෙබ් මත පදනම් වූ පුහුණුවීම්), eCSLs(PH Wiki), සහ assessments වලින් සමන්විත <span style='color:green'>online learning platform</span> එකකි."},
+    {q:"What is an eCSL in Hut University?",si_q:"Hut University හි eCSL යනු කුමක්ද?",opts:["CHAMPS Standards Library - digital reference materials","Electronic Customer Satisfaction Log","Employee Certification Score Level","Easy to Complete Short Lesson"],ans:0,exp:"eCSL = CHAMPS Standards Library - digital reference materials.",si:"<b>eCSL</b> : CHAMPS Standards Library. Digital format එකෙන් ඇති standards documents."},
+    {q:"How long is the GEM portal password validity?",si_q:"GEM portal එකේ Password එක වලංගු වන්නේ කොපමණ කාලයක්ද?",opts:["365 Days","180 Days","90 Days","30 Days"],ans:0,exp:"GEM portal password expires every 365 days (1 year).",si:"GEM portal password, <b>දින 365ක්</b> (අවුරුදු 1ක්) වලංගු වේ."},
+    {q:"When was Gamma Pizzakraft Lanka founded?",si_q:"Gamma Pizzakraft Lanka ආරම්භ කළේ කවදාද?",opts:["1993","1990","1997","2000"],ans:0,exp:"Gamma Pizzakraft Lanka was founded in 1993 (30+ years in business)",si:"Gamma Pizzakraft Lanka <span style='color:green'><b>1993</b></span> දී ආරම්භ කරන ලදී."},
+    {q:"How many Pizza Hut outlets are currently in Sri Lanka(June 2026)?",si_q:"දැනට(June 2026) ශ්‍රී ලංකාවේ Pizza Hut outlets කීයක් තිබේද?",opts:["111","125","120","135"],ans:1,exp:"125 Pizza Hut outlets in Sri Lanka.",si:"දැනට(June 2026) Sri Lankaවේ Pizza Hut outlets <b>125</b>කි."},
+    {q:"How many Taco Bell outlets are in Sri Lanka?",si_q:"දැනට ශ්‍රී ලංකාවේ Taco Bell outlets කීයක් තිබේද?",opts:["11","5","15","8"],ans:0,exp:"11 Taco Bell outlets in Sri Lanka.",si:"Taco Bell outlets = 11."},
+    {q:"What are the brands operated by Gamma Pizzakraft Lanka?",si_q:"Gamma Pizzakraft Lanka විසින් මෙහෙයවන සන්නාම (Brands) මොනවාද?",opts:["Pizza Hut & Taco Bell","Pizza Hut & KFC","Pizza Hut, Taco Bell & KFC","Pizza Hut & Burger King"],ans:0,exp:"Gamma Pizzakraft Lanka operates Pizza Hut & Taco Bell in Sri Lanka.",si:"Gamma Pizzakraft Lanka විසින් ශ්‍රී ලංකාව තුළ මෙහෙයවන Brands වන්නේ <b>Pizza Hut</b> හා <b>Taco Bell</b> වේ."},
+    {q:"What is Gamma's total headcount approximately?(June 2026)",si_q:"Gamma හි දළ වශයෙන් සම්පූර්ණ සේවක සංඛ්‍යාව කොපමණද?(June 2026)",opts:["2800+","3100+","3500+","3000+"],ans:2,exp:"Gamma Pizzakraft Lanka headcount = 3500+ employees.",si:"Gamma හි total staff count එක 2026 ජුනි මාසය වන විට <b>3500+</b> වේ."},
+    {q:"What are Gamma's Core Values?",si_q:"Gamma හි Core Values මොනවාද?",opts:["Respect / Integrity / Innovation / Teamwork","Reliability / Integrity / Initiative / Trust","Respect / Integrity / Initiative / Teamwork","Responsibility / Integrity / Innovation / Trust"],ans:0,exp:"Gamma Core Values = RIIT: Respect, Integrity, Innovation, Teamwork.",si:"<b>Gamma Core Values</b> : \n\n• Respect \n• Integrity \n• Innovation \n• Teamwork"},
+    {q:"Who is the CEO/Managing Director of Gamma Pizzakraft Lanka?",si_q:"Gamma Pizzakraft Lankaහි CEO/Managing Director කවුද?",opts:["Mr.Yasa Nadaraja","Mr.Sanjay Purohit","Mr.Chinthaka Mahesh","Mr.Christopher Barnett"],ans:0,exp:"Mr.Yasa Nadaraja = Managing Director / CEO of Gamma Pizzakraft Lanka.",si:"<b>Mr.Yasa Nadaraja</b> : Gamma Pizzakraft Lanka Managing Director/CEO."},
+    {q:"Who is the Director of People & Culture at Gamma?",si_q:"Gamma හි Director of People & Culture කවුද?",opts:["Mr.Nuwan Jayaweera","Mr.Yasa Nadaraja","Mr.Chinthaka Mahesh","Mr.Christopher Barnett"],ans:0,exp:"Mr.Nuwan Jayaweera = Director – People & Culture at Gamma.",si:"<b>Mr.Nuwan Jayaweera</b> : Director – People & Culture."},
+    {q:"What is Gamma Island Food (Pvt) Ltd?",si_q:"Gamma Island Food (Pvt) Ltd යනු කුමක්ද?",opts:["Joint venture operating Pizza Hut & KFC in Maldives","Gamma's food manufacturing arm","Pizza Hut Maldives only company","Gamma's another Sri Lankan restaurant brand"],ans:0,exp:"Gamma Island Food = joint venture between Gamma Pizzakraft Overseas & Gamma Pizzakraft Lanka, operating Pizza Hut & KFC in Maldives (4 outlets).",si:"<b>Gamma Island Food</b> : Maldives හි Pizza Hut & KFC මෙහෙයවන සමාගම."},
+    {q:"How many outlets does Gamma Island Food have in Maldives?",si_q:"Gamma Island Food හට මාලදිවයිනේ Outlets කීයක් තිබේද?",opts:["4","2","6","3"],ans:0,exp:"Gamma Island Food has 4 outlets in Maldives (Pizza Hut Male, KFC Male, Pizza Hut Hulhumale, KFC Hulhumale).",si:"Maldives හි outlets 4 ක් ඇත."},
+    {q:"What is the wedding gift amount from Gamma?",si_q:"Gamma වෙතින් සේවකයින්ට ලැබෙන විවාහ දීමනාව කොපමණද?",opts:["Rs. 15,000","Rs. 10,000","Rs. 12,000","Rs. 7,500"],ans:0,exp:"Gamma employee wedding gift = Rs. 15,000.",si:"Gamma employee wedding gift = Rs. 15,000."},
+    {q:"What is the Gamma child birth benefit?",si_q:"Gamma සේවකයින්ට ලැබෙන දරු උපත් දීමනාව කොපමණද?",opts:["Rs. 7,500","Rs. 15,000","Rs. 10,000","Rs. 20,000"],ans:0,exp:"Child birth benefit from Gamma = Rs. 7,500.",si:"අලුත උපන් දරුවෙකු වෙනුවෙන් Gamma විසින් එහි සේවකයන් හට රු.7,500ක දීමනාවක් ලබාදෙයි."},
+    {q:"What is the Grade 5 scholarship amount from Gamma?",si_q:"Gamma හි employee කෙනෙකුගේ දරුවෙක් 5 ශ්‍රේණියේ ශිෂ්‍යත්ව විභාගය සමත් වුවහොත් Gamma වෙතින් පිරිනමන මුදල කොපමණද?",opts:["Rs. 10,000","Rs. 15,000","Rs. 25,000","Rs. 20,000"],ans:0,exp:"Grade 5 scholarship = Rs. 10,000, O/L = Rs. 15,000, A/L = Rs. 15,000, University = Rs. 2,500/month for 3 years.",si:"Scholarship: Grade 5 = Rs. 10,000."},
+    {q:"What is the Benevolent Fund payout for death of an employee?",si_q:"සේවකයෙකු මියගියහොත් Benevolent Fund එකෙන් ලැබෙන මුදල කොපමණද?",opts:["Rs. 200,000","Rs. 50,000","Rs. 100,000","Rs. 150,000"],ans:0,exp:"Death of employee = Rs. 200,000 from Benevolent Fund.",si:"Employee කෙනෙක් මිය ගියහොත් Benevolent Fund එකෙන් ලැබෙන මුදල වන්නේ <b>රු. 200,000</b> කි."},
+    {q:"What is the emergency loan amount for employees who have completed 2 years of service?",si_q:"වසර 2කට වඩා වැඩි සේවා කාලයක් සහිත සේවකයෙකුට හදිසි ණය ලෙස කොපමණ මුදලක් ලබාගත හැකිද?",opts:["Rs. 40,000","Rs. 20,000","Rs. 60,000","Rs. 30,000"],ans:1,exp:"Emergency Loan (2yr completed) = Rs. 40,000, 12% interest, 10 months.",si:"Emergency Loan (වසර 2ක් සම්පූර්ණ කළ ): Rs. 40,000."},
+    {q:"Medical benefits - what is the IPD (in-patient) cover for a non-executive individual?",si_q:"වෛද්‍ය ප්‍රතිලාභ යටතේ විධායක නොවන (non-executive) සේවකයෙකුගේ IPD ආවරණය කොපමණද?",opts:["Rs. 100,000","Rs. 50,000","Rs. 200,000","Rs. 25,000"],ans:0,exp:"IPD (hospitalization) = Rs. 100,000 for non-executive individual.",si:"Non-executive individual IPD = Rs. 100,000."},
+    {q:"What is the Critical Illness cover amount at Gamma?",si_q:"Gamma හි Critical Illness (අසාධ්‍ය රෝග) රක්ෂණ ආවරණය කොපමණද?",opts:["Rs. 250,000","Rs. 500,000","Rs. 100,000","Rs. 200,000"],ans:0,exp:"Critical Illness cover = Rs. 250,000. Life insurance = Rs. 500,000.",si:"Gamma හි Critical Illness රක්ෂණ ආවරණය <b>රු. 250,000</b> කි."},
+    {q:"What are the 5 Golden Rules to make Customer WOW?",si_q:"Customer WOW කිරීම සඳහා වන Golden Rules 5 මොනවාද?",opts:["1. Treat customers like you want to be treated 2. Never let a customer leave unhappy 3. Solve problems before they become complaints 4. Never argue with customer 5. Never blame other TMs","1. Always smile 2. Greet customer 3. Take order correctly 4. Deliver fast 5. Thank customer","1. Be polite 2. Know the menu 3. Be fast 4. Be accurate 5. Upsell","1. Listen 2. Apologize 3. Satisfy 4. Thank 5. Believe"],si_opts:["1. තමන්ට සලකනවාට කැමති ලෙස පාරිභෝගිකයාට සැලකීම 2. අසතුටින් යන්න නොදීම 3. පැමිණිලි වීමට පෙර ගැටළු විසඳීම 4. තර්ක නොකිරීම 5. වෙනත් TMs ට දොස් නොකීම","සිනහ වීම, පිළිගැනීම, නිවැරදි ඇණවුම, වේගවත්බව, ස්තූති කිරීම","ආචාරශීලී වීම, මෙනුව දැනගැනීම, වේගවත්බව, නිවැරදි බව, Upsell කිරීම","Listen, Apologize, Satisfy, Thank, Believe"],ans:0,exp:"<b>5 Golden Rules:</b> \n\n1. Treat customers like you want to be treated \n2. Never let a customer leave unhappy \n3. Solve problems before they become complaints \n4. Never argue with customer \n5. Never blame other team members",si:"ඉහත දක්වා ඇත."},
+    {q:"What is the BLAST acronym for complaint handling?",si_q:"පැමිණිලි විසඳීමේදී යොදාගන්නා BLAST framework එකෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Believe / Listen / Apologize / Satisfy / Thank","Believe / Listen / Analyze / Solve / Thank","Be Good / Look / Apologize / Satisfy / Tell"," / Listen / Act / Solve / Thank"],ans:0,exp:"BLAST = Believe, Listen, Apologize, Satisfy, Thank - complaint handling framework.",si:"<b>BLAST:</b> \n\n• B : Believe \n• L : Listen \n• A : Apologize \n• S : Satisfy \n• T : Thank"},
+    {q:"What is 'Team of Two process'?",si_q:"'Team of Two process' යනු කුමක්ද?",opts:["Apologize and show concern → Offer solution → Tell manager → Check back on satisfaction","Two team members handle all orders and solve customer complaints","Two managers present at all times","Two delivery riders per order"],si_opts:["සමාව ගැනීම -> විසඳුමක් දීම -> මැනේජර්ට දැනුම් දීම -> නැවත පරීක්ෂා කිරීම","Team Members දෙදෙනෙක් විසින් සියලුම orders ලබා ගැනීම සහ customer complaints විසඳීම.","සෑමවිටම මැනේජර්වරුන් දෙදෙනෙක් සිටීම","එක් ඇණවුමකට රයිඩර්වරුන් දෙදෙනෙක්"],ans:0,exp:"Team of Two: 1.Apologize/show concern 2.Offer a solution 3.Tell manager immediately 4.Check back on satisfaction.",si:"<b>Team of Two process:</b> සමාව ගෙන, විසඳුමක් ලබාදී, හැකි ඉක්මනින් ඒ පිළිබඳව manager දැනුවත් කර ලබා දුන් solution එක පිළිබඳව satisfy වුවාද යන්න නැවත විමසා බැලීම වේ."},
+    {q:"In the 'Your First 30-Day Journey', when must Food Safety training be completed?",si_q:"'Your First 30-Day Journey' පුහුණුවේදී, Food Safety පුහුණුව අවසන් කළ යුත්තේ කවදාද?",opts:["Within 14 days","Within 2 days","Within 30 days","Within 7 days"],ans:0,exp:"Food Safety training must be completed within 14 days of joining.",si:"Food Safety training <b>දින 14 ක්</b> ඇතුළත සම්පූර්ණ කළ යුතුයි."},
+    {q:"What are the 3 Expert Badge stations?",si_q:"Expert Badge හිමිවන Stations 3 කුමක්ද?",opts:["Back of House (BOH) / Front of House (FOH) / Delivery Rider","BOH / Make Table / Cut Table","FOH / Cashier / Delivery Rider","Restaurant General Manager (RGM) / Shift Manager (SM) / Team Member (TM)"],ans:0,exp:"<b>3 Expert Badge stations:</b> \n\n• Station - Kitchen \n• Station - FOH (Front of House) \n• Station - Delivery Rider",si:"ඉහත දක්වා ඇත."},
+    {q:"How often does the Human Resource(HR) Review occur?",si_q:"HR Review කොපමණ කාලයකට වරක් සිදුකෙරේද?",opts:["Once per quarter (every 3 months)","Once per month (every 4 weeks)","Twice per year (every 6 months)","Once per year (every 12 months)"],ans:0,exp:"HR Review = once per quarter (every 3 months), done by Employee Relations Executive at the outlet.",si:"HR Review = <b>මාස 3 කට වරක්</b> (quarterly)."},
+    {q:"What is the 4-step training process? (in order)",si_q:"4-step training ක්‍රියාවලියේ නිවැරදි අනුපිළිවෙල කුමක්ද?",opts:["Prepare → Show & Tell → Guide and Practice → Follow Up","Show & Tell → Prepare → Guide and Practice → Follow Up","Prepare → Guide and Practice → Show & Tell → Follow Up","Introduction → Show & Tell → Practice → Assess"],ans:0,exp:"Training 4 steps: Prepare → Show & Tell → Guide and Practice → Follow Up.",si:"<b>4-step training:</b> \n\n1. Prepare \n2. Show & Tell \n3. Guide and Practice \n4. Follow Up"},
+    {q:"What does SRI stand for?",si_q:"SRI යනු කුමක්ද?",opts:["Store Readiness Index","Sales Revenue Index","Standard Restaurant Inspection","Staff Retention Indicator"],ans:0,exp:"SRI = Store Readiness Index - internal development plan measurement.",si:"<b>SRI</b> : Store Readiness Index."},
+    {q:"What is the Gamma Pizzakraft contact number?",si_q:"Gamma Pizzakraft හි දුරකථන අංකය කුමක්ද?",opts:["0117 500 600","0112 345 678","0117 600 700","0112 500 600"],ans:0,exp:"Gamma Pizzakraft Lanka contact: 0117 500 600.",si:"Gamma official contact no: <b>0117 500 600</b>"},
+    {q:"What does FER stand for?",si_q:"FER යනු කුමක්ද?",opts:["Financial Excellence Review","Financial Expense Report","Final Evaluation Review","Field Excellence Report"],ans:0,exp:"FER = Financial Excellence Review - internal financial audit of outlets.",si:"<b>FER</b> : Financial Excellence Review"},
+	{q:"What is the MRD (Made, Ready, Discard) for make table toppings?",si_q:"Make table toppings වල MRD කුමක්ද?",opts:["EOS (End of Session)","EOD (End of Day)","24 Hours","12 Hours"],ans:1,exp:"Make table toppings MRD = EOD (End of Day).",si:"Make table toppings වල MRD = <b>EOD</b> (End of Day)."},
+	{q:"What is CHAMPS in Pizza Hut?",si_q:"Pizza Hut හි CHAMPS යනු කුමක්ද?",opts:["Cleanliness, Hospitality, Accuracy, Maintenance, Product Quality, Speed","Customers, Hospitality, Assurance, Management, Product, Standards","Cleanliness, Hustle, Accuracy, Maintenance, People, Speed","Cleanliness, Hospitality, Assurance, Management, Product, Service"],ans:0,exp:"Cleanliness, Hospitality, Accuracy, Maintenance, Product Quality, Speed.",si:"<b>CHAMPS:</b> \n\n• C : Cleanliness \n• H : Hospitality \n• A : Accuracy \n• M : Maintenance \n• P : Product Quality \n• S : Speed"},
+	{q:"What are the 5 Steps of Service for a Delivery Rider?",si_q:"Delivery Rider කෙනෙකු සඳහා වන 5 Steps of Service මොනවාද?",opts:["Smile, Greet & Verify -> Introduce yourself & company -> Repeat the order -> State the amount & give balance -> Thank & invite to call back","Greet -> Give pizza -> Take money -> Say thank you -> Leave","Check order -> Drive safely -> Smile, Greet & Verify -> Give balance -> Say goodbye","Smile -> Give order -> Introduce yourself & company -> Take signature -> Leave"],si_opts:["Smile, Greet & Verify -> තමන් සහ ආයතනය හඳුන්වා දීම -> ඇණවුම නැවත මතක් කිරීම -> මුදල පවසා ඉතිරි මුදල් ලබා දීම -> ස්තූති කර නැවත පැමිණෙන ලෙස පැවසීම","ආචාර කිරීම -> පිට්සා ලබා දීම -> මුදල් ගැනීම -> ස්තූතියි කියා පිටත් වීම","ඇණවුම පරීක්ෂා කිරීම -> ආරක්ෂිතව ධාවනය කිරීම -> Smile, Greet & Verify -> ඉතිරි මුදල් ලබා දීම -> සමුගැනීම","සිනහ වීම -> ඇණවුම ලබා දීම -> තමන් සහ ආයතනය හඳුන්වා දීම -> අත්සන ලබා ගැනීම -> පිටත් වීම"],ans:0,exp:"The 5 Steps: 1. Smile, Greet and Verify 2. Introduce yourself and the company 3. Repeat the order 4. State the amount and give the balance 5. Thank and invite to call back.",si:"<b>The 5 Steps:</b> \n\n1. Smile, Greet and Verify \n2. Introduce yourself and the company \n3. Repeat the order \n4. State the amount and give the balance \n5. Thank and invite to call back."},
+	{q:"3 sink: What chemical is used in the wash compartment?",si_q:"3 sink හි Wash compartment එක සඳහා භාවිතා කරන රසායනික ද්‍රව්‍ය කුමක්ද?",opts:["All-purpose","Mikro Chlor","P3 Sanitizer","Rinse aid"],ans:0,exp:"Wash compartment: All-purpose cleaner",si:"Wash compartment එක සඳහා <b>All-purpose</b> භාවිතා කරයි. Sanitize sink එක සඳහා <b>Mikro Chlor</b> භාවිතා කරයි."},
+    {q:"What is Mikro Chlor used for?",si_q:"Mikro Chlor භාවිතා කරන්නේ කුමක් සඳහාද?",opts:["Sanitizing in the 3-sink and duster management","Washing vegetables","Cleaning the oven","Washing hands"],si_opts:["3-sink හි sanitize කිරීමට සහ duster සඳහා","එළවළු සේදීමට","අවන් එක පිරිසිදු කිරීමට","අත් සේදීමට"],ans:0,exp:"Mikro Chlor = sanitizing solution for 3-sink (sanitize compartment) and duster management.",si:"<b>Mikro Chlor</b> : 3-sink එකේ Sanitize කිරීමට සහ duster bucket එකට යොදා ගනී. එසේම vegetables sanitize කිරීම සහ spray bottle එක සඳහාද යොදාගන්නේ Mikro Chlor වේ."},
+	{q:"What is the correct water temperature for the hand wash sink?",si_q:"Hand wash sink එකක තිබිය යුතු නිවැරදි ජල උෂ්ණත්වය කුමක්ද?",opts:["21°C - 49°C","20°C - 50°C","49°C - 60°C","25°C - 55°C"],ans:0,exp:"Correct handwashing temperature = 21°C - 49°C (hot but not scalding).",si:"<b>21°C සිට 49°C</b>."}
+  ]
+},
+paper2: {
+  title:"⭐⭐⭐ Advanced Questions",
+  qs:[
+    {q:"Why is FIFO important?",si_q:"FIFO වැදගත් වන්නේ ඇයි?",opts:["Ensures older stock is used first","It makes stock counting easier","It prevents theft of ingredients","It helps with ordering efficiency"],si_opts:["පැරණි තොග මුලින් භාවිතා කිරීමට","Stock ගණන් කිරීම පහසු කරයි","අමුද්‍රව්‍ය සොරකම් කිරීම වළක්වයි","ඇණවුම් කිරීම පහසු කරයි"],ans:0,exp:"FIFO (First In First Out) = oldest stock used first, preventing waste and ensuring freshness.",si:"<b>FIFO</b> : <span style='color:green'>First In, First Out</span>. පැරණි තොග මුලින් භාවිතා කිරීම මඟින් නාස්තිය අවම කිරීම සහ නැවුම් බව සුරක්ෂිත කරයි."},
+    {q:"What is the minimum height from floor for food storage?",si_q:"ආහාර ගබඩා කිරීමේදී බිමේ සිට තිබිය යුතු අවම උස කොපමණද?",opts:["6 inches","5 inches","12 inches","2-4 inches"],ans:0,exp:"Food must be stored 6 inches off the floor.",si:"බිම සිට <b>අඟල් 6 ක්</b> උසින් තැබිය යුතුය."},
+    {q:"What temperature should the make table be maintained at?",si_q:"Make table හි උෂ්ණත්වය පවත්වා ගත යුත්තේ කුමන අගයකද?",opts:["Below 5°C","Below 10°C","0°C - 5°C","5°C - 10°C"],ans:0,exp:"Make table must be maintained below 5°C to keep toppings safe.",si:"Make table උෂ්ණත්වය <b>5°C ට වඩා අඩුවෙන්</b> පවත්වාගත යුතුය."},
+    {q:"Which items MUST be stored in the chiller overnight?",si_q:"භාවිතයට පෙර රාත්‍රිය පුරා (Overnight) Chiller එකේ අනිවාර්යයෙන්ම ගබඩා කළ යුතු ද්‍රව්‍ය මොනවාද?",opts:["Jalapenos,Garlic butter","All dry ingredients","Only meat products","Only dairy products"],si_opts:["Jalapenos සහ Garlic Butter වැනි ද්‍රව්‍ය","සියලුම වියළි ද්‍රව්‍ය","මස් වර්ග පමණි","කිරි ආශ්‍රිත ද්‍රව්‍ය පමණි"],ans:0,exp:"Jalapenos, Garlic Butter, Nacho cheese sauce, etc. must be overnight chilled for ACE audit compliance.",si:"Jalapenos, Garlic Butter, Nacho cheese sauce වැනි ද්‍රව්‍ය භාවිතයට පෙර දින රාත්‍රියේ Chiller එකේ තැබිය යුතුය."},
+    {q:"In Dragontail, who can change Drive Conditions (e.g., for rain)?",si_q:"Dragontail හි Drive Conditions (උදා: වර්ෂාව) වෙනස් කළ හැක්කේ කාටද?",opts:["RGM only","Any Team Member","Dispatcher only","Area Coach"],ans:0,exp:"Drive conditions can only be changed by the RGM.",si:"Drive conditions වෙනස් කළ හැක්කේ RGM (Restaurant General Manager) ට පමණි."},
+    {q:"What is the correct order taking process? First step?",si_q:"Order ගැනීමේ ක්‍රියාවලියේ පළමු පියවර කුමක්ද?",opts:["Greet the customer warmly","Take the order","Ask for upsell","Confirm the order"],si_opts:["පාරිභෝගිකයා උණුසුම් ලෙස පිළිගැනීම","ඇණවුම ගැනීම","Upsell කිරීම","ඇණවුම තහවුරු කිරීම"],ans:0,exp:"First step = Greet the customer warmly, using their name if known.",si:"පළමු පියවර : පාරිභෝගිකයා උණුසුම් ලෙස පිළිගැනීම."},
+    {q:"What is the correct response to a customer complaint? (BLAST method - Step 1)",si_q:"පාරිභෝගික පැමිණිල්ලකට නිවැරදි ප්‍රතිචාරය (BLAST method හි 1 වන පියවර) කුමක්ද?",opts:["Believing what the customer says","Listen carefully - look at the customer, understand the problem, and never get angry","Apologize immediately and call the manager","Offer a complimentary meal"],si_opts:["Customer පවසන දෙය විශ්වාස කිරීම","හොඳින් සවන් දෙන්න - පාරිභෝගිකයා දෙස බලන්න, ගැටළුව තේරුම් ගන්න, කිසිවිටෙකත් කෝප නොවන්න","වහාම සමාව ගෙන කළමනාකරුට කතා කරන්න","නොමිලේ ආහාර වේලක් ලබා දෙන්න"],ans:0,exp:"BLAST Step 1 = Believing what the customer says.",si:"BLAST method හි පළමු පියවර වන්නේ Customer පවසන දෙය <b>විශ්වාස කිරීමයි</b>."},
+    {q:"What should you do after handling money?",si_q:"මුදල් ඇල්ලූ පසු කුමක් කළ යුතුද?",opts:["Wash hands immediately","Put on gloves","Use hand sanitizer only","Nothing special needed"],si_opts:["වහාම අත් සේදිය යුතුය","Gloves දැමිය යුතුය","Sanitizer භාවිතයෙන් පමණක් අත් පිරිසිදු කරගත යුතුය","විශේෂ දෙයක් අවශ්‍ය නැත"],ans:0,exp:"After handling money: wash hands immediately - money carries bacteria.",si:"මුදල් ඇල්ලූ පසු වහාම අත් සේදිය යුතුය (මුදල් වල බැක්ටීරියා ඇති බැවින්)."},
+	{q:"What is the Rider accident prevention rule #1?",si_q:"රයිඩර් අනතුරු වළක්වා ගැනීමේ අංක 1 නීතිය කුමක්ද?",opts:["Never Speed","Always wear helmet","Always check your bike for breaks","Obey traffic rules"],si_opts:["කිසිවිටෙක අධික වේගයෙන් නොයන්න","සෑමවිටම හෙල්මටයක් පළඳින්න","සෑම විටම bike එකේ breaks ඇති බව සහතික කරගැනීම","මාර්ග නීති පිළිපදින්න"],ans:0,exp:"Rider accident prevention Rule 1 = Never Speed.",si:"Rule 1 = Never Speed. \n\n<b>Rider accident prevention Rules</b> වන්නේ, \n\n1. Never Speed \n2. Plan your route \n3. Always check your bike for breaks \n4. Always wear your helmet \n5. Drive within the speed limit \n6. Obey the traffic rules \n7. Always indicate 5 seconds before you turn \n8. Never overtake from the left side \n9. Do not stay in the blind spot of a four wheeler for too long \n10. Drive carefully yourself and watch out other people's wrong driving"},
+	{q:"In case of an accident, what must a rider do?",si_q:"අනතුරකදී රයිඩර් කෙනෙකු කළ යුත්තේ කුමක්ද?",opts:["Don't leave scene, call manager, contact insurance & police, trade info, get witness details, contact customer","Just call the manager","Take a photo and leave","Wait for the police to arrive"],si_opts:["සිදුවූ ස්ථානයෙන් පලා නොගොස් මැනේජර්ට, පොලිසියට සහ රක්ෂණ සමාගමට දැනුම් දී, සාක්ෂි එකතු කර ගැනීම, පාරිභෝගිකයාට දැනුම් දීම","මැනේජර්ට පමණක් කතා කිරීම","ඡායාරූපයක් ගෙන පිටත්ව යාම","පොලිසිය එනතුරු බලා සිටීම"],ans:0,exp:"Accident: Don't leave scene/bike, call manager, contact insurance & police, trade info, get witness, contact customer.",si:"අනතුර සිදුවූ ස්ථානයෙන් පලා නොගොස් මැනේජර්ට, පොලිසියට, රක්ෂණ සමාගමට, පාරිභෝගිකයාට දැනුම් දී නිසි ක්‍රියාවලිය අනුගමනය කළ යුතුය."},
+	{q:"What is the standard bike checklist requirement?",si_q:"Standard bike checklist එකෙහි අවශ්‍යතාව කුමක්ද?",opts:["Bike checklist must be maintained and checked before every shift","Bike checklist must be maintained and checked everyday","Check bike only weekly","Check bike only when there's a problem"],si_opts:["සෑම shift එකකටම පෙර Bike checklist එක පරීක්ෂා කර පවත්වාගත යුතුය","සෑම දිනකම Bike checklist එක පරීක්ෂා කර පවත්වාගත යුතුය","සතියකට වරක් පමණක් පරීක්ෂා කිරීම","ගැටළුවක් ඇති වූ විට පමණක් පරීක්ෂා කිරීම"],ans:0,exp:"Bike checklist must be maintained and checked before every shift.",si:"සෑම shift එකකටම පෙර Bike checklist එක පරීක්ෂා කර පවත්වාගත යුතුය."},
+	{q:"What is the maximum pizzas per delivery pouch?",si_q:"Delivery pouch එකක වරකට ගෙන යා හැකි උපරිම පිට්සා ගණන කීයද?",opts:["2 pizzas","3 pizzas","4 pizzas","1 pizza"],si_opts:["පිට්සා 2 යි","පිට්සා 3 යි","පිට්සා 4 යි","පිට්සා 1 යි"],ans:0,exp:"Maximum 2 pizzas per delivery pouch for safe and quality delivery.",si:"ආරක්ෂිත සහ ගුණාත්මක delivery එකක් සඳහා එක් pouch එකක වරකට රැගෙන යා හැක්කේ <b>උපරිම පිට්සා 2ක්</b> පමණි."},
+	{q:"We must keep the customer's cash in view till the balance is given. True or False?",si_q:"ඉතිරි මුදල (Balance) දෙන තුරු පාරිභෝගිකයා දුන් මුදල් ඔවුන්ට පෙනෙන සේ තබාගත යුතුය. සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - Customer's cash must stay in view until change is given to avoid disputes.",si:"සත්‍යයි. ඉතිරි මුදල දෙන තුරු පාරිභෝගිකයා දුන් මුදල් ඔවුන්ට පෙනෙන සේ තබාගත යුතුය. ගැටළු මගහරවා ගැනීමට මෙය වැදගත් වේ."},
+	{q:"What is the service charge % for eat-in and delivery?",si_q:"Eat-in සහ delivery සඳහා Service charge ප්‍රතිශතය කොපමණද?",opts:["7.5%","10%","5%","6.5%"],si_opts:["7.5%","10%","5%","6.5%"],ans:0,exp:"Service charge = 7.5% for both eat-in and delivery.",si:"Eat-in සහ delivery සඳහා Service charge ප්‍රතිශතය <b>7.5%</b> කි."},
+	{q:"What is 'pre-topped pizza' and why is it important?",si_q:"'Pre-topped pizza' යනු කුමක්ද සහ එය වැදගත් වන්නේ ඇයි?",opts:["Pizza assembled (topped) in advance before rush - critical for peak time speed","Pizza made fresh only after ordering - critical for freshness","A frozen pizza product","A promotion pizza"],si_opts:["කාර්යබහුල වීමට පෙර toppings දමා සාදා තැබූ පිට්සා - වේගවත් සේවාවට අත්‍යවශ්‍යයි","ඇණවුම ආ පසු පමණක් සාදන පිට්සා - පිට්සාවල නැවුම්බව සඳහා මෙය අනිවාර්යයයි","ශීතකළ පිට්සා එකකි","ප්‍රමෝෂන් පිට්සා එකකි"],ans:0,exp:"Pre-topped pizza = assembled in advance. Critical for peak times to maintain speed.",si:"Peak timeවලදී  speed service එකක් දීමට කල්තියා සූදානම් කර තබන පිට්සා (cheese සහ toppings add කර, නමුත් bake නොකර) <b>Pre-topped pizza</b> ලෙස හැඳින්වේ."},
+	{q:"What is the pan pizza dough proofing process?",si_q:"Pan pizza ඩෝ Proofing ක්‍රියාවලිය කුමක්ද?",opts:["Dough proofed in proofer, then placed in cool room with empty pan on top","Dough proofed in freezer, then placed in retarder with empty pan on top","Dough proofed at room temperature for 90 - 130 min","Dough proofed directly before making pizza"],si_opts:["Proofer එකේ proof කර, හිස් පෑන් එකක් උඩින් තබා Cool room එකට දැමීම","Freezer එකේ proof කර, හිස් පෑන් එකක් උඩින් තබා retarder එකෙහි තැබීම","කාමර උෂ්ණත්වයේ විනාඩි 90 - 130 ක් තැබීම","පිට්සා සෑදීමට පෙර කෙලින්ම proof කිරීම"],ans:0,exp:"Pan dough: proofed in proofer → moved to cool room with empty pan placed on top.",si:"Proofer එකෙන් පසු හිස් පෑන් එකක් උඩින් තබා Cool room එකට දමයි. proof කළ dough භාවිතයට ගැනීමට පෙර පැයක කාලයක් cool room එකේ තැබීම අනිවාර්යය වේ."},
+	{q:"What does ARGM stand for?",si_q:"ARGM යන්නෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Assistant Restaurant General Manager","Area Restaurant General Manager","Advanced Restaurant General Manager","Assistant Regional General Manager"],ans:0,exp:"ARGM = Assistant Restaurant General Manager.",si:"<b>ARGM</b> : Assistant Restaurant General Manager."},
+	{q:"What is the Buddy Trainer role?",si_q:"Buddy Trainer ගේ කාර්යභාරය කුමක්ද?",opts:["Train new team members using the 4-step training process","Only make pizzas and take the responsibility","Handle customer complaints when MOD not on the floor","Update the buddy trainer log book"],si_opts:["පියවර 4 කින් යුත් පුහුණු ක්‍රියාවලිය භාවිතා කර team membersලව පුහුණු කිරීම.","පිට්සා සෑදීම පමණක් සිදු කර එහි වගකීම භාර ගැනීම.","MOD සේවා ස්ථානයේ නොමැති විට පාරිභෝගික පැමිණිලි විසඳීම","බඩී ට්‍රේනර් (Buddy Trainer) ලොග් පොත යාවත්කාලීන කිරීම."],ans:0,exp:"Buddy Trainer - responsible for training new team members using the 4-step process.",si:"Buddy Trainer ගේ කාර්යභාරය වන්නේ නව සේවකයින්ට 4-step ක්‍රියාවලිය භාවිතයෙන් පුහුණුව ලබාදීමයි."},
+	{q:"How many stations must a Buddy Trainer be expert in?",si_q:"Buddy Trainer කෙනෙක් Stations කීයක expert විය යුතුද?",opts:["All 3 - Kitchen, FOH, Delivery Rider","Only Kitchen","Kitchen and FOH only","Any 2 stations"],si_opts:["Kitchen, FOH, Delivery Rider යන 3 ම","Kitchen පමණි","Kitchen සහ FOH පමණි","ඕනෑම stations 2 ක්"],ans:0,exp:"BT must be expert in all 3 stations: BOH, FOH, Delivery Rider.",si:"BOH (Back of House), Front of House (FOH), Delivery Rider යන 3 ම."},
+	{q:"What is the CCTV footage retention requirement?",si_q:"CCTV දර්ශන තබාගත යුතු අවශ්‍ය කාලය කොපමණද?",opts:["Last 30 days","Last 7 days","Last 14 days","Last 10 days"],si_opts:["පසුගිය දින 30","පසුගිය දින 7","පසුගිය දින 14","පසුගිය දින 10"],ans:0,exp:"CCTV footage must be retained for the last 30 days.",si:"පසුගිය <b>දින 30</b> ක CCTV දර්ශන තබාගත යුතුය."},
+	{q:"What Yum! standards establish restaurant food safety requirements?",si_q:"Restaurant food safety තහවුරු කරන Yum! ප්‍රමිතීන් මොනවාද?",opts:["Yum! Restaurant Food Safety Standards","Yum! Quality Control Manual","Brand Standard Guidelines","ACE Audit Checklist"],si_opts:["Yum! Restaurant Food Safety Standards","Yum! Quality Control Manual","Brand Standard Guidelines","ACE Audit Checklist"],ans:0,exp:"Yum! RFSSs = Restaurant Food Safety Standards - global requirements for all Yum! restaurants.",si:"Yum! Restaurant Food Safety Standards(RFSS) වේ."},
+	{q:"What is Gamma's mission?",si_q:"Gamma හි Mission එක කුමක්ද?",opts:["Providing delightful experiences in food & beverages in QSR through consistent operations, services, investments and happy people","Make it easier for everyone to get a better pizza","Being the most loved and fastest growing(#mlfg) brand in Asia","Win on value, Win on taste, WOW the customer"],ans:0,exp:"Gamma's mission = Make it easier for everyone to get a better pizza",si:"Make it easier for everyone to get a better pizza"},
+	{q:"Gamma is ranked as which workplace in Asia?",si_q:"ආසියාවේ සේවා ස්ථාන අතරින් Gamma හි ශ්‍රේණිගත කිරීම කුමක්ද?",opts:["Asia's 2nd best workplace","Asia's 1st best workplace","Asia's 3rd best workplace","Top 10 in Asia"],si_opts:["ආසියාවේ 2 වන හොඳම සේවා ස්ථානය","ආසියාවේ 1 වන හොඳම සේවා ස්ථානය","ආසියාවේ 3 වන හොඳම සේවා ස්ථානය","ආසියාවේ හොඳම 10"],ans:0,exp:"Gamma ranked as Asia's 2nd best workplace.",si:"<b>ආසියාවේ 2 වන හොඳම සේවා ස්ථානය</b> (2nd best workplace) ලෙසයි."},
+	{q:"What is the correct sauce amount for a Large pizza?",si_q:"Large pizza එකක් සඳහා නිවැරදි සෝස් ප්‍රමාණය කුමක්ද?",opts:["Large spoodle","Regular spoodle","Small spoodle","2 Large spoodles"],si_opts:["Large spoodle එකක්","Regular spoodle එකක්","Small spoodle එකක්","Large spoodles 2 ක්"],ans:0,exp:"Sauce for a Large pizza = Large spoodle.",si:"Large spoodle එකක් යොදයි."},
+	{q:"Dough proofing: maximum pans stacked in proofer is?",si_q:"Dough proofing: Proofer එකේ එක මත එක තැබිය හැකි උපරිම පෑන්ස්  ගණන?",opts:["5","4","6","7"],ans:0,exp:"Maximum 5 pies stacked in Proofer.",si:"Proofer එකේ එක මත එක තැබිය හැකි උපරිම පෑන්ස්  ගණන <b>5 කි</b>."},
+	{q:"What is the oil pump calibration process?",si_q:"Oil pump calibration ක්‍රියාවලිය කුමක්ද?",opts:["Calibrate oil pump at start of shift to ensure correct oil output per press","Only calibrate weekly","Calibrate only if oil looks wrong","No calibration needed"],si_opts:["සෑම shift එකක් ආරම්භයේදීම නිවැරදිව තෙල් ලැබේදැයි පරීක්ෂා කිරීම","සතියකට වරක් පමණක් Calibrate කිරීම","තෙල් ප්‍රමාණය වැරදි නම් පමණක් Calibrate කිරීම","Calibration අවශ්‍ය නැත"],ans:0,exp:"Oil pump must be calibrated at the start of each shift to ensure correct oil dispensing.",si:"සෑම shift එකක් ආරම්භයේදීම oil pump එක නිවැරදි දැයි පරීක්ෂා කළ යුතුය."},
+	{q:"What is the pre-sauce shelf life for Pan Dough?",si_q:"Pan Dough සඳහා Pre-sauce shelf life කොපමණද?",opts:["4 hours","2 hours","3 hours","1 hour"],si_opts:["පැය 4 යි","පැය 2 යි","පැය 3 යි","පැයයි"],ans:0,exp:"Pre-sauce Pan Dough shelf life = 4 hours.",si:"පැය 4 කි."},
+	{q:"What chemicals are in the duster management spray bottle?",si_q:"Duster management ස්ප්‍රේ බෝතලයේ ඇති රසායනික ද්‍රව්‍ය මොනවාද?",opts:["Mikro Chlor 8g per 1 Liter water","Mikro Chlor 10g per 1 Liter water","Superkleen 10g per 1 Liter","Mikro Chlor 5g per 1 Liter water"],si_opts:["ජලය ලීටර් 1 කට Mikro Chlor ග්‍රෑම් 8 යි","ජලය ලීටර් 1 කට Mikro Chlor ග්‍රෑම් 10 යි","ජලය ලීටර් 1 කට Superkleen ග්‍රෑම් 10 යි","ජලය ලීටර් 1 කට Mikro Chlor ග්‍රෑම් 5 යි"],ans:0,exp:"Spray bottle = Mikro Chlor 8g per 1 Liter water.",si:"ජලය ලීටර් 1 කට Mikro Chlor ග්‍රෑම් 8 කි."},
+	{q:"Which toppings are always added LAST to a pizza?",si_q:"පිට්සා එකකට සෑමවිටම අවසානයේ එකතු කරන්නේ කුමන toppings ද?",opts:["Green chili, Jalapeno (garnishes)","Cheese only","Sauce first, then all toppings together","Pepperoni added last"],si_opts:["Black olives, Green chili, Jalapeno (Garnishes)","චීස් පමණි","පළමුව සෝස්, පසුව සියලුම toppings එකට","Pepperoni අවසානයට"],ans:0,exp:"Garnishes always added last.",si:"Green chili, Jalapeno වැනි Garnishes, pizza සෑදීමේදී අවසානයට එකතු කරයි."},
+	{q:"What is the correct order for the 'Your First 30-Day Journey' training?",si_q:"'Your First 30-Day Journey' පුහුණුවේ නිවැරදි අනුපිළිවෙල කුමක්ද?",opts:["Orientation & CHAMPS → Food Safety → Station training with BT → OJE","Station training first → then CHAMPS → then Food Safety","Food Safety → Orientation & CHAMPS → Station training with BT → OJE","OJE → Food Safety → Orientation & CHAMPS → Station training with BT"],si_opts:["Orientation සහ CHAMPS -> Food Safety -> BT සමඟ Station පුහුණුව -> OJE","පළමුව Station පුහුණුව -> පසුව CHAMPS -> පසුව Food Safety","Food Safety → Orientation සහ CHAMPS → BT සමඟ Station පුහුණුව → OJE","OJE → Food Safety → Orientation සහ CHAMPS → BT සමඟ Station පුහුණුව"],ans:0,exp:"30-day journey: Orientation & CHAMPS (Day 2) → Food Safety (Day 14) → Station training with BT (Day 14-28) → OJE (Day 28-30). Orientation -> Food Safety -> BT Station Training -> OJE.",si:"Orientation -> Food Safety -> BT Station Training -> OJE."},
+	{q:"How many times should a task be practiced correctly before a learner fully retains it?",si_q:"පුහුණුවන්නෙකු යමක් සම්පූර්ණයෙන්ම මතක තබාගැනීමට පෙර, එය කී වතාවක් නිවැරදිව පුහුණු විය යුතුද?",opts:["Minimum 6 times","Minimum 3 times","Minimum 2 times","Once is enough"],si_opts:["අවම වශයෙන් 6 වතාවක්","අවම වශයෙන් 3 වතාවක්","අවම වශයෙන් දෙවතාවක්","එක් වරක් ප්‍රමාණවත්ය"],ans:0,exp:"A task must be practiced correctly at least 6 times before learners fully retain what they learned.",si:"අවම වශයෙන් <b>6 වතාවක්</b> නිවැරදිව පුහුණු විය යුතුය."},
+	{q:"What are the Dragontail color codes for orders on map?",si_q:"Dragontail සිතියමේ ඇණවුම් පෙන්වන වර්ණ කේත මොනවාද?",opts:["Black = Deliveries on the way / Yellow = double dispatched / Green = yet to dispatch","Red = urgent / Green = on time / Black = late","Yellow = warning / Red = late / Green = delivered","Green = assigned / Red = unassigned / Blue = delivered"],si_opts:["කළු = Deliveries on the way / කහ = Double dispatched / කොළ = යැවීමට ඇත","රතු = හදිසි / කොළ = වේලාවට / නිල් = ප්‍රමාදයි","කහ = warning / රතු = ප්‍රමාදයි / කොළ = Delivered","කොළ = assign කරන ලදී / රතු = assign කර නැත / නිල් = Delivered"],ans:0,exp:"Map colors: Black = Deliveries on the way, Yellow = Deliveries double dispatched, Green = Deliveries yet to dispatch.",si:"• කළු : Deliveries on the way  \n• කහ : Deliveries double dispatched  \n• කොළ : යැවීමට ඇත."},
+	{q:"What is 'Force to Oven' in Dragontail metrics?",si_q:"Dragontail හි 'Force to Oven' යනු කුමක්ද?",opts:["Orders on virtual shelves oven-ed before system recommendation","Forcing riders to take orders","Bumping a product from the cut table KDS before the 6-minute and 45-second mark","Changing order items mid-process"],si_opts:["පද්ධතියේ නිර්දේශයට පෙර Virtual shelf හි ඇති ඇණවුම් අවන් එකට දැමීම","රයිඩර්වරුන්ට ඇණවුම් භාරගැනීමට බල කිරීම","විනාඩි 6යි තත්පර 45ක කාලයක් ගතවීමට පෙර product එකක් cut table KDS එකෙන් bump කිරීම","ක්‍රියාවලිය අතරමැද ඇණවුම් වෙනස් කිරීම"],ans:0,exp:"Force to Oven = orders on virtual shelves oven-ed before Dragontail system recommends",si:"පද්ධතියේ නිර්දේශයට පෙර Virtual shelf හි ඇති ඇණවුම් අවන් එකට දැමීම."},
+	{q:"What is a 'Virtual Shelf' in Make KDS?",si_q:"Make KDS හි 'Virtual Shelf' යනු කුමක්ද?",opts:["Holding area in Make KDS for Make-Only orders awaiting baking signal","Physical shelf in the kitchen","Customer order display","Driver assignment screen"],si_opts:["බේක් කිරීමට සිග්නල් එනතෙක් Make-Only ඇණවුම් රඳවා තබාගන්නා ස්ථානය","BOH එකේ ඇති භෞතික රාක්කය","පාරිභෝගික ඇණවුම් පෙන්වන තිරය","Orders, ridersලාට assign කරන තිරය"],ans:0,exp:"Virtual Shelf = Make KDS holding area for Make-Only orders waiting for bake signal from Dispatch PC.",si:"Make-Only ඇණවුම් බේක් කිරීමට සිග්නල් එනතෙක් රඳවා තබාගන්නා ස්ථානයයි."},
+	{q:"What is the Gamma LinkedIn page name?",si_q:"Gamma හි LinkedIn පිටුවේ නම කුමක්ද?",opts:["Gamma Pizzakraft Lanka","Life at Gamma","Gamma Careers","Pizza Hut Sri Lanka"],ans:0,exp:"LinkedIn = 'Gamma Pizzakraft Lanka'. Instagram = 'Life at Gamma'. Facebook = 'Gamma Careers'.",si:"'<b>Gamma Pizzakraft Lanka</b>' වේ."},
+	{q:"What is the Gamma 'Integrity' value about?",si_q:"Gamma හි Integrity මගින් කියවෙන්නේ කුමක්ද?",opts:["Acting with transparency and honesty, maintaining confidentiality, no personal gifts from vendors","Being innovative in all processes","Working as a team","Respecting all stakeholders"],si_opts:["විනිවිදභාවයෙන් හා අවංකව කටයුතු කිරීම, රහස්‍යභාවය රැකීම, සැපයුම්කරුවන්ගෙන් තෑගි නොගැනීම","සියලු ක්‍රියාවලීන්හි නව්‍ය වීම","කණ්ඩායමක් ලෙස වැඩ කිරීම","සියලු පාර්ශවකරුවන්ට ගරු කිරීම"],ans:0,exp:"Integrity = act transparently/honestly, maintain confidentiality, no personal gifts from vendors.",si:"විනිවිදභාවයෙන් හා අවංකව කටයුතු කිරීම, රහස්‍යභාවය රැකීම, සහ සැපයුම්කරුවන්ගෙන් තෑගි නොගැනීම."},
+	{q:"What is the Gamma 'Teamwork' value?",si_q:"Gamma හි 'Teamwork' මගින් කියවෙන්නේ කුමක්ද?",opts:["Foster collaborative environment, support diverse teams, share accountability, build trust","Compete with each other, foster collaborative environment, share accountability, build trust","Work independently for best results","Focus only on team performance"],si_opts:["කණ්ඩායමක් ලෙස වැඩ කිරීම, විවිධත්වයට සහාය වීම, වගකීම් බෙදාගැනීම, සහ විශ්වාසය ගොඩනැගීම","එකිනෙකා සමඟ තරඟ කිරීම, කණ්ඩායමක් ලෙස වැඩ කිරීම, වගකීම් බෙදාගැනීම, සහ විශ්වාසය ගොඩනැගීම","හොඳම ප්‍රතිඵල සඳහා ස්වාධීනව වැඩ කිරීම","කණ්ඩායම් කාර්ය සාධනය පමණක් කෙරෙහි අවධානය යොමු කිරීම"],ans:0,exp:"Teamwork = collaborative environment, support diverse teams, accountability, trust, inclusive decision-making.",si:"කණ්ඩායමක් ලෙස වැඩ කිරීම, වගකීම් බෙදාගැනීම, සහ විශ්වාසය ගොඩනැගීම."},
+	{q:"During a shift, who holds the safe keys?",si_q:"Shift එකක් අතරතුර Safe එකේ යතුරු තබාගන්නේ කවුද?",opts:["MOD","RGM","Any senior TM","Security guard"],si_opts:["Manager on Duty","RGM","ඕනෑම ජ්‍යෙෂ්ඨ TM කෙනෙක්","ආරක්ෂක නිලධාරියා"],ans:0,exp:"Safe keys are held ONLY by the MOD during the shift. Keys must be secured separately.",si:"Shift එකේ සිටින MOD (Manager on Duty) පමණි."},
+	{q:"What is the cash counting procedure?",si_q:"මුදල් ගණන් කිරීමේ නිවැරදි ක්‍රියාපටිපාටිය කුමක්ද?",opts:["Till closure and cash count performed by the manager in the presence of the respective cashier","Till closure and cash count performed by the respective cashier in the presence of the manager","Till closure and cash count performed by both the manager and the respective cashier","Till closure and cash count performed by the MOD in the presence of the auditor"],si_opts:["Till එක වසා දමා, අදාළ cashier ඉදිරියේදී කළමනාකරු විසින් මුදල් ගණනය කිරීම සිදු කිරීම","Till එක වසා දමා, කළමනාකරු ඉදිරියේදී අදාළ cashier විසින් මුදල් ගණනය කිරීම සිදු කිරීම","Till එක වසා දමා, කළමනාකරු සහ අදාළ cashier යන දෙදෙනාම විසින් මුදල් ගණනය කිරීම සිදු කිරීම","Till එක වසා දමා, auditor ඉදිරියේදී MOD විසින් මුදල් ගණනය කිරීම සිදු කිරීම"],ans:0,exp:"Till closure and cash count performed by the manager in the presence of the respective cashier.",si:"Cashier ඉදිරිපිටදී මැනේජර් විසින් මුදල් ගණනය කිරීම."},
+	{q:"What does 'GRN' mean?",si_q:"'GRN' යන්නෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Goods Receiving Note","General Restaurant Needs","Gross Revenue Number","Guest Rating Notification"],si_opts:["Goods Receiving Note","General Restaurant Needs","Gross Revenue Number","Guest Rating Notification"],ans:0,exp:"GRN = Goods Receiving Note - how inventory receipts are recorded in the system.",si:"<b>GRN</b> යනු Goods Receiving Note යන්නයි."},
+	{q:"What is the staff meal policy?",si_q:"කාර්ය මණ්ඩලයේ ආහාර (Staff meal) ප්‍රතිපත්තිය කුමක්ද?",opts:["Staff meals ordered as per roster","Free meals for all staff any time","Staff buy from menu at discount","No formal staff meal policy"],si_opts:["රෝස්ටරයට අනුව පමණක් ආහාර ඇණවුම් කිරීම","ඕනෑම වෙලාවක සියලු සේවකයින්ට නොමිලේ ආහාර ලබාදීම","වට්ටමක් යටතේ සේවකයින් මෙනුවෙන් මිලදී ගැනීම","විධිමත් කාර්ය මණ්ඩල ආහාර ප්‍රතිපත්තියක් නැත"],ans:0,exp:"Staff meals = ordered per roster count. Auditor checks roster vs meal packs received.",si:"රෝස්ටරයට අනුව පමණක් ආහාර ඇණවුම් කිරීම (Auditor මෙය පරීක්ෂා කරයි)."},
+	{q:"In which situations are team members required to wash their hands?",si_q:"Team membersලා අත් සේදිය යුතු වන්නේ කිනම් අවස්ථාවලදීද?",opts:["After eating, after using the washroom, after touching the face/hair, and after handling trash","Before starting the shift, after making a pizza, and after handling trash","Every 2 hours, after a break, and after smoking","After engaging in any cleaning tasks, within 10 minutes of the handwash bell ringing, and after handling cash"],si_opts:["අමු ආහාර ඇල්ලීමෙන් පසු, වැසිකිළි ගිය පසු, මුහුණ/කොණ්ඩය ඇල්ලූ පසු, කසළ බැහැර කළ පසු, break එකෙන් පසු","shift එක ආරම්භ කිරීමට පෙර පමණි","සෑම පැය 2 කට වරක්","වැසිකිළි ගිය පසු පමණි"],ans:0,exp:"You must wash your hands thoroughly according to the specified correct procedure if you have: left and returned to the food preparation area, used the washroom, just finished eating, picked up something from the floor, smoked, engaged in any cleaning task, touched any body part, handled cash, if the handwash bell has rung, or if you have touched trash bins with your hands.",si:"• ආහාර සැකසුම් කලාපයෙන් පිටතට ගොස් පැමිණියේ නම්, \n• වැසිකිළිය භාවිතා කළේ නම්, \n• ඔබ මේ මොහොතේ ආහාර ගෙන පැමිණියේ නම්, \n• බිම වැටුණු දෙයක් ඇහිලුවේ නම්, \n• දුම් පානය කළේ නම්, \n• කිසියම් පිරිසිදු කිරීමේ කටයුත්තක නියැලුණේ නම්, \n• කිසියම් ශරීර අවයවයක් ස්පර්ශ කළේ නම්, \n• මුදල් පරිහරණයේ නියැලුණේ නම්, \n• අත් සේදීමේ සීනුව නාද වූයේ නම්, හා \n• දෑත් මඟින් කසළ බඳුන් ස්පර්ශ කළේ නම් \nදක්වා ඇති නිවැරදි ක්‍රමවේදයට අනුව ඔබ අත් හොඳින් සෝදාගත යුතුය."},
+	{q:"What are the Three Foundational Pillars aligned with 'The Winning Recipe' in the 5 STAR Rating System?",si_q:"5 STAR Rating System හි 'The Winning Recipe' සමඟ සමපාත වන Foundational Pillars තුන මොනවාද?",opts:["Best Jobs, Best Moments, Best Operations","Best Food, Best Service, Best People","Best Customer, Best Profit, Best Sales","Best Preparation, Best Delivery, Best Maintenance"],si_opts:["Best Jobs, Best Moments, Best Operations","Best Food, Best Service, Best People","Best Customer, Best Profit, Best Sales","Best Preparation, Best Delivery, Best Maintenance"],ans:0,exp:"The 5 STAR Rating System is built on Three foundational pillars: Best Jobs, Best Moments, and Best Operations.",si:"5 STAR Rating System නිර්මාණය වී ඇත්තේ <b>Best Jobs, Best Moments, සහ Best Operations</b> යන ප්‍රධාන කුළුණු තුන මතයි."},
+	{q:"What are the required actions to be completed on the 1st day of a newcomer?",si_q:"නවකයෙකුගේ (newcomer) පළමු දිනයේදී සම්පූර්ණ කළ යුතු අනිවාර්ය ක්‍රියාකාරකම් මොනවාද?",opts:["Emergency Procedures & Fire Safety, Induction Briefing, Assign Learning Zone Credentials","Induction Briefing, Food Safety Training, CHAMPS Orientation","Emergency Procedures & Fire Safety, CHAMPS Orientation, OJE","Emergency Procedures & Fire Safety, Food Safety Training and Uniform Issuing"],si_opts:["හදිසි ක්‍රියාපටිපාටි සහ ගිනි ආරක්ෂාව, රැකියාවට හඳුන්වා දීමේ දැනුවත් කිරීම (Induction), 'Learning Zone' පිවිසුම් තොරතුරු ලබාදීම","රැකියාවට හඳුන්වා දීමේ දැනුවත් කිරීම, ආහාර සුරක්ෂිතතා පුහුණුව, CHAMPS හඳුන්වාදීමේ වැඩසටහන (CHAMPS Orientation)","හදිසි ක්‍රියාපටිපාටි සහ ගිනි ආරක්ෂාව, CHAMPS හඳුන්වාදීමේ වැඩසටහන, රැකියා ස්ථානයේ පුහුණුව (OJE - On-the-Job Evaluation)","හදිසි ක්‍රියාපටිපාටි සහ ගිනි ආරක්ෂාව, ආහාර සුරක්ෂිතතා පුහුණුව සහ නිල ඇඳුම් නිකුත් කිරීම"],ans:0,exp:"Emergency Procedures & Fire Safety, Induction Briefing, and Assigning Learning Zone Credentials.",si:"පළමු දිනයේදී Emergency Procedures & Fire Safety, Induction Briefing සහ Learning Zone Credentials ලබාදීම යන සියල්ලම සිදුකළ යුතුය."},
+	{q:"Which of the following brands does NOT belong to YUM! Brands?",si_q:"පහත සඳහන් ඒවායින් YUM! Brands වෙත අයත් නොවන සන්නාමය කුමක්ද?",opts:["Long John Silver","KFC","Pizza Hut","Taco Bell"],si_opts:["Long John Silver","KFC","Pizza Hut","Taco Bell"],ans:0,exp:"Long John Silver is not belonging to YUM.",si:"Long John Silver සන්නාමය YUM! වෙත අයත් නොවේ. (<b>KFC, Pizza Hut, Taco Bell, සහ The Habit Burger Grill</b> අයත් වේ)."},
+	{q:"What is 'Suggestive Selling'?",si_q:"'Suggestive Selling' යනු කුමක්ද?",opts:["Suggesting additional items to complement the order","Suggestions to increase the order value","Suggesting an alternative to the customer's selection","Suggesting higher-priced items"],si_opts:["ඇණවුමට ගැලපෙන අමතර දේවල් යෝජනා කිරීම","Order එකේ මිල වැඩි කිරීම සඳහා කරන යෝජනා","Customer, select කළ දෙය වෙනුවට වෙනත් දෙයක් suggest කිරීම"," මිල වැඩි items suggest කිරීම"],ans:0,exp:"Suggestive selling = suggesting additional items to complement/enhance the customer's order.",si:"<b>Suggestive selling</b> යනු ඇණවුමට අමතරව ගැලපෙන වෙනත් දේවල් යෝජනා කිරීමයි."},
+	{q:"What is the correct dilution for Veggie Sanitize and 3-Sink Sanitize Water?",si_q:"Veggie Sanitize සහ 3-Sink Sanitize Water සඳහා නිවැරදි ද්‍රාවණ අනුපාතය කුමක්ද?",opts:["Veggie Sanitize - 5g per 1 Liter / 3 Sink Sanitize Water - 8g per 1 Liter","Veggie Sanitize - 10g per 1 Liter / 3 Sink Sanitize Water - 8g per 1 Liter","Veggie Sanitize - 8g per 1 Liter / 3 Sink Sanitize Water - 10g per 1 Liter","Veggie Sanitize - 5g per 1 Liter / 3 Sink Sanitize Water - 10g per 1 Liter"],si_opts:["Veggie Sanitize - වතුර ලීටරයකට 5g / 3 Sink Sanitize Water - වතුර ලීටරයකට 8g","Veggie Sanitize - වතුර ලීටරයකට 10g / 3 Sink Sanitize Water - වතුර ලීටරයකට 8g","Veggie Sanitize - වතුර ලීටරයකට 8g / 3 Sink Sanitize Water - වතුර ලීටරයකට 10g","Veggie Sanitize - වතුර ලීටරයකට 5g / 3 Sink Sanitize Water - වතුර ලීටරයකට 10g"],ans:0,exp:"Veggie Sanitize is 5g per 1 Liter, and 3-Sink Sanitize Water is 8g per 1 Liter of water.",si:"Veggie Sanitize සඳහා <b>වතුර ලීටර් 1කට 5g</b> ද, 3-Sink Sanitize සඳහා <b>ලීටර් 1කට 8g</b> ද භාවිතා කරයි."},
+	{q:"Which one of the following situations is NOT appropriate for suggestive selling?",si_q:"පහත සඳහන් කවර අවස්ථාවේදී ඔබ Suggestive selling නොකළ යුතුද?",opts:["If the customer ends order with 'That is all'","When the customer is ordering a value meal","When the customer is a regular visitor","When the customer pays by credit card"],si_opts:["පාරිභෝගිකයා 'එපමණයි' කියා ඇණවුම අවසන් කළ විට","පාරිභෝගිකයා value meal එකක් ඇණවුම් කරන විට","පාරිභෝගිකයා නිතර පැමිණෙන අයෙකු වන විට","පාරිභෝගිකයා ක්‍රෙඩිට් කාඩ් පතකින් ගෙවන විට"],ans:0,exp:"You should not suggestive sell directly to children, if the customer clearly ends the order with 'That is all', or too many items at once Customers might feel we are forcing too much on them.",si:"කුඩා ළමුන්ට, පාරිභෝගිකයා 'එපමණයි' කියා order එක අවසන් කළ විට, සහ එකවර වැඩි items ප්‍රමාණයක් සඳහා suggestive selling කිරීම සුදුසු නැත."},
+	{q:"What are the three elements of the FIRE triangle?",si_q:"FIRE triangle එකේ ඇති මූලද්‍රව්‍ය තුන මොනවාද?",opts:["O2 (Oxygen), Fuel, Heat","CO2, Fuel, Wind","Wood, Oil, Heat","Oxygen, Gas, Electricity"],si_opts:["ඔක්සිජන් (O2), ඉන්ධන (Fuel), සහ තාපය (Heat)","කාබන්ඩයොක්සයිඩ් (CO2), ඉන්ධන, සහ සුළඟ","දැව, තෙල්, සහ තාපය","ඔක්සිජන්, ගෑස්, සහ විදුලිය"],ans:0,exp:"The elements of the fire triangle are Oxygen (O2), Fuel, and Heat.",si:"FIRE triangle එකට අයත් වන්නේ \n\n• <b>ඔක්සිජන් (O2), \n• ඉන්ධන (Fuel) සහ \n• තාපය (Heat)</b> \n\nඑනම්, ගින්නක් ඇතිවීම සඳහා බලපාන සාධකයි"},	
+	{q:"What does DIGIEX app do?",si_q:"DIGIEX ඇප් එක මගින් කරන්නේ කුමක්ද?",opts:["Medical insurance claim submission mobile app","Staff payroll tracking app","Staff scheduling app","Pizza ordering app"],si_opts:["වෛද්‍ය රක්ෂණ හිමිකම් (claims) ඉදිරිපත් කිරීමේ ජංගම යෙදුමක්","කාර්ය මණ්ඩල වැටුප් නිරීක්ෂණය කරන යෙදුමක්","කාර්ය මණ්ඩල සේවා මුර සැකසීමේ යෙදුමක්","පිට්සා ඇණවුම් කිරීමේ යෙදුමක්"],ans:0,exp:"DIGIEX = medical insurance claim submission mobile app for Gamma employees.",si:"Gamma employees සඳහා වෛද්‍ය රක්ෂණ බිල්පත් (Medical claims) submit කිරීමට ඇති App එකයි."},
+  ]
+},
+paper3: {
+  title:"⭐⭐⭐⭐ Expert Questions",
+  qs:[
+    {q:"What is Attrition Rate?",si_q:"Attrition Rate යනු කුමක්ද?",opts:["Resigned employees (>10 days service) ÷ average # of employees × 100","Total new hires ÷ total employees × 100","Staff working >90 days ÷ total headcount × 100","Total staff ÷ resigned staff × 100"],ans:0,exp:"Attrition = resigned employees (>10 days service) / average # of employees × 100.",si:"<b>Attrition:</b> දින 10 කට වඩා සේවය කර ඉවත් වූ සේවකයින් ගණන, සාමාන්‍ය සේවක ගණනින් බෙදා 100 න් ගුණ කිරීම."},
+    {q:"How is the retention rate calculated?",si_q:"Retention rate ගණනය කරන්නේ කෙසේද?",opts:["Staff working >90 days ÷ total headcount × 100","Total employees ÷ resigned employees × 100","New hires ÷ total employees × 100","Resigned ÷ total × 100"],ans:0,exp:"Retention = staff working >90 days / total headcount × 100.",si:"<b>Retention:</b> දින 90 කට වඩා වැඩි සේවා කාලයක් ඇති සේවකයින් ගණන ÷ මුළු සේවක ගණන × 100."},
+    {q:"What is SSTG?",si_q:"SSTG යනු කුමක්ද?",opts:["Same Store Transaction Growth","Same Store Total Growth","Sales Standard Target Growth","Staff Sales Target Growth"],ans:0,exp:"SSTG = Same Store Transaction Growth = (Current - Last year) / Last year × 100.",si:"<b>SSTG</b> : <span style='color:green'>Same Store Transaction Growth</span> \n(මින් සරලව අදහස් වන්නේ ඔබේ ශාඛාවේ මේ වසරේ සිදුවූ ගනුදෙනු ප්‍රමාණය, ගිය වසරට සාපේක්ෂව කොපමණ ප්‍රතිශතයකින් (%) වෙනස් වී ඇත්ද යන්නයි)"},
+	{q:"What does 'Production Time U3' measure in Dragontail?",si_q:"Dragontail හි 'Production Time U3' මගින් මනින්නේ කුමක්ද?",opts:["Time from order on Make KDS to order bumped from Make KDS","Time from order on Make KDS to order bumped from Cut Table KDS","Time from order on Make KDS to delivery","Time rider spends packing"],si_opts:["Make KDS එකට order එක ආ මොහොතේ සිට එය Bump කරන තෙක් කාලය","Make KDS එකට order එක ආ මොහොතේ සිට එය Cut Table KDS එකෙන් Bump කරන තෙක් ගතවන කාලය","Make KDS එකට order එක ආ මොහොතේ සිට පාරිභෝගිකයාට ලබා දෙන (Delivery කරන) තෙක් ගතවන කාලය","order එක pack කිරීමට riderට ගතවන කාලය"],ans:0,exp:"Production U3 = time from order appearing on Make KDS to order being bumped (removed) from Make KDS.",si:"<b>Production U3</b> : Make KDS එකට order එක ආ මොහොතේ සිට එය (Make KDS එකෙන්) Bump කරන තෙක් කාලය."},
+    {q:"What is 'Hot & Fresh U20 (H&F U20)' in Dragontail?",si_q:"Dragontail හි 'Hot & Fresh U20' යනු කුමක්ද?",opts:["Time from order being bumped from Expo to rider marking Delivered: under 20 min","Time from order being bumped from Make Table KDS to rider marking Delivered: under 20 min","Total delivery time: under 20 min","Time from order appearing on Make KDS to dispatch: under 20 min"],si_opts:["Cut table එකෙන් Bump කළ මොහොතේ සිට Delivered මාර්ක් කරන තෙක් කාලය විනාඩි 20 ට අඩුවීම","Make Table එකෙන් Bump කළ මොහොතේ සිට Delivered මාර්ක් කරන තෙක් කාලය විනාඩි 20 ට අඩුවීම","Pizza එක සෑදීමට පටන් ගත් අවස්ථාවේ සිට deliver කිරීම දක්වා වන කාලය විනාඩි 20කට වඩා අඩු වීම","Order එක Make KDS එකට පැමිණි මොහොතේ සිට Dispatch කරන තෙක් කාලය විනාඩි 20කට වඩා අඩු වීම"],ans:0,exp:"H&F U20 = from order bumped at Expo (Cut Table) to rider marks Delivered. Target: under 20 min.",si:"<b>H&F U20</b> : Cut table එකෙන් Bump කළ මොහොතේ සිට rider විසින් order එක Delivered මාර්ක් කරන තෙක් කාලය විනාඩි 20 ට අඩුවීම."},
+    {q:"In Dragontail Rider App, when should 'MARK DELIVERED' be pressed?",si_q:"Dragontail රයිඩර් App එකේ 'MARK DELIVERED' ඔබන්නට ඕනේ කිනම් අවස්ථාවේද?",opts:["As soon as the order is delivered to the customer","When returning to the outlet","When leaving the outlet","Before 30 minutes"],si_opts:["පාරිභෝගිකයාට ඇණවුම දුන් වහාම","Outlet එකට ආපසු පැමිණි පසු","Outlet එකෙන් පිටවන විට","විනාඩි 30ක් ගතවීමට පෙර"],ans:0,exp:"'MARK DELIVERED' must be pressed immediately upon delivery to customer.",si:"ඇණවුම පාරිභෝගිකයාට ලබාදුන් වහාම."},
+    {q:"What are Imminent Health Hazards that require restaurant closure?",si_q:"ආපනශාලාව වසා දැමීමට සිදුවන බරපතල සෞඛ්‍ය අවදානම් මොනවාද?",opts:["No running water, No working toilet, No electricity, Fire","Customer complaint, Wrong order, Broken equipment","No hot water for 30 minutes, Pest sighting","Broken make table, No hot water for 3 hours"],si_opts:["ජලය නැතිකම, වැසිකිළි වැඩ නොකිරීම, විදුලිය නැතිකම, ගිනිගැනීම","පාරිභෝගික පැමිණිලි, වැරදි orders ලබාදීම්, කැඩුණු equipments තිබීම","විනාඩි 30 ක් උණු වතුර නැතිකම, Pest activities දක්නට ලැබීම","Make table එක කැඩී තිබීම, පැය 3 ක් උණු වතුර නැතිකම"],ans:0,exp:"Imminent Health Hazards: Fire, Not working toilet, No working hand wash sink, No electricity to provide temperature control, No running potable water and no alternate source available, Sewage backup, No hot water for an hour, Pest inspection as defined in the YUM restaurant pest prevention, Possible chemical contamination of food, Onset an apparent food borne illness outbreak, Other circumstances that may endanger public health.",si:"• ගින්නක් ඇතිවීම (Fire), \n• වැසිකිළි ක්‍රියා විරහිත වීම (Not working toilet), \n• hand wash sink ක්‍රියා විරහිත වීම (No working hand wash sink), \n• උෂ්ණත්ව පාලන පද්ධති පවත්වා ගැනීමට විදුලිය නොමැති වීම (No electricity to provide temperature control), \n• නළ මගින් සැපයෙන පානීය ජලය නොමැති වීම සහ ඒ සඳහා වෙනත් විකල්ප ජල මූලාශ්‍රයක් නොමැති වීම, \n• අපජල / මළාපවහන පද්ධතිය අවහිර වී පිටාර ගැලීම (Sewage backup), \n• උණු ජලය නොමැති වීම (පැයක කාලයක් සඳහා), \n• YUM restaurant pest preventionවල දක්වා ඇති pest activities හඳුනාගැනීම (Pest inspection as defined in the YUM restaurant pest prevention), \n• ආහාරවලට රසායනික ද්‍රව්‍ය මිශ්‍ර වීමේ අවදානම (Possible chemical contamination of food), \n• ආහාර මගින් බෝවන රෝගයක් පැතිර යාමේ මූලික ලක්ෂණ පෙන්නුම් කිරීම (Onset of an apparent food-borne illness outbreak), \n• මහජන සෞඛ්‍යයට තර්ජනයක් විය හැකි වෙනත් තත්ත්වයන් (Other circumstances that may endanger public health) \n\nආපනශාලාව වසා දැමීමට සිදුවන බරපතල සෞඛ්‍ය අවදානම් ගණයට අයත් වේ."},
+	{q:"Food Safety Emergency: No hot water - how long before closure decision?",si_q:"උණු වතුර නොමැති නම්, Outlet එක වසා දැමීමට තීරණය කරන්නේ කොපමණ කාලයකින්ද?",opts:["1 hour","24 hours","30 minutes","3 hours"],si_opts:["පැය 1 යි","පැය 24 යි","විනාඩි 30 යි","පැය 3 යි"],ans:0,exp:"Food Safety Emergency = No hot water that cannot be restored within 1 HOUR.",si:"උණු වතුර නොමැතිවී <b>පැය 1</b> ක් ගතවුවහොත්."},
+	{q:"What is the correct storage order in the walk-in cooler (top to bottom)?",si_q:"Walk-in cooler එකේ ගබඩා කිරීමේ නිවැරදි අනුපිළිවෙල (ඉහළ සිට පහළට) කුමක්ද?",opts:["Ready-to-eat on top, raw meats on bottom","Raw meats on top, ready-to-eat on bottom","Vegetables on top, dairy on bottom","Fresh on top, frozen items on bottom"],si_opts:["පිසූ ආහාර ඉහළින්ද, අමු මස් පහළින්ද","අමු මස් ඉහළින්ද, පිසූ ආහාර පහළින්ද","එළවළු ඉහළින්ද, කිරි පහළින්ද","නැවුම් දේවල් ඉහළින්ද, මිදුණු දේවල් පහළින්ද"],ans:0,exp:"Cooler storage: Ready-to-eat (cooked food) on top, raw meats on bottom - prevents cross contamination.",si:"Ready-to-eat ආහාර ඉහළින්ද, අමු මස් පහළින්ද තැබිය යුතුය (cross contamination වැළක්වීම සඳහා මෙය සිදු කරයි)."},
+	{q:"What is cross-contamination?",si_q:"Cross-contamination යනු කුමක්ද?",opts:["Transfer of harmful bacteria from one food to another, or surface to food","Using the same knife for all foods","Mixing ingredients incorrectly","Storing food at wrong temperature"],si_opts:["හානිකර බැක්ටීරියා එක් ආහාරයකින් තවත් ආහාරයකට මාරුවීම","සියලු ආහාර සඳහා එකම පිහිය භාවිතා කිරීම","අමුද්‍රව්‍ය වැරදියට මිශ්‍ර කිරීම","වැරදි උෂ්ණත්වයේ ගබඩා කිරීම"],ans:0,exp:"Cross-contamination = Transfer of harmful bacteria from one food to another, or surface to food.",si:"හානිකර බැක්ටීරියා එක් ආහාරයකින් හෝ පෘෂ්ඨයකින් තවත් ආහාරයකට මාරුවීම."},
+	{q:"What does ACE stand for and who conducts it?",si_q:"ACE යනු කුමක්ද සහ එය සිදුකරන්නේ කවුද?",opts:["Assured Customer Experience - conducted by NSF","Annual Customer Evaluation - conducted by RGM","Area Control Examination - conducted by Area Coach","Assured CHAMPS Experience - conducted by Head Office"],si_opts:["Assured Customer Experience - NSF විසින් සිදුකරයි","Annual Customer Evaluation - RGM විසින් සිදුකරයි","Area Control Examination - Area Coach විසින් සිදුකරයි","Assured CHAMPS Experience - Head Office විසින් සිදුකරයි"],ans:0,exp:"ACE = Assured Customer Experience. Only outsourced audit, done by NSF(National Sanitation Foundation).",si:"<b>ACE</b> : Assured Customer Experience. \n\nNSF(National Sanitation Foundation) ආයතනය විසින් සිදුකරයි. (outsource කර සිදුකරන එකම audit එක මෙය වේ.)"},
+	{q:"What are the 6 ACE Brand Big groupings?",si_q:"ACE Audit හි ප්‍රධාන කාණ්ඩ 6 (6 ACE Brand Big groupings) මොනවාද?",opts:["Guest Facing / Speed of Service / Product Quality / Kitchen Area / TM Experience / Safety","Cleanliness / Hospitality / Accuracy / Maintenance / Product / Speed","Customer / People / Sales / Profit / Quality / Safety","HR / Operations / Training / Financial / Products / Facilities"],si_opts:["Guest Facing / Speed of Service / Product Quality / Kitchen Area / TM Experience / Safety","Cleanliness / Hospitality / Accuracy / Maintenance / Product / Speed","Customer / People / Sales / Profit / Quality / Safety","Food Safety / Operations / Training / Service / Products / Facilities"],ans:0,exp:"ACE 6 groupings: Guest Facing, Speed of Service, Product Quality, Kitchen Area, TM Experience, Safety.",si:"<b>\n• Guest Facing \n• Speed of Service \n• Product Quality \n• Kitchen Area \n• TM Experience \n• Safety</b> යන 6 වේ."},
+	{q:"What is SSSG?",si_q:"SSSG යනු කුමක්ද?",opts:["Same Store Sales Growth","Same Store Staff Growth","Staff Satisfaction Score Growth","Standard Sales System Growth"],ans:0,exp:"SSSG = Same Store Sales Growth - same formula as SSTG but uses sales value instead of transaction count.",si:"<b>SSSG</b> : Same Store Sales Growth (විකුණුම් වටිනාකම මගින් මනියි) \n\nSSSG (%) = ((Current Period Sales − Prior Period Sales) / Prior Period Sales) × 100."},
+	{q:"What does a Shift Manager check first when starting duty?",si_q:"Shift Manager කෙනෙක් රාජකාරිය ආරම්භ කිරීමේදී පළමුව පරීක්ෂා කරන්නේ කුමක්ද?",opts:["Conduct security checks, check for gas leaks/hazards","Check for any issues left by the previous shift","Check email first","Count the cash in the safe"],si_opts:["ආරක්ෂක පරීක්ෂාවන් (ගෑස් කාන්දුවීම්/අවදානම්)","පෙර shift එකේ ඇති අඩුපාඩු සොයා බැලීම","පළමුව Email පරීක්ෂා කිරීම","Safe එකේ මුදල් ගණන් කිරීම"],ans:0,exp:"First: Conduct security checks - look for gas leaks, hazards inside the outlet.",si:"Shift Manager කෙනෙක්  සිදුකළ යුත්තේ ආරක්ෂක පරීක්ෂාවන් (Security checks) සිදුකිරීමයි."},
+	{q:"Key road safety rules riders must follow: (select all that apply)",si_q:"Riders විසින් පිළිපැදිය යුතු ප්‍රධාන මාර්ග ආරක්ෂණ නීති මොනවාද?",opts:["All the points mentioned","Only wear helmet and obey speed limits","Only avoid highways","Only carry proper documents"],si_opts:["දක්වා ඇති සියලුම කරුණු","හෙල්මට් පැළඳීම සහ වේග සීමා අනුගමනය කිරීම පමණි","අධිවේගී මාර්ග මඟ හැරීම පමණි","නිසි ලියකියවිලි රැගෙන යාම පමණි"],ans:0,exp:"All road safety rules apply",si:"ඉහත සියලුම මාර්ග ආරක්ෂණ නීති පිළිපැදිය යුතුය. \n(උදා: • වටරවුම් වල ඉඩ දීම  \n• පාසල් අසල සැලකිලිමත් වීම \n• දුම්රිය ගේට්ටු අසල ඉක්මන් නොවීම \n• කහ ඉරි අසල overtake නොකිරීම \n• හෙල්මට් පැළඳීම සහ වේග සීමා අනුගමනය කිරීම \n• අධිවේගී මාර්ග මඟ හැරීම \n• නිසි ලියකියවිලි රැගෙන යාම)"},
+	{q:"What must a delivery rider always carry?",si_q:"රයිඩර් කෙනෙකු සෑමවිටම ළඟ තබාගත යුත්තේ මොනවාද?",opts:["Driving License, Revenue License, Insurance, ECO Certificate, Mobile phone, MOMO","Only Driving License and Helmet","Driving License and Vehicle papers","Just mobile phone and cash"],si_opts:["රියදුරු බලපත්‍රය, ආදායම් බලපත්‍රය, රක්ෂණය, ECO සහතිකය, ජංගම දුරකථනය, MOMO","රියදුරු බලපත්‍රය සහ හෙල්මට් එක පමණි","රියදුරු බලපත්‍රය සහ වාහනයේ ලියකියවිලි පමණි","ජංගම දුරකථනය සහ මුදල් පමණි"],ans:0,exp:"Riders must carry: Driving License, Revenue License, Insurance, ECO Certificate, Mobile phone, MOMO.",si:"රයිඩර් කෙනෙකු සෑමවිටම <b>Driving License, Revenue License, Insurance, ECO Certificate, Mobile phone, MOMO</b> ළඟ තබාගැනීම අනිවාර්ය වේ."},
+	{q:"What is 'LAR 1' in the growth plan?",si_q:"Growth plan එකේ 'LAR 1' යනු කුමක්ද?",opts:["Leading a growth mindset","Leadership and Results 1","Learning Achievement Record","Leadership Assessment Round 1"],ans:0,exp:"LAR 1 = 'Leading a growth mindset' - a course for ARM level.",si:"<b>LAR 1</b> යනු ARM මට්ටම සඳහා වන 'Leading a growth mindset' පාඨමාලාවයි."},
+	{q:"What is 'LAS' in the growth plan?",si_q:"Growth plan එකේ 'LAS' යනු කුමක්ද?",opts:["Leadership and Shift Skills","Leadership Annual Score","Learning Achievement Summary","Labour Assessment Standard"],ans:0,exp:"LAS = Leadership and Shift Skills - required course for Shift Manager level.",si:"<b>LAS</b> යනු Shift Manager මට්ටම සඳහා අවශ්‍ය පාඨමාලාවයි."},
+	{q:"In Gamma's employee benefits, what is the university scholarship?",si_q:"Gamma සේවක ප්‍රතිලාභ යටතේ University scholarship මුදල කොපමණද?",opts:["Rs. 2,500 per month for 3 years","Rs. 15,000 one-time payment","Rs. 10,000 one-time payment","Rs. 25,000 one-time payment"],si_opts:["වසර 3 ක් සඳහා මසකට Rs. 2,500 යි","එක්වරක් ගෙවන Rs. 15,000 යි","එක්වරක් ගෙවන Rs. 10,000 යි","එක්වරක් ගෙවන Rs. 25,000 යි"],ans:0,exp:"University scholarship = Rs. 2,500 per month for 3 years.",si:"වසර 3 ක් සඳහා මසකට Rs. 2,500 කි."},
+	{q:"What is the Annual Gift for school children from Gamma?",si_q:"Gamma වෙතින් පාසල් දරුවන් සඳහා ලැබෙන වාර්ෂික දීමනාව කොපමණද?",opts:["Rs. 2,000 per year","Rs. 5,000 per year","Rs. 10,000 per year","Rs. 3,000 per year"],si_opts:["වසරකට Rs. 2,000 යි","වසරකට Rs. 5,000 යි","වසරකට Rs. 10,000 යි","වසරකට Rs. 3,000 යි"],ans:0,exp:"Annual gift for school children (age 3-18) = Rs. 2,000 per year.",si:"වයස 3-18 අතර පාසල් දරුවන් සඳහා වාර්ෂික දීමනාව Rs. 2,000 කි."},
+	{q:"What is the correct Make KDS scenario when an order is updated?",si_q:"ඇණවුමක් Update කළ විට Make KDS හි කුමක් සිදුවේද?",opts:["Added items blue, removed items red with strikethrough","Order automatically changes order","The order disappears and reappears","Nothing changes on screen"],si_opts:["එකතු කළ දේවල් නිල් පැහැයෙන්ද, ඉවත් කළ දේවල් රතු පැහැයෙන් කපාද පෙන්වයි","ඇණවුම ස්වයංක්‍රීයව වෙනස් වේ","ඇණවුම නොපෙනී ගොස් නැවත දිස්වේ","තිරයේ කිසිවක් වෙනස් නොවේ"],ans:0,exp:"Added items shown blue, removed items shown red with strikethrough.",si:"Update කළ ඇණවුම නිල් පැහැයෙන් පෙන්වයි. ඉවත් කළ දේවල් රතු පැහැයෙන් කපා පෙන්වයි."},
+	{q:"What is the 'Undo Feature' in Dragontail Make KDS?",si_q:"Dragontail Make KDS හි 'Undo Feature' යනු කුමක්ද?",opts:["Restores the most recently bumped order from screen","Cancels an entire order","Undoes a payment","Reverses an order update"],si_opts:["තිරයෙන් අත්වැරදීමකින් Bump කළ මෑතම ඇණවුම නැවත ලබාදෙයි","සම්පූර්ණ ඇණවුමක් අවලංගු කරයි","ගෙවීමක් අවලංගු කරයි","ඇණවුම් update එකක් අවලංගු කරයි"],ans:0,exp:"Undo = restores the most recent accidentally bumped order. Only the MOST RECENT can be undone.",si:"අත්වැරදීමකින් Bump කළ අවසන් ඇණවුම නැවත ලබා ගැනීමට. <b>Undo කළ හැක්කේ අවසාන order එක පමණි.</b>"},
+	{q:"In the FER (Financial Excellence Review), what is Level 3 total debit?",si_q:"FER හි Level 3 සඳහා ඇති සම්පූර්ණ debit ලකුණු ගණන කොපමණද?",opts:["60 points","30 points","50 points","100 points"],si_opts:["ලකුණු 60 යි","ලකුණු 20 යි","ලකුණු 50 යි","ලකුණු 100 යි"],ans:0,exp:"FER Level 3 (most critical) = 60 total points.",si:"Level 3 සඳහා <b>ලකුණු 60</b> කි."},
+	{q:"What is the cash variance permitted per FER Level 3 (Safe fund)?",si_q:"FER Level 3 අනුව Safe fund හි අවසර දී ඇති Cash variance එක කොපමණද?",opts:["LKR +/- 99 variance permitted","LKR +/- 100","LKR +/- 200","No variance permitted"],si_opts:["LKR +/- 99 වෙනසකට අවසර ඇත","LKR +/- 100","LKR +/- 200","කිසිදු වෙනසකට අවසර නැත"],ans:0,exp:"FER: Cash variance of LKR +/- 99 is permitted.",si:"<b>රු.99ක්</b> අඩුවීමට හෝ වැඩිවීමට අවසර ඇත."},
+	{q:"What is the GES component weight in BSC?",si_q:"BSC හි GES සඳහා ඇති ලකුණු බර තැබීම කොපමණද?",opts:["25 out of 35","10 out of 35","15 out of 35","20 out of 35"],si_opts:["35 න් 25 යි","35 න් 10 යි","35 න් 15 යි","35 න් 20 යි"],ans:0,exp:"GES = 25 points within Customer component (35 total) in BSC.",si:"Customer කොටසේ 35 න් 25 ක් GES සඳහා හිමිවේ.  \n\nBSCහි ප්‍රධාන කොටස් 4කි.(<b>Customer, People, Sales, Profit</b>). \nමෙහි Customer කොටස ACE(10) සහ GES(25) ලෙසත්, \nPeople කොටස Attrition(10), TMTS(10) සහ Retention(10) ලෙසත්, \nSales කොටස Net Sales(15) සහ SSTG(5) ලෙසත්, \nProfit කොටස UC(15) ලෙසත් අනු කොටස් වලට බෙදේ. \n\n(මෙහි වරහන් තුළ ඇති සංඛ්‍යාවලින් දැක්වෙන්නේ ඒවාට අදාළ බර තැබීම් වේ.)"},
+	{q:"What is the formula for SSTG?",si_q:"SSTG ගණනය කිරීම සඳහා සූත්‍රය කුමක්ද?",opts:["(Current transactions - Last year transactions) ÷ Last year transactions × 100","(Current sales - Last year sales) ÷ Last year sales × 100","Current transactions ÷ Last year × 100","(This week - Last week) ÷ This week × 100"],si_opts:["(මෙම වසරේ බිල්පත් - ගිය වසරේ බිල්පත්) ÷ ගිය වසරේ බිල්පත් × 100","(මෙම වසරේ විකුණුම් - ගිය වසරේ විකුණුම්) ÷ ගිය වසරේ විකුණුම් × 100","මෙම වසරේ බිල්පත් ÷ ගිය වසරේ බිල්පත් × 100","(මෙම සතිය - පසුගිය සතිය) ÷ මෙම සතිය × 100"],ans:0,exp:"SSTG = (Current transactions - Last year transactions) ÷ Last year transactions × 100",si:"(මෙම වසරේ බිල්පත් - ගිය වසරේ බිල්පත්) ÷ ගිය වසරේ බිල්පත් × 100.   <b>SSTG</b> යනු යම් නිශ්චිත කාල සීමාවක් තුළ restaurant එකකට ලැබුණු මුළු පාරිභෝගික ඇණවුම් (ගනුදෙනු / බිල්පත්) සංඛ්‍යාවේ ප්‍රතිශත වෙනස, පෙර වසරේ එම නිශ්චිත කාල සීමාවට සාපේක්ෂව මැන බැලීමයි. විකුණුම් වර්ධනයට (Sales Growth) වඩා මෙය වෙනස් වේ. මන්ද යත්, ආහාරවල මිල වැඩි කිරීම හරහා ද විකුණුම් වර්ධනයක් පෙන්විය හැකි බැවිනි. නමුත් SSTG මගින් ආපනශාලාවට සැබැවින්ම වැඩි පාරිභෝගිකයින් පිරිසක් පැමිණ තිබේද සහ orders වැඩි ප්‍රමාණයක් ලැබී තිබේද යන්න නිවැරදිව තහවුරු කරයි."},
+	{q:"What does GPLPL stand for?",si_q:"GPLPL යනු කුමක්ද?",opts:["Gamma Pizzakraft Lanka (Pvt) Ltd","Global Pizzakraft Lanka (Pvt) Ltd","Gamma Pizza Processing Lanka (Pvt) Ltd","Gamma Pizzakraft Logistics (Pvt) Ltd"],ans:0,exp:"GPLPL = Gamma Pizzakraft Lanka (Pvt) Ltd",si:"GPLPL යනු Gamma Pizzakraft Lanka (Pvt) Ltd වේ."},
+	{q:"What is the Gamma Benevolent Fund for parents' medical cover?",si_q:"දෙමාපියන්ගේ වෛද්‍ය ආවරණය සඳහා Gamma Benevolent Fund මුදල කොපමණද?",opts:["Rs. 25,000","Rs. 50,000","Rs. 100,000","Rs. 15,000"],si_opts:["රු. 25,000","රු. 50,000","රු. 100,000","රු. 15,000"],ans:0,exp:"Parental medical cover from Benevolent Fund = Rs. 25,000.",si:"රු. 25,000 කි."},
+	{q:"What is the OPD cover for a non-executive individual from Gamma medical?",si_q:"Gamma වෛද්‍ය පහසුකම් යටතේ විධායක නොවන (non-executive) සේවකයෙකුගේ OPD ආවරණය කොපමණද?",opts:["Rs. 9,000","Rs. 2,000","Rs. 7,500","Rs. 5,000"],si_opts:["රු. 9,000","රු. 2,000","රු. 7,500","රු. 5,000"],ans:0,exp:"OPD cover for non-executive individual = Rs. 9,000.",si:"Gamma වෛද්‍ය පහසුකම් යටතේ non-executive සේවකයෙකුගේ OPD ආවරණය රු. 9,000 කි."},
+	{q:"What is the accident cover total for Gamma employees?",si_q:"Gamma සේවකයින් සඳහා වන සම්පූර්ණ හදිසි අනතුරු ආවරණය කොපමණද?",opts:["Rs. 2,000,000","Rs. 1,000,000","Rs. 500,000","Rs. 1,500,000"],si_opts:["රු. 2,000,000","රු. 1,000,000","රු. 500,000","රු. 1,500,000"],ans:0,exp:"Accident cover total = Rs. 2,000,000 (death = 100% of coverage).",si:"රු. 2,000,000 කි."},
+	{q:"In Gamma maternity benefits, when does the food voucher start?",si_q:"Gamma මාතෘ ප්‍රතිලාභ යටතේ, ආහාර වවුචරය ලබාදීම ආරම්භ වන්නේ කවදා සිටද?",opts:["From 3rd month of pregnancy until delivery","From 1st month of pregnancy until delivery","From 6th month of pregnancy until delivery","Only after delivery"],si_opts:["ගැබ්ගැනීමේ 3 වන මාසයේ සිට දරු ප්‍රසූතිය දක්වා","ගැබ්ගැනීමේ 1 වන මාසයේ සිට දරු ප්‍රසූතිය දක්වා","ගැබ්ගැනීමේ 6 වන මාසයේ සිට දරු ප්‍රසූතිය දක්වා","දරු ප්‍රසූතියෙන් පසු පමණි"],ans:0,exp:"Food voucher from 3rd month of pregnancy until delivery, maximum 7 months.",si:"ගැබ්ගැනීමේ 3 වන මාසයේ සිට දරු ප්‍රසූතිය දක්වා (උපරිම මාස 7 ක්)."},
+	{q:"What is the BAGR course in Gamma's growth plan?",si_q:"Gamma's growth plan හි BAGR පාඨමාලාව යනු කුමක්ද?",opts:["A course required for RGM level","A basic training for new TSMs","An online food safety course","A management accounting course"],si_opts:["RGM මට්ටම සඳහා අනිවාර්ය පාඨමාලාවක්","නව TSMs සඳහා මූලික පුහුණුවක්","මාර්ගගත ආහාර සුරක්ෂිතතා පාඨමාලාවක්","කළමනාකරණ ගිණුම්කරණ පාඨමාලාවක්"],ans:0,exp:"BAGR = a classroom course required for RGM level in Gamma's career growth plan.",si:"මෙය RGM (Restaurant General Manager) මට්ටම සඳහා අනිවාර්ය පාඨමාලාවකි."},
+	{q:"What is the 'Delivered at Place' metric in Dragontail?",si_q:"Dragontail හි 'Delivered at Place' metric එක යනු කුමක්ද?",opts:["% of orders marked 'Delivered' by the rider within 250m of the customer's registered address","% of orders marked 'Delivered' by the rider within 250m of the outlet","% of orders incorrectly marked as 'Delivered' by the rider before reaching the destination","% of orders marked 'Delivered' by the rider within 200m of the outlet"],si_opts:["පාරිභෝගිකයාගේ ලියාපදිංචි ලිපිනයේ සිට 250m ඇතුළත රයිඩර් 'Delivered' යයි ලකුණු කළ ඇණවුම් %","Outlet එකේ සිට 250m ඇතුළත රයිඩර් 'Delivered' යයි ලකුණු කළ ඇණවුම් %","අදාළ ස්ථානයට යාමට පෙර rider විසින් DELIVERED ලෙස වැරදියට mark කළ orders %","Outlet එකේ සිට 200m ඇතුළත රයිඩර් 'Delivered' යයි ලකුණු කළ ඇණවුම් %"],ans:0,exp:"Delivered at Place = % orders where rider marked Delivered within 250 meters of registered address.",si:"රයිඩර් 'Delivered' ලෙස mark කළේ <b>පාරිභෝගිකයාගේ ලිපිනයේ සිට 250m සීමාව ඇතුළත</b>දී ද යන්න."},
+	{q:"In Dragontail, what does 'Dispatch Deviations' track?",si_q:"Dragontail හි 'Dispatch Deviations' මගින් සොයා බලන්නේ කුමක්ද?",opts:["Checking if recommended double dispatches were sent as singles, or if singles were sent as doubles.","Dispatching another order to a rider while they are already out on a delivery, before they return to the outlet.","Bumping a delivery order from the Cut table KDS before the oven time reaches 6 minutes and 45 seconds.","The rider departing with the order before it is officially dispatched."],si_opts:["නිර්දේශිත Double dispatches, Singles ලෙස හෝ Singles, Double ලෙස යවා ඇත්දැයි බැලීම","rider, delivery එකක් සඳහා පිටත්ව ගොස් ඇති විට නැවත outlet එකට පැමිණීමට පෙර තවත් order එකක් dispatch කිරීම","Oven time එක විනාඩි 6යි තත්පර 45ක් වීමට පෙර delivery order එකක් Cut table KDS එකෙන් bump කිරීම","Order එක dispatch කිරීමට පෙර rider විසින් order එක රැගෙන පිටත් වීම"],ans:0,exp:"Dispatch Deviations = Checking if recommended doubles sent as singles or vice versa.",si:"පද්ධතිය නිර්දේශ කළ Single/Double dispatch වලට පිටින් යැවීම් සිදුවී ඇත්ද යන්න 'Dispatch Deviations' මගින් සොයා බලයි."},
+	{q:"What is HR Review frequency and who conducts it?",si_q:"HR Review සිදුකරන්නේ කොපමණ කාලයකින්ද සහ කවුරුන් විසින්ද?",opts:["Once per quarter by Employee Relations Executive at outlet","Monthly by RGM","Annually by Head Office","Monthly by Area Coach"],si_opts:["කාර්තුවකට වරක්, Employee Relations Executive විසින්","මාසිකව, RGM විසින්","වාර්ෂිකව, Head Office විසින්","මාසිකව, Area Coach විසින්"],ans:0,exp:"HR Review = quarterly (every 4 months) at the outlet, conducted by Employee Relations Executive.",si:"කාර්තුවකට වරක් (මාස 4 කට වරක්), Employee Relations Executive විසින් HR Review සිදු කරනු ලබයි."},
+	{q:"What is the correct Dragontail 'I'm in / I'm out' button usage?",si_q:"Dragontail හි 'I'm in / I'm out' බොත්තම් නිවැරදිව භාවිතා කරන්නේ කෙසේද?",opts:["Press 'I'm out' if late returning to outlet after delivery - 'I'm in' is NOT required","Press 'I'm in' when arriving at customer - 'I'm out' is NOT required","Press both buttons every delivery","Press 'I'm in' when returning to store"],si_opts:["ඩිලිවරි එකෙන් පසු ආපසු පැමිණීම ප්‍රමාද නම් 'I'm out' ඔබන්න - 'I'm in' එබීම අවශ්‍ය නොවේ","පාරිභෝගිකයා වෙත ළඟා වූ විට 'I'm in' ඔබන්න - 'I'm Out' එබීම අවශ්‍ය නොවේ","සෑම ඩිලිවරි එකකදීම බොත්තම් දෙකම ඔබන්න","outlet එකට ආපසු පැමිණෙන විට 'I'm in' ඔබන්න - 'I'm Out' එබීම අවශ්‍ය නොවේ"],ans:0,exp:"'I'm out' = press if late returning to outlet. 'I'm in' is NOT required to press.",si:"Outlet එකට ආපසු ඒම ප්‍රමාද වුවහොත් පමණක් '<b>I'm out</b>' ඔබන්න. 'I'm in' එබීම අවශ්‍ය නොවේ"},
+	{q:"How is the Team Member Turnover (TMTO) calculated according to the 5 STAR metrics?",si_q:"5 STAR නිර්ණායකයන්ට අනුව Team Member Turnover (TMTO) ගණනය කරන්නේ කෙසේද?",opts:["Employees who left during the calculated period / Average number of employees at the beginning and end of the calculated period","Total number of employees during the calculated period / Number of employees who resigned during the calculated period","New employees who joined during the calculated period / Number of employees who left during the relevant period","Employees who left during the calculated period / Total number of new employees who joined during the relevant period"],si_opts:["ගණනය කිරීමට අදාළ කාලය තුළ ඉවත් වූ සේවකයින් / ගණනය කිරීමට අදාළ කාලයේ ආරම්භයේ සහ අවසානයේ සිටි සාමාන්‍ය සේවක සංඛ්‍යාව","ගණනය කිරීමට අදාළ කාලය තුළ සිටි මුළු සේවකයින් / ගණනය කිරීමට අදාළ කාලය තුළ ඉල්ලා අස්වූ සේවකයින් ගණන","ගණනය කිරීමට අදාළ කාලය තුළ සේවයට එක්වූ නවක සේවකයින් / අදාළ කාලය තුළ ඉවත් වූ සේවකයින් ගණන","ගණනය කිරීමට අදාළ කාලය තුළ ඉවත් වූ සේවකයින් / අදාළ කාලය තුළ සේවයට එක වූ මුළු නවක සේවකයින් ගණන"],ans:0,exp:"TMTO is calculated by dividing the terminated team members by the average of active team members at the start and end of the period.",si:"<b>TMTO</b> ගණනය කරනු ලබන්නේ යම් කාල සීමාවක් තුළ සේවයෙන් ඉවත් වූ සේවකයින් සංඛ්‍යාව, එම කාල සීමාවේ ආරම්භයේ සහ අවසානයේ සිටි ක්‍රියාකාරී සේවක සංඛ්‍යාවේ සාමාන්‍යයෙන් බෙදීමෙනි."},
+	{q:"Under FER Cash Management, which of the following is considered a critical (L3) deviation?",si_q:"FER Cash Management යටතේ, පහත සඳහන් ඒවායින් බරපතල වරදක්(Level 3 - L3) ලෙස සැලකෙන්නේ කුමක්ද?",opts:["Using sale cash (Cashier point) for petty cash payments","Petty cash vouchers not submitted to HO on a monthly basis","IOUs have not been settled within two days","Petty cash, Float and Change fund are not maintained separately"],si_opts:["Petty cash ගෙවීම් සඳහා Cashier point හි ඇති විකුණුම් මුදල් භාවිත කිරීම","Petty cash vouchers මාසිකව ප්‍රධාන කාර්යාලයට ඉදිරිපත් නොකිරීම","ලබාගත් IOUs දින දෙකක් ඇතුළත පියවා නොතිබීම","Petty cash, Float සහ Change fund වෙන වෙනම පවත්වා නොගැනීම"],ans:0,exp:"Using sale cash (Cashier point) for petty cash payments at any given point of time is a Level 3 deviation.",si:"Petty cash ගෙවීම් සඳහා Cashier ලාච්චුවේ ඇති විකුණුම් මුදල් (sale cash) භාවිත කිරීම <b>L3</b> ගණයේ බරපතල වරදකි."},
+	{q:"Which of the following expenses are categorized under 'Cost of Semi Variable' (COSV) in the Profit & Loss(P & L) statement?",si_q:"Profit & Loss (P&L) ප්‍රකාශනයේ 'Cost of Semi Variable' (COSV) යටතට ගැනෙන වියදම් මොනවාද?",opts:["Housekeeping, Marketing Promotions, Utility Expences (Electricity, Gas, Water)","Full Time Salary, Part Time Salary, Uniform expences, OT","Food Cost, Full Time Salary, Utility Expences (Electricity, Gas, Water)","Over Time, Target Incentive, Net Sales, Food Cost"],si_opts:["ගෘහපාලන කටයුතු, අලෙවිකරණ ප්‍රවර්ධන, උපයෝගිතා වියදම් (විදුලිය, ගෑස්, ජලය)","පූර්ණකාලීන වැටුප්, අර්ධකාලීන වැටුප්, නිල ඇඳුම් වියදම්, අතිකාල දීමනා (OT)","ආහාර පිරිවැය, පූර්ණකාලීන වැටුප්, උපයෝගිතා වියදම් (විදුලිය, ගෑස්, ජලය)","අතිකාල දීමනා, ඉලක්කගත දිරිදීමනා, ශුද්ධ විකුණුම් (Net Sales), ආහාර පිරිවැය"],ans:0,exp:"COSV includes Housekeeping, Target incentive, Building repair, Marketing Promotions, and Utility Expences (Electricity, Gas, Water).",si:"<b>COSV (Cost of Semi Variable)</b> යටතට \n• Housekeeping, \n• Target incentive, \n• Marketing Promotions, \n• ගොඩනැගිලි අලුත්වැඩියාව සඳහා යන වියදම් සහ \n• Utility Expences (විදුලිය, ගෑස්, ජලය) වැනි වියදම් අයත් වේ."},
+	{q:"What does EBITDA stand for in the financial statements?",si_q:"මූල්‍ය ප්‍රකාශනවල සඳහන් වන EBITDA යන්නෙන් අදහස් වන්නේ කුමක්ද?",opts:["Earning Before Interest, Taxes, Depreciation and Amortization","Earning Before Income, Taxes, Delivery and Audits","Estimated Business Income, Taxes, Depreciation and Amortization","Earning By Interest, Taxes, Depreciation and Assets"],si_opts:["Earning Before Interest, Taxes, Depreciation and Amortization","Earning Before Income, Taxes, Delivery and Audits","Estimated Business Income, Taxes, Depreciation and Amortization","Earning By Interest, Taxes, Depreciation and Assets"],ans:0,exp:"EBITDA stands for Earning Before Interest, Taxes, Depreciation and Amortization.",si:"<b>EBITDA</b> යනු Earning Before Interest, Taxes, Depreciation and Amortization යන්නයි."},
+	{q:"In the 2025 5 STAR Scorecard (with Delivery & Speed Data), what is the weightage given to the 'Delivery U30' metric?",si_q:"2025 5 STAR Scorecard හි(Delivery & Speed Data සහිත), 'Delivery U30' අංගය සඳහා ලබා දී ඇති බර තැබීම (weightage) කොපමණද?",opts:["25%","35%","20%","10%"],si_opts:["25%","35%","20%","10%"],ans:0,exp:"According to the 2025 5 star rating scorecard weightage, Delivery U30 has a weight of 25%.",si:"2025 5 star rating scorecard scorecard බර තැබීම් වලට අනුව, Delivery U30 සඳහා 25% ක බර තැබීමක් හිමිවේ. \n\nඑහි weightages වන්නේ, \nTM Turnover සඳහා 5%, \nWin Score සඳහා 35%, \nDelivery U30 සඳහා 25%, \nFSCC සඳහා 12.5%, \nBrand සඳහා 12.5% සහ \nHut Bot On Time සඳහා 10%වේ."},
+	{q:"According to FER guidelines, which of the following is considered a Level 3 (L3) deviation in Physical Security?",si_q:"FER මාර්ගෝපදේශ වලට අනුව, Physical Security හි Level 3 (L3) Deviation එකක් ලෙස සැලකෙන්නේ කුමක්ද?",opts:["Trade License or Rider License Expired","CCTV Cameras not monitored","Fire extinguisher not renewed","Cleaning of delivery pouches not done"],si_opts:["Trade License හෝ Rider License කල් ඉකුත්වී තිබීම","CCTV කැමරා නිරීක්ෂණය නොකිරීම","ගිනි නිවන උපකරණ (Fire extinguisher) අලුත් කර නොතිබීම","ඩිලිවරි පවුච් පිරිසිදු කර නොතිබීම"],ans:0,exp:"Trade License or Rider License expiring is a critical Level 3 deviation in Physical Security.",si:"Trade License හෝ Rider License කල් ඉකුත්වී තිබීම Physical Security යටතේ ඇති බරපතලම (<b>Level 3</b>) වරදකි."},
+	{q:"How often should the FER self-assessment be carried out by the Restaurant General Manager (RGM)?",si_q:"Restaurant General Manager (RGM) විසින් FER self-assessment එක කොපමණ කාලයකට වරක් සිදුකළ යුතුද?",opts:["Once every month","Once every quarter","Twice a year","Twice a quarter"],si_opts:["සෑම මාසයකට වරක්","සෑම කාර්තුවකට වරක්","වසරකට දෙවරක්","කාර්තුවකට දෙවරක්"],ans:0,exp:"FER self-assessment must be carried out by the RGM once every month.",si:"RGM විසින් <b>සෑම මාසයකට වරක්ම</b> FER self-assessment සිදුකළ යුතුය. මාසයකට වරක් FER self-assessment සිදු නොකිරීම L1 deviation එකකි."},
+	{q:"What is the shelf life of Marinara sauce after thawing in the cool room?",si_q:"Cool room එකේ thaw කළ (දියවෙන්නට හැරිය) පසු Marinara sauce වල shelf life එක කොපමණද?",opts:["2 days","3 days","5 days","EOD"],si_opts:["දින 2 යි","දින 3 යි","දින 5 යි","EOD (දවස අවසානය තෙක්)"],ans:0,exp:"The shelf life of Marinara sauce after thawing in the cool room is 2 days.",si:"Cool room එකේ දියවෙන්නට හැරිය පසු Marinara sauce වල shelf life එක <b>දින 2 කි</b>."},
+	{q:"How to calculate 'WIN Score' measure in the 5 STAR Scorecard?",si_q:"5 STAR Scorecard එකේ 'WIN Score' calculate කරන්නේ කෙසේද?",opts:["Smart GES, Social review & Aggregator rating responses / No of TopBox or Yes responses","MTD GES, Social review & Aggregator rating responses / No of TopBox responses","Social review & Aggregator rating responses / No of Smart GES","No of TopBox or Yes response, Social review & Aggregator rating responses / smart GES"],si_opts:["Smart GES, Social review & Aggregator rating responses / No of TopBox or Yes responses","MTD GES, Social review & Aggregator rating responses / No of TopBox responses","Social review & Aggregator rating responses / No of Smart GES","No of TopBox or Yes response, Social review & Aggregator rating responses / smart GES"],ans:0,exp:"WIN Score = Smart GES, Social review & Aggregator rating responses / No of TopBox or Yes responses",si:"<b>WIN Score</b> = Smart GES, Social review & Aggregator rating responses / No of TopBox or Yes responses"}
+  ]
+}
+};
+
+// ══════════════════════════════════════════════════════════════
+// STATE & AUDIO
+// ══════════════════════════════════════════════════════════════
+let currentPaper = null;
+let questions = [];
+let qIndex = 0;
+let correct = 0;
+let wrong = 0;
+let skipped = 0;
+let currentCorrectIdx = -1;
+let answered = false;
+let qHistory = [];
+let sessionAnswers = [];
+let timerInterval = null;
+let timeLeft = 60;
+let isTranslated = false;
+let _trShuffled = [];
+
+let soundEnabled = localStorage.getItem('bt_sound') !== 'false';
+let audioCtx = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+  checkSavedSession();
+});
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('bt_sound', soundEnabled);
+  document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+  initAudio();
+}
+
+function initAudio() {
+  if (soundEnabled && !audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playFeedback(isCorrect) {
+  if (!soundEnabled) return;
+  initAudio();
+  if (!audioCtx) return;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  if (isCorrect) {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    if (navigator.vibrate) navigator.vibrate(50);
+  } else {
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOCAL STORAGE 
+// ══════════════════════════════════════════════════════════════
+function saveProgress() {
+  const state = {
+    currentPaper, qIndex, correct, wrong, skipped,
+    qHistory, questions, sessionAnswers
+  };
+  localStorage.setItem('bt_exam_state', JSON.stringify(state));
+}
+
+function checkSavedSession() {
+  const saved = localStorage.getItem('bt_exam_state');
+  const banner = document.getElementById('resume-banner');
+  if (saved) {
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function resumeSavedSession() {
+  const saved = localStorage.getItem('bt_exam_state');
+  if (saved) {
+    try {
+      const state = JSON.parse(saved);
+      currentPaper = state.currentPaper;
+      qIndex = state.qIndex;
+      correct = state.correct;
+      wrong = state.wrong;
+      skipped = state.skipped;
+      qHistory = state.qHistory;
+      questions = state.questions;
+      sessionAnswers = state.sessionAnswers || [];
+      
+      document.getElementById('quiz-paper-label').textContent = PAPERS[currentPaper].title;
+      showScreen('quiz');
+      renderQuestion();
+    } catch(e) {
+      localStorage.removeItem('bt_exam_state');
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// UI & NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+  checkSavedSession();
+}
+
+function goHome() {
+  const quizActive = document.getElementById('quiz').classList.contains('active');
+  if (quizActive) {
+    showModal({
+      icon: '🏠',
+      title: 'Home Page එකට යන්නද?',
+      msg: 'ඔබේ progress එක auto-save වේ. පසුව resume කළ හැක.',
+      confirmText: '✔ Home Page එකට යන්න',
+      cancelText: 'නෑ, Continue කරන්න',
+      onConfirm: () => {
+        clearTimer();
+        showScreen('home');
+      }
+    });
+  } else {
+    clearTimer();
+    showScreen('home');
+  }
+}
+
+function startPaper(paperId) {
+  initAudio();
+  currentPaper = paperId;
+  qHistory = [];
+  sessionAnswers = [];
+  const p = PAPERS[paperId];
+  questions = shuffle([...p.qs]);
+  qIndex = 0; correct = 0; wrong = 0; skipped = 0;
+  
+  document.getElementById('quiz-paper-label').textContent = p.title;
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (qIndex >= questions.length) { showResults(); return; }
+  saveProgress();
+  
+  answered = false;
+  isTranslated = false;
+  
+  const q = questions[qIndex];
+  const total = questions.length;
+  const pct = Math.round((qIndex / total) * 100);
+
+  document.getElementById('q-badge').textContent = `Q${qIndex + 1} · ${PAPERS[currentPaper].title}`;
+  document.getElementById('quiz-q-info').textContent = `Question ${qIndex + 1} of ${total}`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  updateScorePill();
+  
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('next-btn').classList.remove('show');
+  
+  const prevBtn = document.getElementById('prev-btn');
+  prevBtn.disabled = (qIndex === 0);
+
+  const btnTrans = document.getElementById('translate-btn');
+  btnTrans.className = 'translate-btn';
+  btnTrans.innerHTML = '🇱🇰 සිංහල';
+
+  const indices = Array.from({length: q.opts.length}, (_, i) => i);
+  _trShuffled = shuffle([...indices]);
+  currentCorrectIdx = _trShuffled.indexOf(q.ans);
+
+  document.getElementById('q-text').textContent = q.q;
+
+  const optsEl = document.getElementById('opts');
+  optsEl.innerHTML = '';
+  
+  const letters = ['A','B','C','D'];
+  _trShuffled.forEach((origIdx, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text">${q.opts[origIdx]}</span>`;
+    btn.onclick = () => selectAnswer(i, currentCorrectIdx, origIdx, q);
+    optsEl.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function toggleTranslate() {
+  isTranslated = !isTranslated;
+  const q = questions[qIndex];
+  const btn = document.getElementById('translate-btn');
+  
+  if (isTranslated) {
+    document.getElementById('q-text').textContent = q.si_q || q.q;
+    document.querySelectorAll('.opt-text').forEach((el, i) => {
+      const origIdx = _trShuffled[i];
+      el.textContent = (q.si_opts && q.si_opts[origIdx]) ? q.si_opts[origIdx] : q.opts[origIdx];
+    });
+    btn.classList.add('active');
+    btn.innerHTML = '🔄 English';
+  } else {
+    document.getElementById('q-text').textContent = q.q;
+    document.querySelectorAll('.opt-text').forEach((el, i) => {
+      const origIdx = _trShuffled[i];
+      el.textContent = q.opts[origIdx];
+    });
+    btn.classList.remove('active');
+    btn.innerHTML = '🇱🇰 සිංහල';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ANSWER HANDLING & TIMER
+// ══════════════════════════════════════════════════════════════
+function selectAnswer(selectedIdx, correctIdx, origIdx, q) {
+  if (answered) return;
+  answered = true;
+  clearTimer();
+  
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === correctIdx) btn.classList.add('correct');
+    else if (i === selectedIdx) btn.classList.add('wrong');
+  });
+
+  const isCorrect = (selectedIdx === correctIdx);
+  if (isCorrect) correct++; else wrong++;
+  
+  playFeedback(isCorrect);
+  
+  sessionAnswers.push({
+    qObj: q,
+    selected: selectedIdx,
+    correctIdx: correctIdx,
+    shuffled: [..._trShuffled]
+  });
+  
+  updateScorePill();
+  showExplanation(isCorrect, false, q);
+}
+
+function timeoutQ() {
+  if (answered) return;
+  answered = true;
+  skipped++;
+  const q = questions[qIndex];
+  
+  document.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === currentCorrectIdx) btn.classList.add('correct');
+  });
+  
+  playFeedback(false);
+  
+  sessionAnswers.push({
+    qObj: q,
+    selected: -1, // -1 means timeout
+    correctIdx: currentCorrectIdx,
+    shuffled: [..._trShuffled]
+  });
+  
+  updateScorePill();
+  showExplanation(false, true, q);
+}
+
+function showExplanation(isCorrect, isTimeout, q) {
+  const area = document.getElementById('result-area');
+  let cls = isTimeout ? 'timeout-card' : isCorrect ? 'correct-card' : 'wrong-card';
+  let titleCls = isTimeout ? 'timeout-t' : isCorrect ? 'correct-t' : 'wrong-t';
+  let title = isTimeout ? '⏰ කාලය ඉකුත් විය! (Time Expired!)' : isCorrect ? '✅ නිවැරදියි! (Correct!)' : '❌ වැරදියි (Wrong)';
+  
+  area.innerHTML = `
+    <div class="result-card ${cls}">
+      <div class="rc-title ${titleCls}">${title}</div>
+      <div class="rc-eng">${q.exp}</div>
+      <div class="rc-si">${q.si || ''}</div>
+    </div>`;
+  
+  document.getElementById('next-btn').classList.add('show');
+  
+  setTimeout(() => {
+    document.querySelector('.quiz-body').scrollTo({ top: document.querySelector('.quiz-body').scrollHeight, behavior: 'smooth' });
+  }, 100);
+}
+
+function nextQuestion() {
+  qHistory.push({qIndex, correct, wrong, skipped});
+  qIndex++;
+  const qBody = document.querySelector('.quiz-body');
+  if(qBody) qBody.scrollTop = 0;
+  renderQuestion();
+}
+
+function goPrevQuestion() {
+  if (qHistory.length === 0) return;
+  clearTimer();
+  const snap = qHistory.pop();
+  qIndex = snap.qIndex; correct = snap.correct; wrong = snap.wrong; skipped = snap.skipped;
+  sessionAnswers.pop(); // Remove last recorded answer
+  const qBody = document.querySelector('.quiz-body');
+  if(qBody) qBody.scrollTop = 0;
+  renderQuestion();
+}
+
+function startTimer() {
+  clearTimer();
+  timeLeft = 60;
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) { clearTimer(); timeoutQ(); }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function updateTimerUI() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  document.getElementById('timer-val').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  
+  const pct = (timeLeft / 60) * 100;
+  const fill = document.getElementById('timer-fill');
+  fill.style.width = pct + '%';
+  
+  const tv = document.getElementById('timer-val');
+  if(timeLeft > 15) { tv.className = 'timer-val ok'; fill.className = 'timer-fill ok'; }
+  else { tv.className = 'timer-val crit'; fill.className = 'timer-fill crit'; }
+}
+
+function updateScorePill() {
+  const totalDone = correct + wrong + skipped;
+  const pct = totalDone > 0 ? Math.round((correct / totalDone) * 100) : 0;
+  document.getElementById('score-display').textContent = pct + '%';
+}
+
+function confirmReset() {
+  showModal({
+    icon: '🔄',
+    title: 'Paper එක Reset කරන්නද?',
+    msg: 'Current progress සියල්ල අහිමි වේ. Paper එක restart කරන්නද?',
+    confirmText: '✔ ඔව්, Reset කරන්න',
+    cancelText: 'නෑ, Continue කරන්න',
+    onConfirm: () => { clearTimer(); startPaper(currentPaper); }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// RESULTS LOGIC & REVIEW
+// ══════════════════════════════════════════════════════════════
+function showResults() {
+  clearTimer();
+  localStorage.removeItem('bt_exam_state'); // Clear save upon finish
+  
+  const total = questions.length;
+  const pct = Math.round((correct / total) * 100);
+  
+  let emoji='', title='', sub='';
+  if(pct>=85){emoji='🏆';title='විශිෂ්ටයි!';sub='ඔබ BT Exam සූදානම් - Excellent!';}
+  else if(pct>=65){emoji='👍';title='හොඳ ප්‍රතිඵලයක්!';sub='තව ටිකක් practice කරන්න - Good Job!';}
+  else{emoji='📚';title='තව ටිකක් study කරන්න!';sub='නැවත try කරන්න - Keep Practising!';}
+  
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-title').textContent = title;
+  document.getElementById('res-sub').textContent = sub;
+  
+  document.getElementById('sr-num').textContent = correct;
+  document.getElementById('sr-total').textContent = '/ ' + total;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-pct').textContent = pct + '%';
+  document.getElementById('r-skip').textContent = skipped;
+  
+  document.getElementById('score-ring').style.setProperty('--deg', Math.round((pct/100)*360) + 'deg');
+  
+  const gb = document.getElementById('grade-badge');
+  if(pct>=85){gb.className='grade-badge grade-A';gb.textContent='🏆 Grade A - BT Exam සඳහා ඔබ සූදානම්!';}
+  else if(pct>=65){gb.className='grade-badge grade-B';gb.textContent='👍 Grade B - තව Practice කරන්න';}
+  else{gb.className='grade-badge grade-C';gb.textContent='📚 Grade C - නැවත Study කරන්න';}
+  
+  showScreen('results');
+}
+
+function showReview() {
+  const revBody = document.getElementById('review-body');
+  revBody.innerHTML = '';
+  
+  const errors = sessionAnswers.filter(ans => ans.selected !== ans.correctIdx);
+  
+  if (errors.length === 0) {
+    revBody.innerHTML = `<div style="text-align:center; margin-top: 40px; font-weight:700;">සියලුම පිළිතුරු නිවැරදියි! 🏆</div>`;
+  } else {
+    errors.forEach((item, index) => {
+      const qObj = item.qObj;
+      let userChoiceHtml = '';
+      
+      if (item.selected === -1) {
+        userChoiceHtml = `<div class="rev-ans-row wrong">⏰ Time Expired (පිළිතුරු දුන්නේ නැත)</div>`;
+      } else {
+        const uStr = qObj.opts[item.shuffled[item.selected]];
+        userChoiceHtml = `<div class="rev-ans-row wrong">❌ ඔබේ පිළිතුර: ${uStr}</div>`;
+      }
+      
+      const cStr = qObj.opts[item.shuffled[item.correctIdx]];
+      
+      const card = document.createElement('div');
+      card.className = 'rev-card';
+      card.innerHTML = `
+        <div class="rev-q-num">Question #${index + 1}</div>
+        <div class="rev-q">${qObj.q}</div>
+        <div class="rev-ans">
+          ${userChoiceHtml}
+          <div class="rev-ans-row correct">✅ නිවැරදි පිළිතුර: ${cStr}</div>
+        </div>
+        <div class="rev-exp">${qObj.exp}</div>
+        ${qObj.si ? `<div class="rev-si">${qObj.si}</div>` : ''}
+      `;
+      revBody.appendChild(card);
+    });
+  }
+  
+  showScreen('review');
+}
+
+function retryPaper() { startPaper(currentPaper); }
+
+// ══════════════════════════════════════════════════════════════
+// MODAL & NAVIGATION BROWSER HISTORY
+// ══════════════════════════════════════════════════════════════
+let _modalCb = null;
+function showModal(opts) {
+  document.getElementById('modal-icon').textContent = opts.icon || '⚠️';
+  document.getElementById('modal-title').textContent = opts.title;
+  document.getElementById('modal-msg').textContent = opts.msg;
+  _modalCb = opts.onConfirm;
+  document.getElementById('modal-actions').innerHTML = `
+    <button class="modal-btn-confirm" onclick="confirmModal()">${opts.confirmText}</button>
+    <button class="modal-btn-cancel" onclick="closeModal()">${opts.cancelText}</button>
+  `;
+  document.getElementById('custom-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('custom-modal').classList.remove('open'); _modalCb = null; }
+function confirmModal() {
+  const cb = _modalCb;
+  closeModal();
+  if (cb) cb();
+}
+
+history.pushState(null, document.title, location.href);
+window.addEventListener('popstate', function() {
+  history.pushState(null, document.title, location.href); 
+  
+  if (document.getElementById('results').classList.contains('active')) {
+    goHome();
+  } else if (document.getElementById('review').classList.contains('active')) {
+    showScreen('results');
+  } else if (document.getElementById('quiz').classList.contains('active')) {
+    goHome();
+  }
+});
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker Registered'))
+        .catch(err => console.log('Service Worker Failed', err));
+    });
+  }
+</script>
+</body>
+</html>
