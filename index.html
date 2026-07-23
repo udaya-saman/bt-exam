@@ -66,20 +66,10 @@ button { outline: none; border: none; font-family: inherit; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 .animate-in { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-/* ===== HOME SCREEN (No Scroll, 4-Row layout) ===== */
+/* ===== HOME SCREEN (No Scroll, 5-Row layout) ===== */
 #home { height: 100vh; height: 100dvh; overflow: hidden; background: var(--bg-color); }
-.home-hero { flex: 0 0 clamp(20vh, 25vh, 25vh); width: 100%; text-align: center; background: linear-gradient(135deg, var(--corp-navy) 0%, #172554 100%); position: relative; overflow: hidden; padding: 10px 15px; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.home-hero::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at top right, rgba(11, 113, 180, 0.2) 0%, transparent 60%); pointer-events: none; }
-.sound-toggle-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: #FFF; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: 0.2s; z-index: 2; }
-.sound-toggle-btn:active { transform: scale(0.95); }
-.hero-logo { font-size: clamp(32px, 8vh, 48px); line-height: 1; display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); margin-bottom: 6px; }
-.hero-title { font-size: clamp(20px, 5vh, 26px); font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 4px; }
-.hero-tagline { font-size: clamp(11px, 2.5vh, 13px); color: rgba(255, 255, 255, 0.8); line-height: 1.2; font-weight: 400; margin-bottom: 10px; }
-.badge-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
-.badge { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 4px 10px; font-size: 10px; color: #FFFFFF; backdrop-filter: blur(8px); }
-.badge b { color: var(--corp-green); font-weight: 700; }
 
-.home-content { flex: 1; display: flex; flex-direction: column; padding: 16px 20px; width: 100%; max-width: 600px; margin: 0 auto; overflow: hidden; }
+.home-content { flex: 1; display: flex; flex-direction: column; padding: 12px 20px 16px; width: 100%; max-width: 600px; margin: 0 auto; overflow: hidden; }
 
 /* Resume Banner */
 #resume-banner { display: none; background: linear-gradient(135deg, var(--corp-navy), var(--corp-blue)); color: #FFF; border-radius: 16px; padding: 12px 16px; align-items: center; justify-content: space-between; margin-bottom: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(11, 113, 180, 0.3); flex-shrink: 0; transition: transform 0.2s; }
@@ -89,11 +79,11 @@ button { outline: none; border: none; font-family: inherit; }
 .rb-sub { font-size: 10px; opacity: 0.9; margin-top: 2px; }
 .rb-icon { font-size: 20px; }
 
-.home-section-label { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+.home-section-label { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
 
-/* 4-Row Grid */
-.paper-grid { flex: 1; display: grid; grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); gap: 10px; min-height: 0; }
-.paper-card { display: flex; flex-direction: row; align-items: center; background: var(--card-bg); border-radius: var(--radius-md); padding: 10px 14px; gap: 14px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
+/* 5-Row Grid */
+.paper-grid { flex: 1; display: grid; grid-template-columns: 1fr; grid-template-rows: repeat(5, 1fr); gap: 8px; min-height: 0; }
+.paper-card { display: flex; flex-direction: row; align-items: center; background: var(--card-bg); border-radius: var(--radius-md); padding: 8px 12px; gap: 12px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); }
 .paper-card:active { transform: scale(0.96); }
 .paper-card:hover { box-shadow: var(--shadow-md); border-color: rgba(11, 113, 180, 0.3); }
 
@@ -103,10 +93,10 @@ button { outline: none; border: none; font-family: inherit; }
 .pc-strip.green { background: var(--corp-green); }
 .pc-strip.purple { background: #8B5CF6; }
 
-.pc-icon-wrap { flex: 0 0 auto; width: clamp(40px, 6vh, 48px); height: clamp(40px, 6vh, 48px); border-radius: 12px; background: var(--opt-bg); display: flex; align-items: center; justify-content: center; font-size: clamp(20px, 3vh, 24px); }
+.pc-icon-wrap { flex: 0 0 auto; width: clamp(38px, 5vh, 46px); height: clamp(38px, 5vh, 46px); border-radius: 12px; background: var(--opt-bg); display: flex; align-items: center; justify-content: center; font-size: clamp(18px, 3vh, 22px); }
 .pc-meta { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-.pc-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.pc-title { font-size: clamp(14px, 2.2vh, 16px); font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.pc-title { font-size: clamp(13px, 2.2vh, 16px); font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pc-tag { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; white-space: nowrap; }
 .pc-tag.blue-tag { background: rgba(11, 113, 180, 0.1); color: var(--corp-blue); }
 .pc-tag.gold-tag { background: rgba(245, 158, 11, 0.1); color: #D97706; }
@@ -254,17 +244,6 @@ button { outline: none; border: none; font-family: inherit; }
 
 <!-- HOME SCREEN -->
 <div id="home" class="screen active">
-  <div class="home-hero animate-in">
-    <button class="sound-toggle-btn" id="sound-toggle" onclick="toggleSound()">🔊 Sound On</button>
-    <span class="hero-logo">🍕</span>
-    <div class="hero-title">BT Exam Prep</div>
-    <div class="hero-tagline">Buddy Trainer Mock Questions</div>
-    <div class="badge-row">
-      <div class="badge">⏱️ <b>1 min</b> / Question</div>
-      <div class="badge">🔀 Shuffled</div>
-    </div>
-  </div>
-
   <div class="home-content animate-in">
     <div id="resume-banner" onclick="resumeSavedSession()">
       <div class="rb-info">
@@ -274,10 +253,30 @@ button { outline: none; border: none; font-family: inherit; }
       <span class="rb-icon">▶</span>
     </div>
 
-    <div class="home-section-label">Select Exam Paper</div>
+    <div class="home-section-label">
+      <span>SELECT EXAM PAPER</span>
+      <button id="sound-toggle" onclick="toggleSound()" style="background: var(--opt-bg); border: 1px solid var(--border-light); color: var(--text-main); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; cursor: pointer;">🔊 Sound On</button>
+    </div>
 
     <div class="paper-grid">
-      <!-- Row 1 -->
+      <!-- Row 1 (New Past Paper) -->
+      <div class="paper-card" onclick="startPaper('past2024')">
+        <div class="pc-strip" style="background: #E11D48;"></div>
+        <div class="pc-icon-wrap"><span class="pc-icon-big">🆕</span></div>
+        <div class="pc-meta">
+          <div class="pc-title-row">
+            <div class="pc-title">Past Paper 2024</div>
+            <div class="pc-tag" style="background: rgba(225, 29, 72, 0.1); color: #BE123C;">24 Qs</div>
+          </div>
+          <div class="pc-desc">Buddy Trainer Mock Questions 2024.</div>
+          <div class="pc-bottom-row">
+            <div class="pc-subtitle">Past Paper</div>
+            <div class="pc-diff">⭐⭐⭐⭐ Expert</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
       <div class="paper-card" onclick="startPaper('questions')">
         <div class="pc-strip red"></div>
         <div class="pc-icon-wrap"><span class="pc-icon-big">📋</span></div>
@@ -294,7 +293,7 @@ button { outline: none; border: none; font-family: inherit; }
         </div>
       </div>
 
-      <!-- Row 2 -->
+      <!-- Row 3 -->
       <div class="paper-card" onclick="startPaper('paper1')">
         <div class="pc-strip gold"></div>
         <div class="pc-icon-wrap"><span class="pc-icon-big">📝</span></div>
@@ -311,7 +310,7 @@ button { outline: none; border: none; font-family: inherit; }
         </div>
       </div>
 
-      <!-- Row 3 -->
+      <!-- Row 4 -->
       <div class="paper-card" onclick="startPaper('paper2')">
         <div class="pc-strip green"></div>
         <div class="pc-icon-wrap"><span class="pc-icon-big">🎯</span></div>
@@ -328,7 +327,7 @@ button { outline: none; border: none; font-family: inherit; }
         </div>
       </div>
 
-      <!-- Row 4 -->
+      <!-- Row 5 -->
       <div class="paper-card" onclick="startPaper('paper3')">
         <div class="pc-strip purple"></div>
         <div class="pc-icon-wrap"><span class="pc-icon-big">🚀</span></div>
@@ -449,6 +448,496 @@ button { outline: none; border: none; font-family: inherit; }
 // Don't change below content
 // ══════════════════════════════════════════════════════════════
 const PAPERS = {
+past2024: {
+  title: "Past Paper 2024",
+  qs: [
+    {
+      "q": "Which company the mother company of Gamma Pizzakraft Lanka PVT LTD?",
+      "si_q": "Gamma Pizzakraft Lanka PVT LTD හි මව් සමාගම කුමක්ද?",
+      "opts": [
+        "Softlogic",
+        "Yum",
+        "Cargills Foods",
+        "Sapphire Foods"
+      ],
+      "si_opts": [
+        "සොෆ්ට්ලොජික්",
+        "යම් (Yum)",
+        "කාගිල්ස් ෆුඩ්ස්",
+        "සෆයර් ෆුඩ්ස් (Sapphire Foods)"
+      ],
+      "ans": 3,
+      "exp": "Sapphire Foods is the mother company of Gamma Pizzakraft Lanka.",
+      "si": "Gamma Pizzakraft Lanka හි මව් සමාගම වන්නේ <span style='color:green'><b>Sapphire Foods</b></span> සමාගමයි."
+    },
+    {
+      "q": "What is CARE stand for?",
+      "si_q": "CARE යන්නෙන් අදහස් වන්නේ කුමක්ද?",
+      "opts": [
+        "Courage, attractiveness, responsible, entertainment",
+        "Courtesy, attentiveness, respect, entertainment",
+        "Courtesy, attentiveness, respect, enthusiasm",
+        "Courage, attractiveness, responsible, enthusiasm"
+      ],
+      "si_opts": [
+        "ධෛර්යය, ආකර්ෂණීය බව, වගකීම, විනෝදාස්වාදය",
+        "කාරුණික බව, අවධානය, ගෞරවය, විනෝදාස්වාදය",
+        "කාරුණික බව, අවධානය, ගෞරවය, උද්‍යෝගය",
+        "ධෛර්යය, ආකර්ෂණීය බව, වගකීම, උද්‍යෝගය"
+      ],
+      "ans": 2,
+      "exp": "CARE stands for Courtesy, attentiveness, respect, enthusiasm.",
+      "si": "<b><span style='color:green'>C.A.R.E.</span></b> : \n\n• Courtesy \n• Attentiveness \n• Respect \n• Enthusiasm \n\nකාරුණික බව, අවධානය, ගෞරවය, උද්‍යෝගය යන්න මෙයින් අදහස් වේ. \n\nමෙය customer service සංකල්පයයි."
+    },
+    {
+      "q": "What is the correct job hierarchy?",
+      "si_q": "නිවැරදි රැකියා ධූරාවලිය (job hierarchy) කුමක්ද?",
+      "opts": [
+        "TSM, BT, SM, RGM",
+        "CM, SM, TSM, RGM",
+        "BT, CM, SM, TSM",
+        "CM, BT, TSM, SM"
+      ],
+      "ans": 3,
+      "exp": "The standard progression is Crew Member (CM), Buddy Trainer (BT), Trainee Shift Manager (TSM), and Shift Manager (SM).",
+      "si": "<b>Job Hierarchy</b> : නිවැරදි අනුපිළිවෙල වන්නේ Crew Member, Buddy Trainer, Trainee Shift Manager, ඉන්පසු Shift Manager වේ."
+    },
+    {
+      "q": "Who is the current Managing Director in Gamma Pizza craft Lanka (Pvt) Ltd?",
+      "si_q": "Gamma Pizzakraft Lanka (Pvt) Ltd හි වත්මන් කළමනාකාර අධ්‍යක්ෂවරයා කවුරුන්ද?",
+      "opts": [
+        "Mr. Yasa Nadaraja",
+        "Mr. Amar Raj Singh",
+        "Mr. Sanjey Purohit",
+        "Mr. Rohith Saxena"
+      ],
+      "si_opts": [
+        "යස නඩරාජා මහතා",
+        "අමර් රාජ් සිං මහතා",
+        "සංජේ පුරෝහිත් මහතා",
+        "රෝහිත් සක්සේනා මහතා"
+      ],
+      "ans": 0,
+      "exp": "Mr. Yasa Nadaraja is the Managing Director of Gamma Pizzakraft Lanka (Pvt) Ltd.",
+      "si": "Gamma Pizzakraft Lanka (Pvt) Ltd හි වත්මන් Managing Director වන්නේ <span style='color:green'><b>යස නඩරාජා</b></span> මහතායි."
+    },
+    {
+      "q": "What is the correct definition of our company Values?",
+      "si_q": "අප සමාගමේ Company Values වල නිවැරදි අර්ථ දැක්වීම කුමක්ද?",
+      "opts": [
+        "Respect / Intelligence / Innerve / Team Work",
+        "Resilience / Intermediate / Interim / Tension",
+        "Respect / Integrity / Innovation / Team work",
+        "Review / Insane / Inauguration / Tender"
+      ],
+      "ans": 2,
+      "exp": "The core company values are Respect, Integrity, Innovation, and Team work.",
+      "si": "<span style='color:green'><b>Core Values</b></span> : සමාගමේ Core Values වන්නේ \n\n• ගෞරවය (Respect) \n• අඛණ්ඩතාව (Integrity) \n• නවෝත්පාදනය (Innovation) සහ \n• කණ්ඩායම් හැඟීමයි (Team work)."
+    },
+    {
+      "q": "What are the audits and reviews conducted internally in Pizza Hut?",
+      "si_q": "Pizza Hut ආයතනය තුළ අභ්‍යන්තරව සිදු කරන audits and reviews මොනවාද?",
+      "opts": [
+        "FER and great place to work",
+        "Speed, Taste and TMTS",
+        "ACE and great place to work",
+        "HR review and ACE"
+      ],
+      "ans": 1,
+      "exp": "Speed, Taste, and TMTS are internal audits and review processes.",
+      "si": "<b>Internal Audits</b> : Speed, Taste and TMTS"
+    },
+    {
+      "q": "What is the goal of global Pizza Hut?",
+      "si_q": "ගෝලීය Pizza Hut හි අරමුණ කුමක්ද?",
+      "opts": [
+        "Make it easier for everyone to get a better pizza",
+        "Most Loved Fastest Growing Brand",
+        "Win on value, Win on taste, Wow the customer",
+        "Give every customer reason to return"
+      ],
+      "ans": 2,
+      "exp": "The global goal is Win on value, Win on taste, Wow the customer",
+      "si": "<b>Pizza Hut Goal</b> : Win on value, Win on taste, Wow the customer"
+    },
+    {
+      "q": "What are the Definition of 3Ps while giving First Aid?",
+      "si_q": "ප්‍රථමාධාර ලබා දීමේදී 3Ps වල අර්ථ දැක්වීම කුමක්ද?",
+      "opts": [
+        "Person Live / Promote Injury / Preservation",
+        "Prefix Injury / Present situation / Past Illnesses",
+        "Preserve Life / Prevent the condition from worsening / Promote Recovery",
+        "Persevere Dressing / Promote Dressing / Prevent Dressing"
+      ],
+      "ans": 2,
+      "exp": "The 3Ps of First Aid are Preserve Life, Prevent the condition from worsening, and Promote Recovery.",
+      "si": "<b>3Ps in First Aid</b> : ප්‍රථමාධාර වලදී 3Ps යනු \n\n• Preserve Life \n• Prevent the condition from worsening, සහ \n• Promote Recovery යන්නයි."
+    },
+    {
+      "q": "What are the 3 elements for FIRE triangle?",
+      "si_q": "ගිනි ත්‍රිකෝණයේ (FIRE triangle) ඇති මූලද්‍රව්‍ය 3 මොනවාද?",
+      "opts": [
+        "Oxigen",
+        "Fuel",
+        "Heat",
+        "All of these"
+      ],
+      "si_opts": [
+        "ඔක්සිජන්",
+        "ඉන්ධන",
+        "තාපය",
+        "මෙහි දැක්වෙන සියල්ලම"
+      ],
+      "ans": 3,
+      "exp": "The fire triangle consists of Oxygen, Fuel, and Heat.",
+      "si": "ගින්නක් ඇතිවීමට <span style='color:green'><b>ඔක්සිජන්, ඉන්ධන සහ තාපය</b></span> යන සාධක තුනම අවශ්‍ය වේ."
+    },
+    {
+      "q": "What are the required actions of 1st day of new comer?",
+      "si_q": "නව සාමාජිකයෙකුගේ පළමු දිනයේ  ගතයුතු අවශ්‍ය ක්‍රියාමාර්ග මොනවාද?",
+      "opts": [
+        "RGM Welcome & Restaurant Tour",
+        "Emergency Procedures & Fire Safety",
+        "Induction Briefing & Assign Learning Zone",
+        "All of these"
+      ],
+      "si_opts": [
+        "RGM විසින් පිළිගැනීම සහ restaurant එක පෙන්වීම",
+        "හදිසි ක්‍රියා පටිපාටි සහ Fire Safety පිළිබඳව දැනුවත් කිරීම",
+        "Induction Briefing සහ Learning Zone එකට assign කිරීම",
+        "මේ සියල්ලම"
+      ],
+      "ans": 3,
+      "exp": "All listed actions including induction and learning zone setup are required on the first day.",
+      "si": "<b>First Day Actions</b> : \n\nනව සාමාජිකයෙකුගේ පළමු දිනයේදී ඉහත සඳහන් සියලුම ක්‍රියාමාර්ග සම්පූර්ණ කළ යුතුය."
+    },
+    {
+      "q": "What are the most possible times for any robbery in our outlets?",
+      "si_q": "අපගේ outlets තුළ මංකොල්ලකෑමක් සිදුවීමට වඩාත්ම සම්භාවිතාවක් ඇති වේලාවන් මොනවාද?",
+      "opts": [
+        "Opening Time / Closing Time / While Discarding Trash / After Dark",
+        "Closing Time / Business Time / Before Dispatch Delivery / After Close the bill",
+        "Before 11pm / After 11am / While Detailing / While Wash-up duties",
+        "Before close the bill / During Cashier Meal Getting / During Cashier Detail Duties"
+      ],
+      "si_opts": [
+        "outlet එක open කරන වේලාව / outlet එක වසන වේලාව / කසළ ඉවත් කරන විට / අඳුර වැටුණු පසු",
+        "outlet එක වසන වේලාව / ගනුදෙනු සිදුකරන වෙලාවේදී / බෙදා හැරීමට පෙර / බිල්පත close කිරීමෙන් පසු",
+        "රාත්‍රී 11ට පෙර / උදේ 11ට පසු / පිරිසිදු කිරීම් අතරතුර / Wash-up අතරතුර",
+        "බිල්පත close කිරීමට පෙර / මුදල් අයකැමි ආහාර ගන්නා අතරතුර / මුදල් අයකැමි රාජකාරි අතරතුර"
+      ],
+      "ans": 0,
+      "exp": "Robberies are most likely during opening/closing times, taking out the trash, or after dark.",
+      "si": "<b>Robbery Risks</b> : \n\nමංකොල්ලකෑමක් සිදුවීමට අවදානම වැඩිම වන්නේ, \n• Outlet එක විවෘත කරන විට, \n• Outlet එක වසන විට, \n• කසළ බැහැර කරන විට සහ \n• අඳුර වැටුණු පසුවය."
+    },
+    {
+      "q": "What is the correct order of three sink process?",
+      "si_q": "Three sink process නිවැරදි අනුපිළිවෙල කුමක්ද?",
+      "opts": [
+        "Rinse water/ Sanitize water/ Soapy water",
+        "Sanitize water/ Rinse water/ Soapy water",
+        "Soapy water/ Rinse water/ Sanitize water",
+        "Soapy water/ Sanitize water/ Rinse water"
+      ],
+      "ans": 2,
+      "exp": "The correct order is wash in soapy water, rinse in clean water, then sanitize.",
+      "si": "<b>Three Sink Process</b> : නිවැරදි අනුපිළිවෙල වන්නේ, \n\n• පළමුව සබන් ජලයෙන් සේදීම, \n• ඉන්පසු පිරිසිදු ජලයෙන් සේදීම සහ \n• අවසානයට විෂබීජහරණය (Sanitize) කිරීමයි."
+    },
+    {
+      "q": "What you should not do in accident?",
+      "si_q": "අනතුරකදී ඔබ නොකළ යුත්තේ කුමක්ද?",
+      "opts": [
+        "Do not leave the scene or move your vehicle",
+        "Obtain insurance company and policy",
+        "Immediately go to your home",
+        "Get the names and addresses of witness"
+      ],
+      "si_opts": [
+        "අනතුර වූ ස්ථානයෙන් පිටවීම හෝ වාහනය ඉවත් කිරීම නොකරන්න",
+        "රක්ෂණ සමාගම සහ ප්‍රතිපත්ති විස්තර ලබා ගන්න",
+        "වහාම ඔබේ නිවසට යන්න",
+        "සාක්ෂිකරුවන්ගේ නම් සහ ලිපින ලබා ගන්න"
+      ],
+      "ans": 2,
+      "exp": "You should stay at the scene; immediately going home is the wrong action.",
+      "si": "<b>In case of an accident</b> : අනතුරක් වූ විට, කිසිවිටෙකත් අනතුර වූ ස්ථානයෙන් පිටවී නිවසට නොයා යුතුය."
+    },
+    {
+      "q": "What we should do when delivering orders?",
+      "si_q": "Orders deliver කිරීමේදී අප කුමක් කළ යුතුද?",
+      "opts": [
+        "Never overtake from left side",
+        "Always indicate 5 seconds before you turn",
+        "Drive within speed limit",
+        "All of these"
+      ],
+      "si_opts": [
+        "කිසි විටෙකත් වම් පැත්තෙන් ඉස්සර නොකරන්න",
+        "හැරීමට තත්පර 5කට පෙර සෑම විටම සංඥා කරන්න",
+        "වේග සීමාව තුළ ධාවනය කරන්න",
+        "මේ සියල්ලම"
+      ],
+      "ans": 3,
+      "exp": "All mentioned safety practices must be followed when delivering orders.",
+      "si": "<b>Delivery Safety</b> : Delivery සිදු කිරීමේදී මෙම සියලුම මාර්ග ආරක්ෂණ නීති අනුගමනය කිරීම අනිවාර්ය වේ."
+    },
+    {
+      "q": "What are the rider accident prevention rules?",
+      "si_q": "යතුරුපැදිකරුගේ අනතුරු වළක්වා ගැනීමේ නීති මොනවාද?",
+      "opts": [
+        "Never speed & Plan your route",
+        "Obey traffic rules",
+        "Always wear your helmet & Check bike",
+        "All of these"
+      ],
+      "si_opts": [
+        "කිසිවිටෙකත් වේගයෙන් නොයන්න සහ ගමන් මාර්ගය සැලසුම් කරන්න",
+        "මාර්ග නීති වලට කීකරු වන්න",
+        "සෑම විටම හිස්වැසුම් පළඳින්න සහ යතුරුපැදිය පරීක්ෂා කරන්න",
+        "මේ සියල්ලම"
+      ],
+      "ans": 3,
+      "exp": "Accident prevention includes obeying rules, planning routes, wearing helmets, and checking the bike.",
+      "si": "<b>Accident Prevention</b> : අනතුරු වළක්වා ගැනීම සඳහා මෙම සියලුම ආරක්ෂිත පියවරයන් අනුගමනය කළ යුතුය."
+    },
+    {
+      "q": "What is our promise time for delivery orders?",
+      "si_q": "Delivery orders සඳහා අපගේ පොරොන්දු වූ කාලය (promise time) කොපමණද?",
+      "opts": [
+        "12 min",
+        "14 min",
+        "30 min",
+        "20 min"
+      ],
+      "si_opts": [
+        "විනාඩි 12",
+        "විනාඩි 14",
+        "විනාඩි 30",
+        "විනාඩි 20"
+      ],
+      "ans": 2,
+      "exp": "The standard promise time for delivery is generally <b>30 minutes</b>.",
+      "si": "<b>Promise Time</b> : \n\nDelivery orders, පාරිභෝගිකයා වෙත ලබාදීමට අප පොරොන්දු වන සම්මත කාලය <b>විනාඩි 30</b> කි."
+    },
+    {
+      "q": "When do you need to complete the bike check list in your day routine?",
+      "si_q": "ඔබේ දෛනික චර්යාව තුළ යතුරුපැදි පරීක්ෂණ ලැයිස්තුව (bike check list) සම්පූර්ණ කළ යුත්තේ කුමන වේලාවකද?",
+      "opts": [
+        "Before the shift",
+        "After completed first delivery of the day",
+        "Any time of the day",
+        "After the shift"
+      ],
+      "si_opts": [
+        "Shift එක ආරම්භ කිරීමට පෙර",
+        "දවසේ පළමු delivery එක අවසන් වූ පසු",
+        "දවසේ ඕනෑම වේලාවක",
+        "Shift එක අවසන් වූ පසු"
+      ],
+      "ans": 0,
+      "exp": "The bike check list must always be completed before starting the shift.",
+      "si": "<b>Bike Checklist</b> : \n\nආරක්ෂාව තහවුරු කිරීම සඳහා සෑම විටම <b>Shift එක ආරම්භ කිරීමට පෙර (Before the shift)</b> යතුරුපැදිය පරීක්ෂා කළ යුතුය."
+    },
+    {
+      "q": "Choose the correct definition of Rider IR?",
+      "si_q": "Rider IR හි නිවැරදි අර්ථ දැක්වීම තෝරන්න.",
+      "opts": [
+        "Invoice of rider",
+        "Information of rider",
+        "Interim report",
+        "Internal report"
+      ],
+      "si_opts": [
+        "Invoice of rider",
+        "Information of rider",
+        "Incident Report",
+        "Internal report"
+      ],
+      "ans": 2,
+      "exp": "IR generally stands for Incident Report for riders.",
+      "si": "<b>Rider IR</b> : Incident Report"
+    },
+    {
+      "q": "What are the ingredients for Grilled onion one batch?",
+      "si_q": "Grilled onion batch එකක් සඳහා අවශ්‍ය අමුද්‍රව්‍ය මොනවාද?",
+      "opts": [
+        "500g Onion, 50g oil",
+        "250g onion, 10g oil",
+        "500g onion, 100g oil",
+        "250g Onion, 50g oil"
+      ],
+      "ans": 0,
+      "exp": "One batch of grilled onions typically requires 500g of onions and 50g of oil.",
+      "si": "<b>Grilled Onion</b> : Onions ග්‍රෑම් 500 ක් සහ oil ග්‍රෑම් 50 ක් අවශ්‍ය වේ."
+    },
+    {
+      "q": "What are the Standard timings for vegetable sanitation? (sanitation/ soak chill/ drain in cool room)",
+      "si_q": "Vegetable sanitize කිරීමේ සම්මත වේලාවන් මොනවාද? (විෂබීජහරණය/ සිසිල් ජලයේ පෙඟවීම/ Cool room එකේ තබා drain කිරීම)",
+      "opts": [
+        "3 min,6 min,10 min",
+        "2 min,5 min,10 min",
+        "5 min,10 min,20 min",
+        "3 min,5 min,10 min"
+      ],
+      "si_opts": [
+        "විනාඩි 3, විනාඩි 6, විනාඩි 10",
+        "විනාඩි 2, විනාඩි 5, විනාඩි 10",
+        "විනාඩි 5, විනාඩි 10, විනාඩි 20",
+        "විනාඩි 3, විනාඩි 5, විනාඩි 10"
+      ],
+      "ans": 3,
+      "exp": "The standard timings are 3 minutes sanitation, 5 minutes soak chill, and 10 minutes drain.",
+      "si": "<span style='color:green'><b>Vegetable Sanitation</b></span> : \n\nසම්මත ක්‍රමවේදය වන්නේ, \n\n• විනාඩි 3ක් විෂබීජහරණය කිරීම, \n• විනාඩි 5ක් සිසිල් ජලයේ තැබීම සහ \n• විනාඩි 10ක් ජලය ඉවත් කිරීමට තැබීමයි."
+    },
+    {
+      "q": "How much Garlic Butter is used for one Cheesy Garlic Bread Portion?",
+      "si_q": "Cheesy Garlic Bread portion එකක් සඳහා Garlic Butter කොපමණ ප්‍රමාණයක් භාවිතා කරනවාද?",
+      "opts": [
+        "1 Large Spoodle",
+        "2 Regular Spoodles",
+        "2 Small Spoodles",
+        "2 Small Cups"
+      ],
+      "ans": 1,
+      "exp": "2 regular spoodles of garlic butter are typically used.",
+      "si": "Cheesy Garlic Bread portion එකක් සඳහා <b>Garlic Butter</b> regular Spoodles 2ක් භාවිතා කරයි."
+    },
+    {
+      "q": "What is the correct ingredients and timings of new pasta boiling procedure?",
+      "si_q": "Pasta boil කිරීමේ නව ක්‍රමයේදී  භාවිතා කරන අමුද්‍රව්‍ය සහ නිවැරදි වේලාවන් මොනවාද?",
+      "opts": [
+        "1kg pasta, 4L water, 50g oil, salt 18g, 15 minutes",
+        "400g pasta, 4L water, 10g oil, salt 10g, 15 minutes",
+        "1kg pasta, 2L water, 10g oil, salt 10g, 9 minutes",
+        "400g pasta, 4L water, 10g oil, salt 18g, 15 minutes"
+      ],
+      "ans": 1,
+      "exp": "The standard new pasta boiling procedure uses 400g pasta, 4L water, 10g oil, 10g salt for 15 minutes.",
+      "si": "<b>Pasta Boiling</b> : \n\nනව ක්‍රමවේදයට අනුව pasta ග්‍රෑම් 400 ක් තැම්බීම සඳහා ජලය ලීටර් 2ක්, oil ග්‍රෑම් 10ක් සහ ලුණු ග්‍රෑම් 10ක් අවශ්‍ය වේ. එසේම විනාඩි 15ක් ගතවේ. \n\n• Pasta 400g\n• Water 4l\n• Oil 10g\n• Salt 10g"
+    },
+    {
+      "q": "What is the shelf life for Pre sauce & Pre cheese on Pan Dough / Thin Crust?",
+      "si_q": "Pan Dough / Thin Crust මත Pre sauce සහ Pre cheese සඳහා කල් ඉකුත්වීමේ කාලය (shelf life) කොපමණද?",
+      "opts": [
+        "4 hrs / 4 hrs",
+        "2 hrs / 2 hrs",
+        "4 hrs / 2 hrs",
+        "2 hrs / 4 hrs"
+      ],
+      "si_opts": [
+        "පැය 4 / පැය 4",
+        "පැය 2 / පැය 2",
+        "පැය 4 / පැය 2",
+        "පැය 2 / පැය 4"
+      ],
+      "ans": 2,
+      "exp": "The standard shelf life is typically 4 hours for pan dough and 2 hours for thin crust.",
+      "si": "Pre sauce සහ Pre cheese යෙදූ පසු සාමාන්‍යයෙන් <b>pan dough සඳහා කල් ඉකුත්වීමේ කාලය පැය 4 ක් සහ thin crust සඳහා පැය 2ක් වේ</b>. \n\nPre top කළ විට pan dough සහ thin crust යන දෙකටම කල් ඉකුත්වීමේ කාලය පැය 2ක් වේ."
+    },
+    {
+      "q": "What is the shelf life of Marinara sauce after thawing (cool room)?",
+      "si_q": "දියවීමෙන් පසු (cool room) Marinara sauce හි කල් ඉකුත්වීමේ කාලය කොපමණද?",
+      "opts": [
+        "2 days",
+        "5 days",
+        "3 days",
+        "EOD"
+      ],
+      "si_opts": [
+        "දින 2",
+        "දින 5",
+        "දින 3",
+        "EOD (දිනය අවසානයේ)"
+      ],
+      "ans": 0,
+      "exp": "Thawed marinara sauce has a shelf life of 2 days in cool room.",
+      "si": "<b>Marinara Sauce</b> : Cool room එකේදී  ready වූ පසු  මෙහි කල් ඉකුත්වීමේ කාලය දින 2කි. \n\n• Nacho Cheese Sauce (Cheesy Dip) : \n<span style='color:green'>1 Overnight Ready 3 Days Discard</span>\n\n• Garlic Butter (For GB) : \n<span style='color:green'>1 Overnight Ready 3 Days Discard</span>\n\n• Kochchi Sauce : \n<span style='color:green'>1 Day Ready 2 Days Discard</span>\n\n• Creamy Seafood / Prawns / Mushroom : \n<span style='color:green'>1 Day Ready 2 Days Discard</span>\n\n• Caramel Topping : \n<span style='color:green'>1 Day Ready 7 Days Discard</span>\n\n• Meat items / Vegetable : \n<span style='color:green'>2 Days Ready 2 Days Discard</span>\n\n• Lasagna Sheets / Lava / Marinara Sauce: \n<span style='color:green'>2 Days Ready 2 Days Discard</span>\n\n• Mozzarella Cheese : \n<span style='color:green'>2 Days Ready 5 Days Discard</span>"
+    },
+    {
+      "q": "How do we serve wing IT chicken wings? (Take away / Dine in)",
+      "si_q": "අප Wing IT chicken wings පිළිගන්වන්නේ කෙසේද? (Take away / Dine in)",
+      "opts": [
+        "Platter, foil container",
+        "Platter, wing it box",
+        "Foil container, wing it box",
+        "Foil container, platter"
+      ],
+      "ans": 3,
+      "exp": "Take-away in a foil container, and Dine-in on a platter",
+      "si": "<b>Serving Wings</b> : Takeaway සඳහා ෆොයිල් කන්ටේනර් ද, Dine-in සඳහා platter ද භාවිතා කෙරේ."
+    },
+    {
+      "q": "What are the standard timings for serving pizza / pasta, table reset and greeting in RBD?",
+      "si_q": "RBDහි (Restaurant Based Delivery) pizza / pasta පිළිගැන්වීම, මේසය නැවත සකස් කිරීම සහ customer පිළිගැනීම සඳහා වන සම්මත කාල වේලාවන් කොපමණද?",
+      "opts": [
+        "15 min, 5 min, 5 seconds",
+        "17.5 min, 2 min, 10 seconds",
+        "15 min, 2 min, 15 seconds",
+        "17.5 min, 5 min, 15 seconds"
+      ],
+      "si_opts": [
+        "විනාඩි 15, විනාඩි 5, තත්පර 5",
+        "විනාඩි 17.5, විනාඩි 2, තත්පර 10",
+        "විනාඩි 15, විනාඩි 2, තත්පර 15",
+        "විනාඩි 17.5, විනාඩි 5, තත්පර 15"
+      ],
+      "ans": 3,
+      "exp": "Standard times are 17.5 min for serving pizza / pasta, 5 min table reset, and 15 seconds for greeting.",
+      "si": "<b>RBD Timings</b> : සම්මත වේලාවන් වන්නේ, \n\n• Main course පිළිගැන්වීමට <span style='color:green'><b>විනාඩි 17.5</b></span> \n• මේසය සැකසීමට <span style='color:green'><b>විනාඩි 5</b></span> සහ \n• පිළිගැනීමට<span style='color:green'><b> තත්පර 15</b></span> කි."
+    },
+    {
+      "q": "When should you NOT suggestive sell?",
+      "si_q": "ඔබ suggestive selling නොකළ යුත්තේ කවර අවස්ථාවලදීද?",
+      "opts": [
+        "Directly to children, as it may upset parents",
+        "If the customer ends order with, 'That is all'",
+        "Too many items at once",
+        "All of these"
+      ],
+      "si_opts": [
+        "කෙලින්ම කුඩා දරුවන්ට යෝජනා කිරීම",
+        "පාරිභෝගිකයා 'එච්චරයි' කියා ඇණවුම අවසන් කළහොත්",
+        "එකවර අයිතම විශාල ප්‍රමාණයක් යෝජනා කිරීම",
+        "මේ සියල්ලම"
+      ],
+      "ans": 3,
+      "exp": "You should not suggestive sell directly to kids, when the customer explicitly finishes the order, or overwhelm them with too many items.",
+      "si": "\n• කුඩා ළමුන්ට\n• පාරිභෝගිකයා 'එපමණයි' කියා order එක අවසන් කළ විට සහ \n• එකවර වැඩි items ප්‍රමාණයක් සඳහා \n\n<span style='color:green'>suggestive selling කිරීම සුදුසු නැත.</span>"
+    },
+    {
+      "q": "What are the Veggie Appetizers currently have in our Menu?",
+      "si_q": "දැනට අපගේ මෙනුවේ ඇති Veggie Appetizers මොනවාද?",
+      "opts": [
+        "Wing IT - Sriracha / BBQ / Kochchi",
+        "Spicy Chicken & Cheese balls / Cheesy Chicken Garlic Bread",
+        "Garlic Bread / Cheesy Garlic toast / Cheesy Garlic Bread Supreme",
+        "All of these"
+      ],
+      "si_opts": [
+        "Wing IT - Sriracha / BBQ / Kochchi",
+        "Spicy Chicken & Cheese balls / Cheesy Chicken Garlic Bread",
+        "Garlic Bread / Cheesy Garlic toast / Cheesy Garlic Bread Supreme",
+        "මේ සියල්ලම"
+      ],
+      "ans": 2,
+      "exp": "Garlic toast and its plain cheesy variations are the vegetarian appetizers on the menu.",
+      "si": "<span style='color:green'><b>Veggie Appetizers</b></span> : \n\n• Garlic Bread \n• Hash Browns \n• Fries \n• Tater Tots \n• Potato Wedges \n• Cheesy Garlic Toast \n• Cheesy Garlic Bread Supreme \n• Cheesy Garlic Toast stuffed with Onions and Chillies \n\nඅපගේ මෙනුවේ ඇති Veggie Appetizers වේ."
+    },
+    {
+      "q": "How many varieties of Pan Pizzas do we have currently?(including Grand Dipper)",
+      "si_q": "දැනට අප සතුව Pan Pizzas වර්ග කීයක් තිබේද?",
+      "opts": [
+        "25",
+        "20",
+        "23",
+        "24"
+      ],
+      "ans": 2,
+      "exp": "There are currently 23 varieties of Pan Pizzas available.",
+      "si": "<b>Pan Pizza Varieties</b> : අපගේ මෙනුවේ දැනට Pan Pizzas <b>වර්ග 23 ක්</b> අඩංගු වේ. \n\n<b>DELIGHT</b>\n• Chilli Chicken\n<span style='color:green'>• Margherita <i>(Veg)</i></span>\n• Chicken Bacon & Potato with Nai Miris\n• Sausage Delight\n<span style='color:green'>• Veggie Masala <i>(Veg)</i></span>\n\n<b>CLASSIC</b>\n• Double Chicken Surprise\n<span style='color:green'>• Cheese Lovers <i>(Veg)</i></span>\n• Tandoori Chicken\n• Hot & Spicy Chicken\n• Chicken Triple Treat\n• Butter Chicken Masala\n<span style='color:green'>• Veggie Supreme <i>(Veg)</i></span>\n• Chicken Hawaiian\n\n<b>SIGNATURE</b>\n• Crispy Korean Chicken\n• BBQ Chicken\n<span style='color:green'>• Spicy Veggie with Paneer <i>(Veg)</i></span>\n• Double Chicken & Cheese Fiesta\n\n<b>FAVOURITES</b>\n• Seafood Treat\n• Beef Pepperoni\n• Prawn with Chicken Bacon & Jalapeno\n• Super Supreme\n• Hot Garlic Prawns\n• Meat Lovers"
+    }
+  ]
+},
 questions: {
   title:"⭐ Foundation Questions",
   qs:[
@@ -461,36 +950,36 @@ questions: {
     {q:"Select the Category 2 complaints:",si_q:"Category 2 යටතට ගැනෙන පැමිණිලි (complaints) මොනවාද?",opts:["Customer injury / Dirty table / Order delay","Wrong order / Customer injury / Alleged food poisoning","Alleged food poisoning / Customer injury / Foreign object","Foreign object / Customer injury / Dirty Tables"],si_opts:["පාරිභෝගිකයන්ට සිදුවන තුවාල / අපිරිසිදු මේස / ඇණවුම් ප්‍රමාදවීම","වැරදි order එකක් ලබාදීම / පාරිභෝගිකයන්ට සිදුවන තුවාල / ආහාර විෂවීම්","ආහාර විෂවීම් / පාරිභෝගිකයන්ට සිදුවන තුවාල / ආහාරයේ බාහිර ද්‍රව්‍ය තිබීම","ආහාරයේ බාහිර ද්‍රව්‍ය තිබීම / පාරිභෝගිකයන්ට සිදුවන තුවාල / අපිරිසිදු මේස"],ans:2,exp:"Category 2 = Alleged food poisoning, Customer injury, Foreign object - serious complaints needing immediate manager action.",si:"<b>Category 2 complaints</b> වන්නේ, \n\n• ආහාර විෂවීම් \n• පාරිභෝගිකයන්ට සිදුවන තුවාල \n• ආහාරයේ බාහිර ද්‍රව්‍ය තිබීම \n\n<span style='color:red'>මෙවැනි serious complaints ක්ෂණිකව manager ට දැන්විය යුතුය.</span>"},
     {q:"What does H2OP stand for?",si_q:"H2OP යන්නෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Hustle / Hospitality / Own the zone / Passion for Product","Hustle / Hospitality / Own the zone / Vision for the Product","Hustle / Hospitality / Own the delivery grid / Passion for Product","Hustle / Hospitality / Own the zone / Product mania"],ans:0,exp:"H2OP = Hustle + Hospitality + Own the Zone + Passion for Product.",si:"• <b>H = Hustle</b> (ඉක්මනින් සේවාව සැපයීම), \n• <b>H = Hospitality</b> (Customerට නැවත පැමිණීමට සිතෙන ආකාරයේ service එකක් ලබාදීම), \n• <b>O = Own the Zone</b> (තමාගේ සේවාවේ BEST වීම), \n• <b>P = Passion for Product</b> (තම පවුලේ අයට සාදන කෑමක් සේ සියලුම products සෑදීම). \n\n<span style='color:green'>මෙය Pizza Hut service concept එකයි.</span>"},
     {q:"What is the current service charge percentage for eat-in & delivery?",si_q:"Eat-in සහ delivery සඳහා දැනට ඇති service charge ප්‍රතිශතය කොපමණද?",opts:["7.5%","10%","5%","6.5%"],ans:0,exp:"Service charge = 7.5% for eat-in and delivery orders.",si:"Restaurant එකේ කෑමට (eat-in) සහ delivery orders යන දෙකටම <b>7.5%</b>ක service charge එකක් අය කරයි. මෙසේ අයකරගන්නා service charge එක staff එක අතර බෙදී යයි."},
-    {q:"What is the dough weight of Large / Medium / Small?",si_q:"Large / Medium / Small ඩෝ වල බර කොපමණද?",opts:["400g / 250g / 150g","450g / 250g / 150g","450g / 250g / 140g","475g / 275g / 175g"],ans:2,exp:"Large = 450g, Medium = 250g, Small = 140g pan dough weights.",si:"<b>Pan dough වල බර</b> \n\n• Large : 450g \n• Medium : 250g \n• Small : 140g"},
+    {q:"What is the dough weight of Large / Medium / Small?",si_q:"Large / Medium / Small ඩෝ වල බර කොපමණද?",opts:["400g / 250g / 150g","450g / 250g / 150g","450g / 250g / 140g","475g / 275g / 175g"],ans:2,exp:"Large = 450g, Medium = 250g, Small = 140g pan dough weights.",si:"<b>Pan dough වල බර</b> \n\n• Large : 450g \n• Medium : 250g \n• Small : 140g \n• Grand Dipper : 450g \n• Thin and Crispy(Melt) : 225g"},
     {q:"What is the weight of Large / Medium Thin Crust Dough?",si_q:"Large සහ Medium Thin Crust ඩෝ වල බර කොපමණද?",opts:["180g / 120g","200g / 150g","250g / 140g","205g / 185g"],ans:2,exp:"Thin Crust: Large = 250g, Medium = 140g.",si:"<b>Thin Crust dough වල බර</b> \n• Large : 250g \n• Medium : 140g \n\nLarge Thin Crust සඳහා medium pan ඩෝ එකත් Regular Thin Crust සඳහා small pan ඩෝ එකත් use කරනවා."},
     {q:"How many small / Medium / Large pans can we stack in Proofer?",si_q:"Proofer එකේ පෑන්ස් කීයක් එකක් මත එකක් තැබිය හැකිද?",opts:["5","6","4","7"],ans:0,exp:"Maximum 5 pans can be stacked in the Proofer.",si:"Proofer එකේ <b>උපරිම pans 5ක්</b> එක මත එක තියන්න පුළුවන්. <span style='color:green'>Small, Medium සහ Large යන සියලුම dough සඳහා මෙය අදාළ වේ.</span> 5ට වඩා තැබූ විට food safety සහ proofing ගැටළු ඇතිවෙනවා."},
     {q:"An empty pan should be kept on top after dough is proofed and kept in cool room. True or False?",si_q:"ඩෝ proof වූ පසු cool room එකේ තැබීමේදී උඩින් හිස් පෑන් එකක් තැබිය යුතුයි. මෙය සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - An empty pan must be placed on top of proofed dough to prevent drying out in the cool room.",si:"<b>මෙය සත්‍ය වේ.</b> Cool room එකේ dough වියළී යාම වළක්වාගැනීමට empty pan එකක් stack එකේ උඩම ඇති separator එක උඩින් තැබිය යුතුය. මෙය standard best practice එකකි."},
-    {q:"If dough is over proofed what should we do?",si_q:"ඩෝ එකක් over proof වී ඇත්නම් අප කළ යුත්තේ කුමක්ද?",opts:["Pre top for pizza immediately","Make pizza for team members and Discard","Discard, Record the discard","Pre top, Make pizza, Record the discard"],si_opts:["වහාම පීසා එකට toppings දැමීම","Team Membersලාට පීසා සාදා discard ලෙස සටහන් කිරීම","Discard කර, එය සටහන් කිරීම","Pre top කර, පීසා සාදා, discard ලෙස සටහන් කිරීම"],ans:2,exp:"Over proofed dough: Discard it, Record the discard in the log.",si:"Over proofed ඩෝ ඇති විට එය <b>discard කර dough book එකේ සටහන් කළ යුතුයි</b>."},
+    {q:"If dough is over proofed what should we do?",si_q:"ඩෝ එකක් over proof වී ඇත්නම් අප කළ යුත්තේ කුමක්ද?",opts:["Pre top for pizza immediately","Make pizza for team members and Discard","Discard, Record the discard","Pre top, Make pizza, Record the discard"],si_opts:["වහාම පිට්සා එකට toppings දැමීම","Team Membersලාට පිට්සා සාදා discard ලෙස සටහන් කිරීම","Discard කර, එය සටහන් කිරීම","Pre top කර, පිට්සා සාදා, discard ලෙස සටහන් කිරීම"],ans:2,exp:"Over proofed dough: Discard it, Record the discard in the log.",si:"Over proofed ඩෝ ඇති විට එය <b>discard කර dough book එකේ සටහන් කළ යුතුයි</b>."},
     {q:"What is the shelf life for Pre sauce & Pre cheese on Pan Dough / Thin Crust?",si_q:"Pan Dough සහ Thin Crust මත Pre sauce & Pre cheese කළ පසු shelf life කොපමණද?",opts:["4 hrs / 4 hrs","2 hrs / 2 hrs","4 hrs / 2 hrs","2 hrs / 4 hrs"],ans:2,exp:"Pan Dough pre sauce shelf life = 4 hrs. Thin Crust pre sauce shelf life = 2 hrs.",si:"Pan Dough එකට sauce සහ cheese දැමූ විට shelf life එක 4 hours වේ. Thin Crust සඳහා එය 2 hours වේ."},
-    {q:"Pre topped pizza is necessary for peak times. True or False?",si_q:"Peak times සඳහා pre-topped පීසා අත්‍යවශ්‍ය වේ. මෙය සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - Pre topped pizza IS necessary for peak times to ensure fast service.",si:"<b>සත්‍යයි.</b> Peak times වලදී(busy වෙලාවල) කෙටි කාලයක් තුළ වැඩි orders ප්‍රමාණයක් පැමිණෙන නිසා pre topped pizza ready කරගෙන තියාගන්න ඕනේ. මෙය speed එක maintain කරගැනීමට ඉතා වැදගත් වෙනවා."},
+    {q:"Pre topped pizza is necessary for peak times. True or False?",si_q:"Peak times සඳහා pre-topped පිට්සා අත්‍යවශ්‍ය වේ. මෙය සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - Pre topped pizza IS necessary for peak times to ensure fast service.",si:"<b>සත්‍යයි.</b> Peak times වලදී(busy වෙලාවල) කෙටි කාලයක් තුළ වැඩි orders ප්‍රමාණයක් පැමිණෙන නිසා pre topped pizza ready කරගෙන තියාගන්න ඕනේ. මෙය speed එක maintain කරගැනීමට ඉතා වැදගත් වෙනවා."},
     {q:"A pastry brush is required to spread oil to pans. True or False?",si_q:"පෑන් වල තෙල් ආලේප කිරීමට pastry brush එකක් අවශ්‍ය වේ. සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - A pastry brush is required.",si:"<b>සත්‍යයි.</b> Oil pump එකෙන් oil add කළ පසු, pan එක පුරා oil spread කිරීම සඳහා Pastry brush එකක් භාවිතා කරනවා."},
     {q:"When vegetable sanitizing how long should it be kept in sanitize, soak chill & drain?",si_q:"එළවළු Sanitize කිරීමේදී Sanitize, Chill, සහ Drain කරන කාලයන් කොපමණද?",opts:["3 min, 5 min, 10 min","5 min, 5 min, 10 min","10 min, 5 min, 3 min","3 min, 5 min, 5 min"],ans:0,exp:"Vegetable sanitizing: Sanitize = 3 min, Soak/Chill = 5 min, Drain = 10 min.",si:"<b>නිවැරදි ක්‍රමය:</b> \n\n• Sanitize - 3 min \n• Chill/Soak - 5 min \n• Drain - 10 min. \n\nTotal = 18 min. \n\nFood safety සඳහා මේ ක්‍රමය follow කරනවා."},
     {q:"What are the Mikro Chlor dilutions for duster management? (Wettex bath / Spray bottle)",si_q:"ඩස්ටර් සඳහා Mikro Chlor මිශ්‍ර කරන ප්‍රමාණයන් මොනවාද? (Wettex බාස්කට් එක / ස්ප්‍රේ බෝතලය)",opts:["10g per 1L / 5g per 1L","10g per 1L / 10g per 1L","8g per 1L / 5g per 1L","10g per 1L / 8g per 1L"],ans:3,exp:"Mikro Chlor: Wettex bath = 10g per 1 Liter, Spray bottle = 8g per 1 Liter.",si:"• <b>Wettex bath</b> සඳහා වතුර ලීටරයකට Mikro Chlor <b>ග්‍රෑම් 10</b> ක්ද, \n<b>Spray bottle</b> සඳහා වතුර ලීටරයකට Mikro Chlor <b>ග්‍රෑම් 8</b> ක්ද යොදාගනී. Spray bottle එකේ සාන්ද්‍රණය අඩුයි."},
-    {q:"Why are Green chili and Jalapeno added to the Pizza last?",si_q:"Green chili සහ Jalapeno පීසා එකට අවසානයේ එකතු කරන්නේ ඇයි?",opts:["To prevent cross contamination","They need to be baked well","They are treated as garnishes","To leave more room for other toppings"],si_opts:["Cross contamination වැළැක්වීමට","හොඳින් බේක් වීමට","ඒවා Garnishes (සරසන ද්‍රව්‍ය) ලෙස සලකන බැවින්","අනෙක් toppings වලට ඉඩ දීමට"],ans:2,exp:"Green chili and Jalapeno are added last because they are treated as garnishes.",si:"Green chili හා Jalapeno, <b><span style='color:green'>garnishes</span></b> ලෙස සලකනවා. ඒ නිසා pizza හදද්දී අවසානයට add කරනවා."},
+    {q:"Why are Green chili and Jalapeno added to the Pizza last?",si_q:"Green chili සහ Jalapeno පිට්සා එකට අවසානයේ එකතු කරන්නේ ඇයි?",opts:["To prevent cross contamination","They need to be baked well","They are treated as garnishes","To leave more room for other toppings"],si_opts:["Cross contamination වැළැක්වීමට","හොඳින් බේක් වීමට","ඒවා Garnishes (සරසන ද්‍රව්‍ය) ලෙස සලකන බැවින්","අනෙක් toppings වලට ඉඩ දීමට"],ans:2,exp:"Green chili and Jalapeno are added last because they are treated as garnishes.",si:"Green chili හා Jalapeno, <b><span style='color:green'>garnishes</span></b> ලෙස සලකනවා. ඒ නිසා pizza හදද්දී අවසානයට add කරනවා."},
     {q:"How many slices of Pepperoni for Small / Medium /Large Pan Pizza?",si_q:"Small / Medium / Large Pan Pizza සඳහා Pepperoni පෙති කීයක් යොදයිද?",opts:["12 / 24 / 36","10 / 20 / 30","12 / 24 / 48","10 / 20 / 40"],ans:2,exp:"Pepperoni: Small = 12, Medium = 24, Large = 48 slices.",si:"<b>Beef Pepperoni pizza සෑදීමේදී</b> \n\n• small සඳහා Pepperoni slices 12කුත්, \n• medium සඳහා Pepperoni slices 24කුත්, \n• large  සඳහා Pepperoni slices 48කුත් යොදයි."},
     {q:"How do we top a Large Thin Crust, Sausage crust pizza?",si_q:"Large Thin Crust සහ Sausage crust pizza එකක් top කරන්නේ කෙසේද?",opts:["Sauce – Large spoodle / Topping and veg – Regular cup / Cheese – Purple cup","Sauce – Large spoodle / Topping and veg – Large cup / Cheese – Purple cup","Sauce – Large spoodle / Topping and veg – Large cup / Cheese – Yellow cup","Sauce – Large spoodle / Topping and veg – Regular cup / Cheese – Yellow cup"],ans:0,exp:"Large Thin Crust/Sausage/Stuffed: Sauce=Large spoodle, Topping&veg=Regular cup, Cheese=Purple cup.",si:"Large Thin Crust සහ Sausage crust සඳහා <span style='color:green'>Sauce</span> දැමීමට <b>Large spoodle</b> එකත්, <span style='color:green'>Toppings & veg</span> දැමීම සඳහා <b>Regular cup</b> එකත්, <span style='color:green'>Cheese</span> සඳහා <b>Purple cup</b> එකත් භාවිතා කරයි."},
     {q:"What is the maximum level an insert on the make table should be filled?",si_q:"Make table එකේ insert එකක් පිරවිය යුතු උපරිම මට්ටම කුමක්ද?",opts:["1/2 of the insert","3/5th of the insert","3/4th of the insert","Full of the insert"],si_opts:["අඩක් (1/2)","3/5 ක්","තුන් කාලක් (3/4)","සම්පූර්ණයෙන්ම"],ans:2,exp:"Make table inserts should be filled to a maximum of 3/4 (three quarters) of the insert.",si:"<span style='color:blue'><b>Make table එකේ insert උපරිම 3/4 (තුන් කාලක්) ප්‍රමාණයට fill කරනවා.</b></span> Fullම fill කරන්නේ නෑ. එම ප්‍රමාණයට fill කිරීමෙන් temperature සහ food safety maintain කිරීම අරමුණ වෙනවා."},
-    {q:"If a customer asks Extra Cheese for Large pizza, how much should we add?",si_q:"Large පීසා එකකට Extra Cheese ඉල්ලුවහොත් කොපමණ ප්‍රමාණයක් යෙදිය යුතුද?",opts:["1/2 Purple cup","2 Purple cups","1/4 Purple cup","1 Purple cup"],ans:3,exp:"Extra Cheese for Large pizza = 1 Purple cup.",si:"Large pizza එකට Extra Cheese, <b>Purple cup එකක්</b> add කරනවා."},
+    {q:"If a customer asks Extra Cheese for Large pizza, how much should we add?",si_q:"Large පිට්සා එකකට Extra Cheese ඉල්ලුවහොත් කොපමණ ප්‍රමාණයක් යෙදිය යුතුද?",opts:["1/2 Purple cup","2 Purple cups","1/4 Purple cup","1 Purple cup"],ans:3,exp:"Extra Cheese for Large pizza = 1 Purple cup.",si:"Large pizza එකට Extra Cheese, <b>Purple cup එකක්</b> add කරනවා."},
     {q:"Pan Sauce should always be made with ice water. True or False?",si_q:"Pan Sauce සැමවිටම අයිස් වතුරෙන් සෑදිය යුතුය. සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - Pan sauce must be made with ice water to maintain proper temperature.",si:"සත්‍යයි. Pan sauce හදාගන්නට ice water (වතුරට ice cubes දාල) use කරනවා. <span style='color:green'>ඒ මගින් sauce එකේ temperature maintain කරනවා.</span>"},
     {q:"What is the MRD of ALL toppings in the Make table?",si_q:"Make table හි ඇති සියලුම toppings වල MRD කුමක්ද?",opts:["24 Hrs","12 Hrs","EOS (End of Session)","EOD (End of Day)"],si_opts:["පැය 24","පැය 12","EOS (සෙෂන් එක අවසන් වනතුරු)","EOD (දවස අවසානය තෙක්)"],ans:3,exp:"All make table toppings MRD = EOD (End of Day).",si:"<b>Make table toppings</b> සියල්ලේ MRD = EOD (End of day)."},
     {q:"How much Garlic Butter for one Cheesy Garlic Bread portion?",si_q:"Cheesy Garlic Bread පෝෂන් එකක් සඳහා Garlic Butter කොපමණ යොදයිද?",opts:["1 Large Spoodle","2 Regular Spoodle","2 Small Spoodle","2 Small Cup"],ans:1,exp:"Cheesy Garlic Bread: 2 Regular Spoodles of Garlic Butter.",si:"<b>Cheesy Garlic Bread</b> පෝෂන් එකක් සඳහා Garlic butter, <b>Regular Spoodles 2ක්</b> යොදාගනී."},
     {q:"How can you melt garlic butter for easy application on Garlic bread?",si_q:"Garlic bread වල ගෑමට පහසු වන පරිදි Garlic butter දියකර ගන්නේ (melt කර ගන්නේ) කෙසේද?",opts:["Half oven pass in a pan","Place butter in pan and keep on stove","Placed in a container and place in boiling water pan","By leaving it in room temperature"],si_opts:["පෑන් එකක දමා අවන් එකේ භාගයක් යැවීමෙන්","බටර් පෑන් එකක දමා ලිප මත තැබීමෙන්","කන්ටේනරයක දමා උතුරන වතුර පෑන් එකක තැබීමෙන්","කාමර උෂ්ණත්වයේ තැබීමෙන්"],ans:2,exp:"Melt garlic butter: Place it in a container and put that in a boiling water pan (bain-marie/double boiler method).",si:"Garlic butter melt කිරීමට container එකකට දමා, එම container එක boiling water pan එකක දමනවා. <span style='color:green'>මෙය <b>bain-marie</b> (double boiler) method එක ලෙස හඳුන්වනවා.</span>"},
     {q:"What is the weight of a Chocolate melt lava cake?",si_q:"Chocolate melt lava cake එකක බර කොපමණද?",opts:["85g +/- 10","85g +/- 5","90g +/- 10","90g +/- 5"],ans:3,exp:"Chocolate melt lava cake weight = 90g +/- 5g.",si:"Chocolate melt lava cake එකක බර <b>ග්‍රෑම් 90ක්</b> විය යුතුය. මෙය ග්‍රෑම් 5ක් අඩු හෝ වැඩි විය හැකිය.<span style='color:green'><b>(90g +/- 5g)</b></span>"},
     {q:"What is the Buddy Trainer training process?",si_q:"Buddy Trainer (BT) පුහුණු කිරීමේ ක්‍රියාවලිය කුමක්ද?",opts:["Prepare, Show & Tell, Follow up, Expert","Introduction, Prepare, Show & Tell, Follow up","Prepare, Show & Tell, Guide and Practice, Follow up","Introduction, Show & Tell, Guide and practice, Expert"],ans:2,exp:"BT training process: Prepare → Show & Tell → Guide and Practice → Follow Up. (4 steps)",si:"1) <b>Prepare</b> (සූදානම් කිරීම) \n2) <b>Show & Tell</b> (පෙන්වීම සහ කීම) \n3) <b>Guide and Practice</b> (මඟ පෙන්වමින් practice කිරීම) \n4) <b>Follow Up</b> (පසු විපරම). \n\nBuddy Trainer training process සඳහා steps 4කින් යුත් මේ ක්‍රමය follow කරනවා."},
-    {q:"What are the Pizza Hut Goals?",si_q:"Pizza Hut හි ප්‍රධාන අරමුණු (Goals) මොනවාද?",opts:["Make it easier for everyone to get a better pizza","Most loved Fastest Growing brand","Win on value, Win on taste, Wow the customer","Give every customer reason to return"],si_opts:["හැමෝටම හොඳ පීසා එකක් ගැනීමට පහසු කිරීම","වඩාත්ම ආදරය දිනාගත් සන්නාමය වීම","Win on value, Win on taste, Wow the customer","ආපසු පැමිණීමට හේතුවක් දීම"],ans:2,exp:"Pizza Hut Goal = Win on value, Win on taste, Wow the customer.",si:"Pizza Hut SL ප්‍රධාන ඉලක්ක: <span style='color:green'><b>Win on value, Win on taste, Wow the customer.</b></span>"},
+    {q:"What are the Pizza Hut Goals?",si_q:"Pizza Hut හි ප්‍රධාන අරමුණු (Goals) මොනවාද?",opts:["Make it easier for everyone to get a better pizza","Most loved Fastest Growing brand","Win on value, Win on taste, Wow the customer","Give every customer reason to return"],si_opts:["හැමෝටම හොඳ පිට්සා එකක් ගැනීමට පහසු කිරීම","වඩාත්ම ආදරය දිනාගත් සන්නාමය වීම","Win on value, Win on taste, Wow the customer","ආපසු පැමිණීමට හේතුවක් දීම"],ans:2,exp:"Pizza Hut Goal = Win on value, Win on taste, Wow the customer.",si:"Pizza Hut SL ප්‍රධාන ඉලක්ක: <span style='color:green'><b>Win on value, Win on taste, Wow the customer.</b></span>"},
     {q:"BBQ chicken wings portion - how many wings?",si_q:"BBQ chicken wings පෝෂන් එකකට කෑලි කීයක් අඩංගුද?",opts:["8 pieces","12 pieces","6 pieces","10 pieces"],ans:2,exp:"BBQ chicken wings portion: 6 pieces",si:"BBQ chicken wings portion: <b>6 pieces</b>."},
-    {q:"How are WING IT portions served for dine-in? (6 pieces / 12 pieces / 24 pieces)",si_q:"Dine-in සඳහා WING IT පෝෂන් (කෑලි 6 / 12 / 24) පිළිගන්වන්නේ කෙසේද?",opts:["Platter, Platter, Platter","Small Platter, Medium Platter, Large Platter","Platter, Platter, Large WING IT Box","Platter, Small Wing IT Box, Large Wing IT Box"],ans:0,exp:"WING IT dine-in serving: All the sizes served in platters.",si:"Dine-in ගන්න විට WING IT portions 3 ම <b>Platter</b> වල serve කරනවා."},
+    {q:"How are WING IT portions served for dine-in? (6 pieces / 12 pieces)",si_q:"Dine-in සඳහා WING IT පෝෂන් (කෑලි 6 / 12) පිළිගන්වන්නේ කෙසේද?",opts:["Platter, Platter","Small Platter, Large Platter","Platter, Large WING IT Box","Platter, Regular Wing IT Box"],ans:0,exp:"WING IT dine-in serving: All the sizes served in platters.",si:"Dine-in ගන්න විට WING IT portions <b>Platter</b> වල serve කරනවා."},
     {q:"What must we do to give outstanding CHAMPS experience for delivery?",si_q:"Delivery සඳහා විශිෂ්ට CHAMPS අත්දැකීමක් දීමට අප කුමක් කළ යුතුද?",opts:["Deliver within promised time and correct temperature only","Ensure accuracy only","Promised time, accuracy, correct temperature, well-presented package","Deliver within correct temperature only"],si_opts:["පොරොන්දු වූ වේලාවට දීම සහ නිවැරදි උෂ්ණත්වය පමණි","නිවැරදි බව සහතික කිරීම පමණි","වේලාව, නිවැරදි බව, උෂ්ණත්වය, සහ පෙනුම","නිවැරදි උෂ්ණත්වයට දීම පමණි"],ans:2,exp:"Outstanding CHAMPS delivery = ALL: Promised time + Accuracy + Correct temperature + Well-presented package.",si:"<b>CHAMPS delivery experience එකක් සඳහා:</b> \n\n(1) Promised time එකට deliver කිරීම \n(2) Order accuracy \n(3) Correct temperature, සහ \n(4) Well-presented package \nයන සියලුම කරුණු වැදගත් වේ."},
     {q:"What does C.A.R.E. stand for?",si_q:"C.A.R.E. යන්නෙන් අදහස් කරන්නේ කුමක්ද?",opts:["Courtesy / Apologize / Respect / Enthusiasm","CHAMPS / Attentiveness / Respect / Enthusiasm","Courtesy / Attentiveness / Respect / Enthusiasm","Courtesy / Attentiveness / Repeat / Enthusiasm"],ans:2,exp:"C.A.R.E. = Courtesy / Attentiveness / Respect / Enthusiasm.",si:"<b>C.A.R.E.</b> : \n\n• C : Courtesy \n• A : Attentiveness \n• R : Respect \n• E : Enthusiasm. \n\nමෙය customer service සංකල්පයයි"},
-    {q:"Which audit happens twice a year in your restaurant without a white card visit?",si_q:"'White card/Wild card' නිරීක්ෂණයකින් තොරව වසරකට දෙවරක් ඔබේ ආපනශාලාවේ සිදුවන විගණනය (audit) කුමක්ද?",opts:["3rd Party ACE","FER","TMTS","STAR"],si_opts:["3rd Party ACE","FER","TMTS","STAR"],ans:0,exp:"The 3rd Party ACE audit happens twice a year without a white card visit.",si:"<b>3rd Party ACE audit</b> එක white card visit එකක් නොමැතිව <b>වසරකට දෙවරක්</b> සිදුවේ."},
+    {q:"Which audit happens twice a year in your restaurant without a white card visit?",si_q:"'White card/Wild card' නිරීක්ෂණයකින් තොරව වසරකට දෙවරක් ඔබේ restaurant එකේ සිදුවන විගණනය (audit) කුමක්ද?",opts:["3rd Party ACE","FER","TMTS","STAR"],si_opts:["3rd Party ACE","FER","TMTS","STAR"],ans:0,exp:"The 3rd Party ACE audit happens twice a year without a white card visit.",si:"<b>3rd Party ACE audit</b> එක white card visit එකක් නොමැතිව <b>වසරකට දෙවරක්</b> සිදුවේ."},
     {q:"What are the HutBot shift check times? (Morning check deadline)",si_q:"HutBot හි උදෑසන Check එක (Morning setup) කළයුතු අවසන් වේලාව කුමක්ද?",opts:["Before 11:00 AM","Before 9:00 AM","Before 10:00 AM","Before 12:00 PM"],ans:0,exp:"HutBot Morning setup/prep check = Before 11:00 AM.",si:"HutBot morning check <b>උදෑසන 11ට පෙර</b> සම්පූර්ණ විය යුතුයි. \n\n• Day Shift : 11 AM \n• Review : 3.10 PM \n\n• Night Shift : 5.15 PM \n• Review : 2.10 AM"},
-	{q:"Assign the driver not more than how many orders?",si_q:"එක් රයිඩර් කෙනෙකුට උපරිම වශයෙන් ඇණවුම් කීයක් ලබාදිය හැකිද?",opts:["1 order","2 orders","3 orders","4 orders"],ans:0,exp:"Only 1 order per driver assignment.",si:"<b>Delivery Rider කෙනෙකුට වරකට රැගෙන යාමට අවසර ඇත්තේ එක් order එකක් පමණයි.</b> 1 ට වඩා assign කරන්නේ නෑ. නමුත් තෙල් ප්‍රශ්න මතුවන සමහර කාලවලදී <span style='color:green'>Double dispatch</span> concept එක තාවකාලිකව enable කිරීම තුළින් වරකට orders 2ක් රැගෙන යාමට ridersලට අවස්ථාව සලසනවා."},
-    {q:"How many pizzas can be carried per delivery pouch?",si_q:"Delivery pouch එකක වරකට පීසා කීයක් ගෙන යා හැකිද?",opts:["1","2","3","4"],ans:1,exp:"Maximum 2 pizzas per delivery pouch.",si:"<b>Delivery pouch එකක වරකට උපරිම pizzas 2ක් රැගෙන යාමට පුළුවනි.</b> 2 ට වඩා ගත්තොත් pizzaවල temperature එකට සහ quality එකට affect වෙනවා."},
+	{q:"Assign the driver not more than how many orders?",si_q:"එක් රයිඩර් කෙනෙකුට උපරිම වශයෙන් orders කීයක් ලබාදිය හැකිද?",opts:["1 order","2 orders","3 orders","4 orders"],ans:0,exp:"Only 1 order per driver assignment.",si:"<b>Delivery Rider කෙනෙකුට වරකට රැගෙන යාමට අවසර ඇත්තේ එක් order එකක් පමණයි.</b> 1 ට වඩා assign කරන්නේ නෑ. නමුත් තෙල් ප්‍රශ්න මතුවන සමහර කාලවලදී <span style='color:green'>Double dispatch</span> concept එක තාවකාලිකව enable කිරීම තුළින් වරකට orders 2ක් රැගෙන යාමට ridersලට අවස්ථාව සලසනවා."},
+    {q:"How many pizzas can be carried per delivery pouch?",si_q:"Delivery pouch එකක වරකට පිට්සා කීයක් ගෙන යා හැකිද?",opts:["1","2","3","4"],ans:1,exp:"Maximum 2 pizzas per delivery pouch.",si:"<b>Delivery pouch එකක වරකට උපරිම pizzas 2ක් රැගෙන යාමට පුළුවනි.</b> 2 ට වඩා ගත්තොත් pizzaවල temperature එකට සහ quality එකට affect වෙනවා."},
     {q:"What is HutBot?",si_q:"HutBot යනු කුමක්ද?",opts:["A Pizza Hut mobile app for restaurant operations improvement","A customer ordering chatbot","A delivery tracking system","A temperature tracking system"],si_opts:["Pizza Hutහි මෙහෙයුම් දියුණු කිරීම සඳහා වූ ජංගම යෙදුමක්","පාරිභෝගිකයින් ඇණවුම් කරන chatbot එකක්","Delivery tracking පද්ධතියක්","Temperature tracking පද්ධතියක්"],ans:0,exp:"Pizza Hut mobile app collecting data from GES, Fleet Management (Speed), ACE(Audits), YUM(Hut University) to provide restaurant-specific improvement tasks.",si:"<b>HutBot යනු Pizza Hut mobile app එකයි.</b> එමඟින් YUM data analyze කරලා, outlet එකේ improvement එක සඳහා අවශ්‍ය specific tasks දෙනවා."}
   ]
 },
@@ -510,7 +999,7 @@ paper1: {
     {q:"What does TMTS stand for?",si_q:"TMTS යනු කුමක්ද?",opts:["Team Member Training Score","Team Member Task Standard","Training Management Tracking System","Team Member Testing Score"],ans:0,exp:"TMTS = Team Member Training Score - measures training quality in the outlet.",si:"<b>TMTS = Team Member Training Score</b>. \n\nමෙමඟින් Team Membersලගේ training quality measure කරනවා."},
     {q:"What is the Dragontail system used for?",si_q:"Dragontail පද්ධතිය භාවිතා කරන්නේ කුමක් සඳහාද?",opts:["Delivery order management and GPS tracking","Customer ordering online","Stock management","Staff scheduling"],si_opts:["Delivery orders කළමනාකරණය සහ GPS Tracking සඳහා","අන්තර්ජාලය හරහා ඇණවුම් කිරීමට","Stock manage කිරීමට","Shift සැකසීමට"],ans:0,exp:"Dragontail = delivery order management system with GPS tracking for riders and customers.",si:"<b>Dragontail</b> : delivery order manage කිරීමට සහ Rider track කිරීමට මෙම system එක භාවිතා කරයි."},
     {q:"In Dragontail, what does OTD U12 mean?",si_q:"Dragontail හි OTD U12 යනු කුමක්ද?",opts:["Time from order hitting store to rider exiting store fence within 12 mins","Total delivery time under 12 minutes","Order to door under 12 minutes","Prepare the order within 12 minutes"],si_opts:["ඇණවුම ලැබී විනාඩි 12ක් ඇතුළත රයිඩර් outlet සීමාවෙන් පිටවීම","මුළු ඩිලිවරි කාලය විනාඩි 12ට අඩු වීම","විනාඩි 12න් order එක deliver කිරීම","විනාඩි 12ක් ඇතුළත order එක සකස් කිරීම"],ans:0,exp:"OTD U12 = Order hits store → rider exits the geo-fence of the store. Target: under 12 minutes.",si:"<b>OTD U12</b> : ඇණවුම ලැබී විනාඩි 12ක් ඇතුළත රයිඩර් outlet සීමාවෙන් පිටවීම."},
-    {q:"In Dragontail, what does 'Rack Time' measure?",si_q:"Dragontail හි 'Rack Time' මගින් මනින්නේ කුමක්ද?",opts:["Time from order bumped from Expo KDS to rider dispatched","Time pizza spends in the oven","Time from order placed to delivery","Time rider spends at customer location"],si_opts:["Expo KDS(Cut table) එකෙන් Bump කළ මොහොතේ සිට රයිඩර් පිටත් වන තෙක් කාලය","පීසා එක අවන් වීමට ගතවන කාලය","Order එක ලැබුණු මොහොතේ සිට ඩිලිවරි කිරීම දක්වා කාලය","Customerගේ location එකේදී order එක hand over කිරීමට රයිඩර්ට ගතවන කාලය"],ans:0,exp:"Rack Time = from order bumped from Expo KDS(Cut Table) to order dispatched to rider.",si:"<b>Rack Time</b> : Cut table එකෙන් bump කර riderට dispatch කිරීම දක්වා කාලය."},
+    {q:"In Dragontail, what does 'Rack Time' measure?",si_q:"Dragontail හි 'Rack Time' මගින් මනින්නේ කුමක්ද?",opts:["Time from order bumped from Expo KDS to rider dispatched","Time pizza spends in the oven","Time from order placed to delivery","Time rider spends at customer location"],si_opts:["Expo KDS(Cut table) එකෙන් Bump කළ මොහොතේ සිට රයිඩර් පිටත් වන තෙක් කාලය","පිට්සා එක අවන් වීමට ගතවන කාලය","Order එක ලැබුණු මොහොතේ සිට ඩිලිවරි කිරීම දක්වා කාලය","Customerගේ location එකේදී order එක hand over කිරීමට රයිඩර්ට ගතවන කාලය"],ans:0,exp:"Rack Time = from order bumped from Expo KDS(Cut Table) to order dispatched to rider.",si:"<b>Rack Time</b> : Cut table එකෙන් bump කර riderට dispatch කිරීම දක්වා කාලය."},
     {q:"What is Hut University?",si_q:"Hut University යනු කුමක්ද?",opts:["Online learning platform for Pizza Hut team members","A physical university for Pizza Hut employees","The training kitchen at HQ","Pizza Hut's recruitment portal"],si_opts:["Pizza Hut team members සඳහා වන අන්තර්ජාල ඉගෙනුම් platform එකකි","Pizza Hut සේවකයින් සඳහා ඇති විශ්වවිද්‍යාලයක්","ප්‍රධාන කාර්යාලයේ ඇති training kitchen එක","Pizza Hut සඳහා employees බඳවා ගැනීමේ portal එකයි"],ans:0,exp:"Hut University = online learning platform for Pizza Hut team members with WBTs(Web Based Trainings), eCSLs(PH Wiki), and assessments.",si:"<b>Hut University</b> : Pizza Hut team members සඳහා වන, WBTs(වෙබ් මත පදනම් වූ පුහුණුවීම්), eCSLs(PH Wiki), සහ assessments වලින් සමන්විත <span style='color:green'>online learning platform</span> එකකි."},
     {q:"What is an eCSL in Hut University?",si_q:"Hut University හි eCSL යනු කුමක්ද?",opts:["CHAMPS Standards Library - digital reference materials","Electronic Customer Satisfaction Log","Employee Certification Score Level","Easy to Complete Short Lesson"],ans:0,exp:"eCSL = CHAMPS Standards Library - digital reference materials.",si:"<b>eCSL</b> : CHAMPS Standards Library. Digital format එකෙන් ඇති standards documents."},
     {q:"How long is the GEM portal password validity?",si_q:"GEM portal එකේ Password එක වලංගු වන්නේ කොපමණ කාලයක්ද?",opts:["365 Days","180 Days","90 Days","30 Days"],ans:0,exp:"GEM portal password expires every 365 days (1 year).",si:"GEM portal password, <b>දින 365ක්</b> (අවුරුදු 1ක්) වලංගු වේ."},
@@ -563,7 +1052,7 @@ paper2: {
 	{q:"What is the Rider accident prevention rule #1?",si_q:"රයිඩර් අනතුරු වළක්වා ගැනීමේ අංක 1 නීතිය කුමක්ද?",opts:["Never Speed","Always wear helmet","Always check your bike for breaks","Obey traffic rules"],si_opts:["කිසිවිටෙක අධික වේගයෙන් නොයන්න","සෑමවිටම හෙල්මටයක් පළඳින්න","සෑම විටම bike එකේ breaks ඇති බව සහතික කරගැනීම","මාර්ග නීති පිළිපදින්න"],ans:0,exp:"Rider accident prevention Rule 1 = Never Speed.",si:"Rule 1 = Never Speed. \n\n<b>Rider accident prevention Rules</b> වන්නේ, \n\n1. Never Speed \n2. Plan your route \n3. Always check your bike for breaks \n4. Always wear your helmet \n5. Drive within the speed limit \n6. Obey the traffic rules \n7. Always indicate 5 seconds before you turn \n8. Never overtake from the left side \n9. Do not stay in the blind spot of a four wheeler for too long \n10. Drive carefully yourself and watch out other people's wrong driving"},
 	{q:"In case of an accident, what must a rider do?",si_q:"අනතුරකදී රයිඩර් කෙනෙකු කළ යුත්තේ කුමක්ද?",opts:["Don't leave scene, call manager, contact insurance & police, trade info, get witness details, contact customer","Just call the manager","Take a photo and leave","Wait for the police to arrive"],si_opts:["සිදුවූ ස්ථානයෙන් පලා නොගොස් මැනේජර්ට, පොලිසියට සහ රක්ෂණ සමාගමට දැනුම් දී, සාක්ෂි එකතු කර ගැනීම, පාරිභෝගිකයාට දැනුම් දීම","මැනේජර්ට පමණක් කතා කිරීම","ඡායාරූපයක් ගෙන පිටත්ව යාම","පොලිසිය එනතුරු බලා සිටීම"],ans:0,exp:"Accident: Don't leave scene/bike, call manager, contact insurance & police, trade info, get witness, contact customer.",si:"අනතුර සිදුවූ ස්ථානයෙන් පලා නොගොස් මැනේජර්ට, පොලිසියට, රක්ෂණ සමාගමට, පාරිභෝගිකයාට දැනුම් දී නිසි ක්‍රියාවලිය අනුගමනය කළ යුතුය."},
 	{q:"What is the standard bike checklist requirement?",si_q:"Standard bike checklist එකෙහි අවශ්‍යතාව කුමක්ද?",opts:["Bike checklist must be maintained and checked before every shift","Bike checklist must be maintained and checked everyday","Check bike only weekly","Check bike only when there's a problem"],si_opts:["සෑම shift එකකටම පෙර Bike checklist එක පරීක්ෂා කර පවත්වාගත යුතුය","සෑම දිනකම Bike checklist එක පරීක්ෂා කර පවත්වාගත යුතුය","සතියකට වරක් පමණක් පරීක්ෂා කිරීම","ගැටළුවක් ඇති වූ විට පමණක් පරීක්ෂා කිරීම"],ans:0,exp:"Bike checklist must be maintained and checked before every shift.",si:"සෑම shift එකකටම පෙර Bike checklist එක පරීක්ෂා කර පවත්වාගත යුතුය."},
-	{q:"What is the maximum pizzas per delivery pouch?",si_q:"Delivery pouch එකක වරකට ගෙන යා හැකි උපරිම පිට්සා ගණන කීයද?",opts:["2 pizzas","3 pizzas","4 pizzas","1 pizza"],si_opts:["පිට්සා 2 යි","පිට්සා 3 යි","පිට්සා 4 යි","පිට්සා 1 යි"],ans:0,exp:"Maximum 2 pizzas per delivery pouch for safe and quality delivery.",si:"ආරක්ෂිත සහ ගුණාත්මක delivery එකක් සඳහා එක් pouch එකක වරකට රැගෙන යා හැක්කේ <b>උපරිම පිට්සා 2ක්</b> පමණි."},
+	{q:"What is the maximum pizzas per delivery pouch?",si_q:"Delivery pouch එකක වරකට ගෙන යා හැකි උපරිම පිට්සා ගණන කීයද?",opts:["2 pizzas","3 pizzas","4 pizzas","1 pizza"],si_opts:["පිට්සා 2 යි","පිට්සා 3 යි","පිට්සා 4 යි","පිට්සා 1 යි"],ans:0,exp:"Maximum 2 pizzas per delivery pouch for safe and quality delivery.",si:"ආරක්ෂිත සහ ගුණාත්මක delivery එකක් සඳහා එක් pouch එකක වරකට රැගෙන හැක්කේ <b>උපරිම පිට්සා 2ක්</b> පමණි."},
 	{q:"We must keep the customer's cash in view till the balance is given. True or False?",si_q:"ඉතිරි මුදල (Balance) දෙන තුරු පාරිභෝගිකයා දුන් මුදල් ඔවුන්ට පෙනෙන සේ තබාගත යුතුය. සත්‍යද? අසත්‍යද?",opts:["True","False"],si_opts:["සත්‍යයි","අසත්‍යයි"],ans:0,exp:"TRUE - Customer's cash must stay in view until change is given to avoid disputes.",si:"සත්‍යයි. ඉතිරි මුදල දෙන තුරු පාරිභෝගිකයා දුන් මුදල් ඔවුන්ට පෙනෙන සේ තබාගත යුතුය. ගැටළු මගහරවා ගැනීමට මෙය වැදගත් වේ."},
 	{q:"What is the service charge % for eat-in and delivery?",si_q:"Eat-in සහ delivery සඳහා Service charge ප්‍රතිශතය කොපමණද?",opts:["7.5%","10%","5%","6.5%"],si_opts:["7.5%","10%","5%","6.5%"],ans:0,exp:"Service charge = 7.5% for both eat-in and delivery.",si:"Eat-in සහ delivery සඳහා Service charge ප්‍රතිශතය <b>7.5%</b> කි."},
 	{q:"What is 'pre-topped pizza' and why is it important?",si_q:"'Pre-topped pizza' යනු කුමක්ද සහ එය වැදගත් වන්නේ ඇයි?",opts:["Pizza assembled (topped) in advance before rush - critical for peak time speed","Pizza made fresh only after ordering - critical for freshness","A frozen pizza product","A promotion pizza"],si_opts:["කාර්යබහුල වීමට පෙර toppings දමා සාදා තැබූ පිට්සා - වේගවත් සේවාවට අත්‍යවශ්‍යයි","ඇණවුම ආ පසු පමණක් සාදන පිට්සා - පිට්සාවල නැවුම්බව සඳහා මෙය අනිවාර්යයයි","ශීතකළ පිට්සා එකකි","ප්‍රමෝෂන් පිට්සා එකකි"],ans:0,exp:"Pre-topped pizza = assembled in advance. Critical for peak times to maintain speed.",si:"Peak timeවලදී  speed service එකක් දීමට කල්තියා සූදානම් කර තබන පිට්සා (cheese සහ toppings add කර, නමුත් bake නොකර) <b>Pre-topped pizza</b> ලෙස හැඳින්වේ."},
@@ -613,7 +1102,7 @@ paper3: {
 	{q:"What does 'Production Time U3' measure in Dragontail?",si_q:"Dragontail හි 'Production Time U3' මගින් මනින්නේ කුමක්ද?",opts:["Time from order on Make KDS to order bumped from Make KDS","Time from order on Make KDS to order bumped from Cut Table KDS","Time from order on Make KDS to delivery","Time rider spends packing"],si_opts:["Make KDS එකට order එක ආ මොහොතේ සිට එය Bump කරන තෙක් කාලය","Make KDS එකට order එක ආ මොහොතේ සිට එය Cut Table KDS එකෙන් Bump කරන තෙක් ගතවන කාලය","Make KDS එකට order එක ආ මොහොතේ සිට පාරිභෝගිකයාට ලබා දෙන (Delivery කරන) තෙක් ගතවන කාලය","order එක pack කිරීමට riderට ගතවන කාලය"],ans:0,exp:"Production U3 = time from order appearing on Make KDS to order being bumped (removed) from Make KDS.",si:"<b>Production U3</b> : Make KDS එකට order එක ආ මොහොතේ සිට එය (Make KDS එකෙන්) Bump කරන තෙක් කාලය."},
     {q:"What is 'Hot & Fresh U20 (H&F U20)' in Dragontail?",si_q:"Dragontail හි 'Hot & Fresh U20' යනු කුමක්ද?",opts:["Time from order being bumped from Expo to rider marking Delivered: under 20 min","Time from order being bumped from Make Table KDS to rider marking Delivered: under 20 min","Total delivery time: under 20 min","Time from order appearing on Make KDS to dispatch: under 20 min"],si_opts:["Cut table එකෙන් Bump කළ මොහොතේ සිට Delivered මාර්ක් කරන තෙක් කාලය විනාඩි 20 ට අඩුවීම","Make Table එකෙන් Bump කළ මොහොතේ සිට Delivered මාර්ක් කරන තෙක් කාලය විනාඩි 20 ට අඩුවීම","Pizza එක සෑදීමට පටන් ගත් අවස්ථාවේ සිට deliver කිරීම දක්වා වන කාලය විනාඩි 20කට වඩා අඩු වීම","Order එක Make KDS එකට පැමිණි මොහොතේ සිට Dispatch කරන තෙක් කාලය විනාඩි 20කට වඩා අඩු වීම"],ans:0,exp:"H&F U20 = from order bumped at Expo (Cut Table) to rider marks Delivered. Target: under 20 min.",si:"<b>H&F U20</b> : Cut table එකෙන් Bump කළ මොහොතේ සිට rider විසින් order එක Delivered මාර්ක් කරන තෙක් කාලය විනාඩි 20 ට අඩුවීම."},
     {q:"In Dragontail Rider App, when should 'MARK DELIVERED' be pressed?",si_q:"Dragontail රයිඩර් App එකේ 'MARK DELIVERED' ඔබන්නට ඕනේ කිනම් අවස්ථාවේද?",opts:["As soon as the order is delivered to the customer","When returning to the outlet","When leaving the outlet","Before 30 minutes"],si_opts:["පාරිභෝගිකයාට ඇණවුම දුන් වහාම","Outlet එකට ආපසු පැමිණි පසු","Outlet එකෙන් පිටවන විට","විනාඩි 30ක් ගතවීමට පෙර"],ans:0,exp:"'MARK DELIVERED' must be pressed immediately upon delivery to customer.",si:"ඇණවුම පාරිභෝගිකයාට ලබාදුන් වහාම."},
-    {q:"What are Imminent Health Hazards that require restaurant closure?",si_q:"ආපනශාලාව වසා දැමීමට සිදුවන බරපතල සෞඛ්‍ය අවදානම් මොනවාද?",opts:["No running water, No working toilet, No electricity, Fire","Customer complaint, Wrong order, Broken equipment","No hot water for 30 minutes, Pest sighting","Broken make table, No hot water for 3 hours"],si_opts:["ජලය නැතිකම, වැසිකිළි වැඩ නොකිරීම, විදුලිය නැතිකම, ගිනිගැනීම","පාරිභෝගික පැමිණිලි, වැරදි orders ලබාදීම්, කැඩුණු equipments තිබීම","විනාඩි 30 ක් උණු වතුර නැතිකම, Pest activities දක්නට ලැබීම","Make table එක කැඩී තිබීම, පැය 3 ක් උණු වතුර නැතිකම"],ans:0,exp:"Imminent Health Hazards: Fire, Not working toilet, No working hand wash sink, No electricity to provide temperature control, No running potable water and no alternate source available, Sewage backup, No hot water for an hour, Pest inspection as defined in the YUM restaurant pest prevention, Possible chemical contamination of food, Onset an apparent food borne illness outbreak, Other circumstances that may endanger public health.",si:"• ගින්නක් ඇතිවීම (Fire), \n• වැසිකිළි ක්‍රියා විරහිත වීම (Not working toilet), \n• hand wash sink ක්‍රියා විරහිත වීම (No working hand wash sink), \n• උෂ්ණත්ව පාලන පද්ධති පවත්වා ගැනීමට විදුලිය නොමැති වීම (No electricity to provide temperature control), \n• නළ මගින් සැපයෙන පානීය ජලය නොමැති වීම සහ ඒ සඳහා වෙනත් විකල්ප ජල මූලාශ්‍රයක් නොමැති වීම, \n• අපජල / මළාපවහන පද්ධතිය අවහිර වී පිටාර ගැලීම (Sewage backup), \n• උණු ජලය නොමැති වීම (පැයක කාලයක් සඳහා), \n• YUM restaurant pest preventionවල දක්වා ඇති pest activities හඳුනාගැනීම (Pest inspection as defined in the YUM restaurant pest prevention), \n• ආහාරවලට රසායනික ද්‍රව්‍ය මිශ්‍ර වීමේ අවදානම (Possible chemical contamination of food), \n• ආහාර මගින් බෝවන රෝගයක් පැතිර යාමේ මූලික ලක්ෂණ පෙන්නුම් කිරීම (Onset of an apparent food-borne illness outbreak), \n• මහජන සෞඛ්‍යයට තර්ජනයක් විය හැකි වෙනත් තත්ත්වයන් (Other circumstances that may endanger public health) \n\nආපනශාලාව වසා දැමීමට සිදුවන බරපතල සෞඛ්‍ය අවදානම් ගණයට අයත් වේ."},
+    {q:"What are Imminent Health Hazards that require restaurant closure?",si_q:"restaurant එක වසා දැමීමට සිදුවන බරපතල සෞඛ්‍ය අවදානම් මොනවාද?",opts:["No running water, No working toilet, No electricity, Fire","Customer complaint, Wrong order, Broken equipment","No hot water for 30 minutes, Pest sighting","Broken make table, No hot water for 3 hours"],si_opts:["ජලය නැතිකම, වැසිකිළි වැඩ නොකිරීම, විදුලිය නැතිකම, ගිනිගැනීම","පාරිභෝගික පැමිණිලි, වැරදි orders ලබාදීම්, කැඩුණු equipments තිබීම","විනාඩි 30 ක් උණු වතුර නැතිකම, Pest activities දක්නට ලැබීම","Make table එක කැඩී තිබීම, පැය 3 ක් උණු වතුර නැතිකම"],ans:0,exp:"Imminent Health Hazards: Fire, Not working toilet, No working hand wash sink, No electricity to provide temperature control, No running potable water and no alternate source available, Sewage backup, No hot water for an hour, Pest inspection as defined in the YUM restaurant pest prevention, Possible chemical contamination of food, Onset an apparent food borne illness outbreak, Other circumstances that may endanger public health.",si:"• ගින්නක් ඇතිවීම (Fire), \n• වැසිකිළි ක්‍රියා විරහිත වීම (Not working toilet), \n• hand wash sink ක්‍රියා විරහිත වීම (No working hand wash sink), \n• උෂ්ණත්ව පාලන පද්ධති පවත්වා ගැනීමට විදුලිය නොමැති වීම (No electricity to provide temperature control), \n• නළ මගින් සැපයෙන පානීය ජලය නොමැති වීම සහ ඒ සඳහා වෙනත් විකල්ප ජල මූලාශ්‍රයක් නොමැති වීම, \n• අපජල / මළාපවහන පද්ධතිය අවහිර වී පිටාර ගැලීම (Sewage backup), \n• උණු ජලය නොමැති වීම (පැයක කාලයක් සඳහා), \n• YUM restaurant pest preventionවල දක්වා ඇති pest activities හඳුනාගැනීම (Pest inspection as defined in the YUM restaurant pest prevention), \n• ආහාරවලට රසායනික ද්‍රව්‍ය මිශ්‍ර වීමේ අවදානම (Possible chemical contamination of food), \n• ආහාර මගින් බෝවන රෝගයක් පැතිර යාමේ මූලික ලක්ෂණ පෙන්නුම් කිරීම (Onset of an apparent food-borne illness outbreak), \n• මහජන සෞඛ්‍යයට තර්ජනයක් විය හැකි වෙනත් තත්ත්වයන් (Other circumstances that may endanger public health) \n\nrestaurant එක වසා දැමීමට සිදුවන බරපතල සෞඛ්‍ය අවදානම් ගණයට අයත් වේ."},
 	{q:"Food Safety Emergency: No hot water - how long before closure decision?",si_q:"උණු වතුර නොමැති නම්, Outlet එක වසා දැමීමට තීරණය කරන්නේ කොපමණ කාලයකින්ද?",opts:["1 hour","24 hours","30 minutes","3 hours"],si_opts:["පැය 1 යි","පැය 24 යි","විනාඩි 30 යි","පැය 3 යි"],ans:0,exp:"Food Safety Emergency = No hot water that cannot be restored within 1 HOUR.",si:"උණු වතුර නොමැතිවී <b>පැය 1</b> ක් ගතවුවහොත්."},
 	{q:"What is the correct storage order in the walk-in cooler (top to bottom)?",si_q:"Walk-in cooler එකේ ගබඩා කිරීමේ නිවැරදි අනුපිළිවෙල (ඉහළ සිට පහළට) කුමක්ද?",opts:["Ready-to-eat on top, raw meats on bottom","Raw meats on top, ready-to-eat on bottom","Vegetables on top, dairy on bottom","Fresh on top, frozen items on bottom"],si_opts:["පිසූ ආහාර ඉහළින්ද, අමු මස් පහළින්ද","අමු මස් ඉහළින්ද, පිසූ ආහාර පහළින්ද","එළවළු ඉහළින්ද, කිරි පහළින්ද","නැවුම් දේවල් ඉහළින්ද, මිදුණු දේවල් පහළින්ද"],ans:0,exp:"Cooler storage: Ready-to-eat (cooked food) on top, raw meats on bottom - prevents cross contamination.",si:"Ready-to-eat ආහාර ඉහළින්ද, අමු මස් පහළින්ද තැබිය යුතුය (cross contamination වැළක්වීම සඳහා මෙය සිදු කරයි)."},
 	{q:"What is cross-contamination?",si_q:"Cross-contamination යනු කුමක්ද?",opts:["Transfer of harmful bacteria from one food to another, or surface to food","Using the same knife for all foods","Mixing ingredients incorrectly","Storing food at wrong temperature"],si_opts:["හානිකර බැක්ටීරියා එක් ආහාරයකින් තවත් ආහාරයකට මාරුවීම","සියලු ආහාර සඳහා එකම පිහිය භාවිතා කිරීම","අමුද්‍රව්‍ය වැරදියට මිශ්‍ර කිරීම","වැරදි උෂ්ණත්වයේ ගබඩා කිරීම"],ans:0,exp:"Cross-contamination = Transfer of harmful bacteria from one food to another, or surface to food.",si:"හානිකර බැක්ටීරියා එක් ආහාරයකින් හෝ පෘෂ්ඨයකින් තවත් ආහාරයකට මාරුවීම."},
@@ -632,7 +1121,7 @@ paper3: {
 	{q:"In the FER (Financial Excellence Review), what is Level 3 total debit?",si_q:"FER හි Level 3 සඳහා ඇති සම්පූර්ණ debit ලකුණු ගණන කොපමණද?",opts:["60 points","30 points","50 points","100 points"],si_opts:["ලකුණු 60 යි","ලකුණු 20 යි","ලකුණු 50 යි","ලකුණු 100 යි"],ans:0,exp:"FER Level 3 (most critical) = 60 total points.",si:"Level 3 සඳහා <b>ලකුණු 60</b> කි."},
 	{q:"What is the cash variance permitted per FER Level 3 (Safe fund)?",si_q:"FER Level 3 අනුව Safe fund හි අවසර දී ඇති Cash variance එක කොපමණද?",opts:["LKR +/- 99 variance permitted","LKR +/- 100","LKR +/- 200","No variance permitted"],si_opts:["LKR +/- 99 වෙනසකට අවසර ඇත","LKR +/- 100","LKR +/- 200","කිසිදු වෙනසකට අවසර නැත"],ans:0,exp:"FER: Cash variance of LKR +/- 99 is permitted.",si:"<b>රු.99ක්</b> අඩුවීමට හෝ වැඩිවීමට අවසර ඇත."},
 	{q:"What is the GES component weight in BSC?",si_q:"BSC හි GES සඳහා ඇති ලකුණු බර තැබීම කොපමණද?",opts:["25 out of 35","10 out of 35","15 out of 35","20 out of 35"],si_opts:["35 න් 25 යි","35 න් 10 යි","35 න් 15 යි","35 න් 20 යි"],ans:0,exp:"GES = 25 points within Customer component (35 total) in BSC.",si:"Customer කොටසේ 35 න් 25 ක් GES සඳහා හිමිවේ.  \n\nBSCහි ප්‍රධාන කොටස් 4කි.(<b>Customer, People, Sales, Profit</b>). \nමෙහි Customer කොටස ACE(10) සහ GES(25) ලෙසත්, \nPeople කොටස Attrition(10), TMTS(10) සහ Retention(10) ලෙසත්, \nSales කොටස Net Sales(15) සහ SSTG(5) ලෙසත්, \nProfit කොටස UC(15) ලෙසත් අනු කොටස් වලට බෙදේ. \n\n(මෙහි වරහන් තුළ ඇති සංඛ්‍යාවලින් දැක්වෙන්නේ ඒවාට අදාළ බර තැබීම් වේ.)"},
-	{q:"What is the formula for SSTG?",si_q:"SSTG ගණනය කිරීම සඳහා සූත්‍රය කුමක්ද?",opts:["(Current transactions - Last year transactions) ÷ Last year transactions × 100","(Current sales - Last year sales) ÷ Last year sales × 100","Current transactions ÷ Last year × 100","(This week - Last week) ÷ This week × 100"],si_opts:["(මෙම වසරේ බිල්පත් - ගිය වසරේ බිල්පත්) ÷ ගිය වසරේ බිල්පත් × 100","(මෙම වසරේ විකුණුම් - ගිය වසරේ විකුණුම්) ÷ ගිය වසරේ විකුණුම් × 100","මෙම වසරේ බිල්පත් ÷ ගිය වසරේ බිල්පත් × 100","(මෙම සතිය - පසුගිය සතිය) ÷ මෙම සතිය × 100"],ans:0,exp:"SSTG = (Current transactions - Last year transactions) ÷ Last year transactions × 100",si:"(මෙම වසරේ බිල්පත් - ගිය වසරේ බිල්පත්) ÷ ගිය වසරේ බිල්පත් × 100.   <b>SSTG</b> යනු යම් නිශ්චිත කාල සීමාවක් තුළ restaurant එකකට ලැබුණු මුළු පාරිභෝගික ඇණවුම් (ගනුදෙනු / බිල්පත්) සංඛ්‍යාවේ ප්‍රතිශත වෙනස, පෙර වසරේ එම නිශ්චිත කාල සීමාවට සාපේක්ෂව මැන බැලීමයි. විකුණුම් වර්ධනයට (Sales Growth) වඩා මෙය වෙනස් වේ. මන්ද යත්, ආහාරවල මිල වැඩි කිරීම හරහා ද විකුණුම් වර්ධනයක් පෙන්විය හැකි බැවිනි. නමුත් SSTG මගින් ආපනශාලාවට සැබැවින්ම වැඩි පාරිභෝගිකයින් පිරිසක් පැමිණ තිබේද සහ orders වැඩි ප්‍රමාණයක් ලැබී තිබේද යන්න නිවැරදිව තහවුරු කරයි."},
+	{q:"What is the formula for SSTG?",si_q:"SSTG ගණනය කිරීම සඳහා සූත්‍රය කුමක්ද?",opts:["(Current transactions - Last year transactions) ÷ Last year transactions × 100","(Current sales - Last year sales) ÷ Last year sales × 100","Current transactions ÷ Last year × 100","(This week - Last week) ÷ This week × 100"],si_opts:["(මෙම වසරේ බිල්පත් - ගිය වසරේ බිල්පත්) ÷ ගිය වසරේ බිල්පත් × 100","(මෙම වසරේ විකුණුම් - ගිය වසරේ විකුණුම්) ÷ ගිය වසරේ විකුණුම් × 100","මෙම වසරේ බිල්පත් ÷ ගිය වසරේ බිල්පත් × 100","(මෙම සතිය - පසුගිය සතිය) ÷ මෙම සතිය × 100"],ans:0,exp:"SSTG = (Current transactions - Last year transactions) ÷ Last year transactions × 100",si:"(මෙම වසරේ බිල්පත් - ගිය වසරේ බිල්පත්) ÷ ගිය වසරේ බිල්පත් × 100.   <b>SSTG</b> යනු යම් නිශ්චිත කාල සීමාවක් තුළ restaurant එකකට ලැබුණු මුළු පාරිභෝගික ඇණවුම් (ගනුදෙනු / බිල්පත්) සංඛ්‍යාවේ ප්‍රතිශත වෙනස, පෙර වසරේ එම නිශ්චිත කාල සීමාවට සාපේක්ෂව මැන බැලීමයි. විකුණුම් වර්ධනයට (Sales Growth) වඩා මෙය වෙනස් වේ. මන්ද යත්, ආහාරවල මිල වැඩි කිරීම හරහා ද විකුණුම් වර්ධනයක් පෙන්විය හැකි බැවිනි. නමුත් SSTG මගින් restaurant එකට සැබැවින්ම වැඩි පාරිභෝගිකයින් පිරිසක් පැමිණ තිබේද සහ orders වැඩි ප්‍රමාණයක් ලැබී තිබේද යන්න නිවැරදිව තහවුරු කරයි."},
 	{q:"What does GPLPL stand for?",si_q:"GPLPL යනු කුමක්ද?",opts:["Gamma Pizzakraft Lanka (Pvt) Ltd","Global Pizzakraft Lanka (Pvt) Ltd","Gamma Pizza Processing Lanka (Pvt) Ltd","Gamma Pizzakraft Logistics (Pvt) Ltd"],ans:0,exp:"GPLPL = Gamma Pizzakraft Lanka (Pvt) Ltd",si:"GPLPL යනු Gamma Pizzakraft Lanka (Pvt) Ltd වේ."},
 	{q:"What is the Gamma Benevolent Fund for parents' medical cover?",si_q:"දෙමාපියන්ගේ වෛද්‍ය ආවරණය සඳහා Gamma Benevolent Fund මුදල කොපමණද?",opts:["Rs. 25,000","Rs. 50,000","Rs. 100,000","Rs. 15,000"],si_opts:["රු. 25,000","රු. 50,000","රු. 100,000","රු. 15,000"],ans:0,exp:"Parental medical cover from Benevolent Fund = Rs. 25,000.",si:"රු. 25,000 කි."},
 	{q:"What is the OPD cover for a non-executive individual from Gamma medical?",si_q:"Gamma වෛද්‍ය පහසුකම් යටතේ විධායක නොවන (non-executive) සේවකයෙකුගේ OPD ආවරණය කොපමණද?",opts:["Rs. 9,000","Rs. 2,000","Rs. 7,500","Rs. 5,000"],si_opts:["රු. 9,000","රු. 2,000","රු. 7,500","රු. 5,000"],ans:0,exp:"OPD cover for non-executive individual = Rs. 9,000.",si:"Gamma වෛද්‍ය පහසුකම් යටතේ non-executive සේවකයෙකුගේ OPD ආවරණය රු. 9,000 කි."},
