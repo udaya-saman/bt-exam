@@ -4,7 +4,7 @@
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B'];
 const rand=()=>crypto.randomUUID().replace(/-/g,'');
-const day=(date=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Colombo',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+const day=(date=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Colombo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);const g=t=>p.find(v=>v.type===t).value;return g('year')+'-'+g('month')+'-'+g('day');};
 const week=(date=new Date())=>{const d=new Date(day(date)+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10)};
 const norm=name=>String(name||'').trim().toLowerCase();
 const valid=name=>/^[A-Za-z0-9._-]{3,24}$/.test(name);
@@ -43,6 +43,7 @@ async function register(name,password,outlet){
    tx.set(reg,{uid:created.user.uid,authEmail});
    tx.set(u,{uid:created.user.uid,username:name,usernameLower:norm(name),outlet,avatar:'',totalPoints:0,totalAnswers:0,weeklyPoints:{},monthlyPoints:{},outletPoints:{},outletWeeklyPoints:{},outletAnswers:{},outletWeeklyAnswers:{},lastEventId:'',createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()});
   });
+  await session(created.user);
  }catch(e){try{await A.deleteUser(created.user)}catch(_){}throw e;}
 }
 async function login(name,password){
@@ -69,7 +70,7 @@ async function onAnswer(a){
  const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,weekKey:week(),monthKey:day().slice(0,7),outlet:profile.outlet,earnedAt:Date.now(),claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
  q.push(entry);saveQueue(q);note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
 }
-window.BTExamBridge={storageKey,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId),onAnswer,onPaperComplete:onFinish,onProgress:()=>{},onScreenChange:()=>{}};
+window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId),onAnswer,onPaperComplete:onFinish,onProgress:()=>{},onScreenChange:()=>{}};
 async function sync(){
  if(!user||!profile||syncing||!navigator.onLine)return;syncing=true;
  try{
@@ -176,7 +177,7 @@ async function seedKeys(){
 }
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
- user=u; if(!u){profile=null;active=null;users=[];gate();return;}
+ user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
  try{const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){gate('setup','The account profile is missing. Contact the administrator.');return;}
   profile=snap.data();admins=(await F.getDoc(F.doc(db,'admins',u.uid))).exists();
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));});}
