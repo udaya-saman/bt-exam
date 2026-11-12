@@ -136,7 +136,7 @@ function board(){
  box.append(btn('Weekly',()=>{period='weekly';board()},period!=='weekly'),btn('All-time',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'People':'Outlets',()=>{outletView=!outletView;board()},true));
  const list=ranked(period,outletView);
  if(outletView){const winner=list.find(x=>x.people>=3);const banner=document.createElement('p');banner.textContent=winner?'👑 '+winner.name+' · '+winner.score+' average points':'At least three active participants required for a crown.';box.append(banner);}
- for(const r of list){const d=document.createElement('div');d.className='entry';const l=document.createElement('span');l.textContent=r.rank+'. '+r.name+' · '+(outletView?r.people+' active':r.outlet);const p=document.createElement('strong');p.textContent=r.score+' pts';d.append(l,p);box.append(d);}
+ for(const r of list){const d=document.createElement('div');d.className='entry';const l=document.createElement('span');if(!outletView){const avatar=document.createElement('img');avatar.src=r.avatar||'./images/default-avatar.svg';avatar.alt='';avatar.style.cssText='width:29px;height:29px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px';l.append(avatar);}l.append(document.createTextNode(r.rank+'. '+r.name+' · '+(outletView?r.people+' active':r.outlet)));const p=document.createElement('strong');p.textContent=r.score+' pts';d.append(l,p);box.append(d);}
  box.append(btn('My profile',()=>show('profile'),true),btn('Close',close,true));
 }
 function monthly(){
@@ -151,7 +151,7 @@ function listen(){
  unsubscribe=F.onSnapshot(F.collection(db,'users'),snap=>{
   users=snap.docs.map(d=>d.data());profile=users.find(x=>x.uid===user?.uid)||profile;
   const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine<previousRank){note('🏆 Overtook another user · rank #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden){const panel=open('🏆 Rank increased!','You overtook another participant. Your new weekly rank is #'+mine);const image=document.createElement('img');image.src='./images/overtake/you-overtook.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();panel.prepend(image);panel.append(btn('Continue',close));}}
+  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;note(risen?'🏆 Overtook another user · rank #'+mine:'Another user overtook you · rank #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden){const panel=open(risen?'🏆 Rank increased!':'Your rank changed',risen?'You moved ahead of another participant. New rank: #'+mine:'Another participant moved ahead of you. New rank: #'+mine);const image=document.createElement('img');image.src=risen?'./images/overtake/you-overtook.png':'./images/overtake/you-were-overtaken.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();panel.prepend(image);panel.append(btn('Continue',close));}}
   previousRank=mine;monthly();
  },err=>console.warn('Leaderboard listener',err));
 }
@@ -203,7 +203,7 @@ async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
  try{const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){gate('setup','The account profile is missing. Contact the administrator.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
-  if(admins){if(unsubscribeAdmin)unsubscribeAdmin();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));});}
+  if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
   close();listen();restoreCloudSession();sync();
  }catch(e){gate('setup',errorMessage(e));}
