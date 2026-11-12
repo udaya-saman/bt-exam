@@ -1346,7 +1346,7 @@ function startPaper(paperId) {
   qHistory = [];
   sessionAnswers = [];
   const p = PAPERS[paperId];
-  questions = shuffle([...p.qs]);
+  questions = shuffle(p.qs.map((question, index) => ({ ...question, btOriginalQuestionIndex: index })));
   qIndex = 0; correct = 0; wrong = 0; skipped = 0;
   
   document.getElementById('quiz-paper-label').textContent = p.title;
@@ -1459,7 +1459,7 @@ function selectAnswer(selectedIdx, correctIdx, origIdx, q) {
   updateScorePill();
   showExplanation(isCorrect, false, q);
   saveProgress();
-  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.findIndex(item => item.q === q.q && JSON.stringify(item.opts) === JSON.stringify(q.opts)), selectedOriginalIndex: origIdx, correct: isCorrect, remainingSeconds: timeLeft, source: 'answer'});
+  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: (Number.isInteger(q.btOriginalQuestionIndex) ? q.btOriginalQuestionIndex : PAPERS[currentPaper].qs.findIndex(item => item.q === q.q && JSON.stringify(item.opts) === JSON.stringify(q.opts))), selectedOriginalIndex: origIdx, correct: isCorrect, remainingSeconds: timeLeft, source: 'answer'});
 }
 
 function timeoutQ() {
@@ -1485,7 +1485,7 @@ function timeoutQ() {
   updateScorePill();
   showExplanation(false, true, q);
   saveProgress();
-  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.findIndex(item => item.q === q.q && JSON.stringify(item.opts) === JSON.stringify(q.opts)), selectedOriginalIndex: -1, correct: false, remainingSeconds: 0, source: 'timeout'});
+  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: (Number.isInteger(q.btOriginalQuestionIndex) ? q.btOriginalQuestionIndex : PAPERS[currentPaper].qs.findIndex(item => item.q === q.q && JSON.stringify(item.opts) === JSON.stringify(q.opts))), selectedOriginalIndex: -1, correct: false, remainingSeconds: 0, source: 'timeout'});
 }
 
 function showExplanation(isCorrect, isTimeout, q) {
