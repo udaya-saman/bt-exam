@@ -58,8 +58,8 @@ const storageKey=()=>user?'bt_exam_state:'+user.uid:null;
 function getQueue(){try{return JSON.parse(localStorage.getItem(qkey())||'[]')}catch(_){return []}}
 function saveQueue(q){localStorage.setItem(qkey(),JSON.stringify(q))}
 function onStart(paper){if(!user)return;active={id:rand(),paper,dayKey:day(),startedAt:Date.now()};localStorage.setItem(akey(),JSON.stringify(active));}
-function onResume(paper){if(!user)return;try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}if(!active||active.paper!==paper)onStart(paper);}
-function onFinish(){if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
+function onResume(paper,saved){if(!user)return;try{active=saved||JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}if(!active||active.paper!==paper)onStart(paper);else localStorage.setItem(akey(),JSON.stringify(active));}
+function onFinish(){clearTimeout(cloudTimer);if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
 async function onAnswer(a){
  if(!user||!profile||!active||active.paper!==a.paperId)return;
  const index=Number(a.originalQuestionIndex),selected=Number(a.selectedOriginalIndex);
@@ -67,10 +67,10 @@ async function onAnswer(a){
  const id=user.uid+'_'+active.id+'_'+active.paper+'_'+index,q=getQueue();
  if(q.some(x=>x.id===id))return;
  const remaining=a.correct?Math.max(0,Math.min(60,Math.floor(Number(a.remainingSeconds)||0))):0;
- const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,weekKey:week(),monthKey:day().slice(0,7),outlet:profile.outlet,earnedAt:Date.now(),claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
+ const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,startedAt:active.startedAt,weekKey:week(),monthKey:day().slice(0,7),outlet:profile.outlet,earnedAt:Date.now(),claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
  q.push(entry);saveQueue(q);note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
 }
-window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>{}};
+window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>{}};
 let cloudTimer=null;
 function saveCloudSession(snapshot){
  if(!user||!navigator.onLine)return;
@@ -79,7 +79,7 @@ function saveCloudSession(snapshot){
   if(!user)return;
   F.setDoc(F.doc(db,'savedSessions',user.uid),{uid:user.uid,snapshot,updatedAt:F.serverTimestamp()})
     .catch(e=>console.warn('Session sync failed:',e.code||e));
- },9000);
+ },1800);
 }
 async function restoreCloudSession(){
  if(!user||!navigator.onLine||localStorage.getItem(storageKey()))return;
@@ -102,7 +102,7 @@ async function sync(){
      if(!u.exists()||u.data().outlet!==e.outlet)throw Error('OUTLET_CHANGED');
      const p=u.data(),change=(m,k,v)=>Object.assign({},m||{},{[k]:Number((m||{})[k]||0)+v}),wk=e.weekKey+'__'+e.outlet;
      tx.set(er,{uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,earnedAt:F.Timestamp.fromMillis(e.earnedAt),claimId:e.claimId});
-     if(!claim.exists())tx.set(cr,{uid:e.uid,paper:e.paper,dayKey:e.dayKey,attemptId:e.attemptId,startedAt:F.Timestamp.fromMillis(e.earnedAt)});
+     if(!claim.exists())tx.set(cr,{uid:e.uid,paper:e.paper,dayKey:e.dayKey,attemptId:e.attemptId,startedAt:F.Timestamp.fromMillis(e.startedAt||e.earnedAt)});
      tx.update(ur,{lastEventId:e.id,totalPoints:Number(p.totalPoints||0)+e.points,totalAnswers:Number(p.totalAnswers||0)+1,
       weeklyPoints:change(p.weeklyPoints,e.weekKey,e.points),monthlyPoints:change(p.monthlyPoints,e.monthKey,e.points),
       outletPoints:change(p.outletPoints,e.outlet,e.points),outletWeeklyPoints:change(p.outletWeeklyPoints,wk,e.points),
