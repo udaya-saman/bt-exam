@@ -200,7 +200,7 @@ function show(view){if(!user||!profile){gate();return;}if(view==='board')board()
 async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
  try{const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){gate('setup','The account profile is missing. Contact the administrator.');return;}
-  profile=snap.data();admins=(await F.getDoc(F.doc(db,'admins',u.uid))).exists();
+  profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
   close();listen();restoreCloudSession();sync();
@@ -230,8 +230,8 @@ try{
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-auth.js'),
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-firestore.js')]);
  A=authModule;F=firestoreModule;const app=appModule.initializeApp(config);auth=A.getAuth(app);
- await A.setPersistence(auth,A.browserLocalPersistence);
- db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})});
+ try{await A.setPersistence(auth,A.browserLocalPersistence);}catch(e){console.warn('Persistent login unavailable:',e);await A.setPersistence(auth,A.inMemoryPersistence);}
+ try{db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})});}catch(storageError){console.warn('Persistent offline database unavailable:',storageError);db=F.getFirestore(app);note('Offline storage is limited on this browser.');}
  A.onAuthStateChanged(auth,session);
 }catch(e){gate('setup','Firebase SDK error: '+errorMessage(e));}
 })();
