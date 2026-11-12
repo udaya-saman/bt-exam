@@ -2,6 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
+const APP_VERSION='3.0.0-spark';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B'];
 const rand=()=>crypto.randomUUID().replace(/-/g,'');
 const day=(date=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Colombo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);const g=t=>p.find(v=>v.type===t).value;return g('year')+'-'+g('month')+'-'+g('day');};
@@ -70,7 +71,7 @@ async function onAnswer(a){
  const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,startedAt:active.startedAt,weekKey:week(),monthKey:day().slice(0,7),outlet:profile.outlet,earnedAt:Date.now(),claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
  q.push(entry);saveQueue(q);note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
 }
-window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>{}};
+window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>promptUpdate()};
 let cloudTimer=null;
 function saveCloudSession(snapshot){
  if(!user||!navigator.onLine)return;
@@ -141,19 +142,23 @@ function monthly(){
  if(d<4||!user||!users.length)return;
  const key='bt_spark_champion_'+user.uid+'_'+previous;if(localStorage.getItem(key))return;
  const top=users.map(u=>({name:u.username,outlet:u.outlet,score:Number(u.monthlyPoints?.[previous]||0)})).sort((a,b)=>b.score-a.score);
- if(top[0]?.score>0){localStorage.setItem(key,'1');const box=open('🏆 Monthly champion','Congratulations to '+top[0].name+' of '+top[0].outlet+' · '+top[0].score+' points');box.append(btn('Continue',close));}
+ if(top[0]?.score>0){localStorage.setItem(key,'1');const box=open('🏆 Monthly champion','Congratulations to '+top[0].name+' of '+top[0].outlet+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/congratulations/monthly-champion.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();box.prepend(image);box.append(btn('Continue',close));}
 }
 function listen(){
  if(unsubscribe)unsubscribe();
  unsubscribe=F.onSnapshot(F.collection(db,'users'),snap=>{
   users=snap.docs.map(d=>d.data());profile=users.find(x=>x.uid===user?.uid)||profile;
   const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine<previousRank){note('🏆 Overtook another user · rank #'+mine);}
+  if(previousRank!==null&&mine&&mine<previousRank){note('🏆 Overtook another user · rank #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden){const panel=open('🏆 Rank increased!','You overtook another participant. Your new weekly rank is #'+mine);const image=document.createElement('img');image.src='./images/overtake/you-overtook.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();panel.prepend(image);panel.append(btn('Continue',close));}}
   previousRank=mine;monthly();
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
  const box=open('My profile',profile.username+' · '+profile.outlet+' · '+profile.totalPoints+' total points · '+getQueue().length+' pending');
+ const achieved=['First 100 points','500-point Star','1,000-point Master'].filter((_,i)=>Number(profile.totalPoints||0)>=[100,500,1000][i]);
+ if(achieved.length){const badge=document.createElement('p');badge.textContent='🏅 Achievements: '+achieved.join(' · ');box.append(badge);}
+ const weekAnswers=Object.entries(profile.outletWeeklyAnswers||{}).filter(([key])=>key.startsWith(week()+'__')).reduce((sum,[,n])=>sum+Number(n||0),0);
+ if(weekAnswers>=50){const challenge=document.createElement('p');challenge.textContent='✅ Weekly challenge complete: 50 questions';box.append(challenge);}
  const msg=document.createElement('p');msg.className='err';box.append(msg);
  const image=field(box,'Profile picture','file');image.accept='image/jpeg,image/png,image/webp';image.onchange=async()=>{
   try{const file=image.files[0],src=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
@@ -201,8 +206,24 @@ async function session(u){
   close();listen();restoreCloudSession();sync();
  }catch(e){gate('setup',errorMessage(e));}
 }
-window.addEventListener('online',sync);setInterval(sync,60000);
-if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){gate('setup','Set Firebase web-app settings in firebase-config.js first.');return;}
+async function checkForUpdates(){
+ if(!navigator.onLine)return;
+ try{const r=await fetch('./version.json?check='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+ const v=(await r.json()).version;if(v&&v!==APP_VERSION)latestUpdate=v;promptUpdate();
+ }catch(e){console.info('Update check unavailable:',e.message);}
+}
+function promptUpdate(){
+ if(!latestUpdate||!root.hidden||$('#quiz')?.classList.contains('active'))return;
+ const v=latestUpdate;const box=open('Update available','BT Exam Prep version '+v+' is available. Updating will reload the application.');
+ box.append(btn('Update now',async()=>{
+  try{const reg=await navigator.serviceWorker?.getRegistration();if(reg){await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});}}
+  catch(e){console.warn('Update:',e);}
+  location.reload();
+ }),btn('Later',close,true));
+}
+window.addEventListener('online',()=>{sync();checkForUpdates();});
+setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
+if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','Configure the free Firebase project before using the leaderboard. The existing exam remains available.');dock.textContent='🏆 Leaderboard (setup)';return;}
 try{
  const [appModule,authModule,firestoreModule]=await Promise.all([
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-app.js'),
