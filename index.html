@@ -1261,7 +1261,8 @@ function shuffle(arr) {
 function saveProgress() {
   const state = {
     currentPaper, qIndex, correct, wrong, skipped,
-    qHistory, questions, sessionAnswers
+    qHistory, questions, sessionAnswers,
+    btLeaderboardAttempt: window.BTExamBridge?.getAttempt?.() || null
   };
   localStorage.setItem(window.BTExamBridge?.storageKey?.() || 'bt_exam_state', JSON.stringify(state));
 }
@@ -1290,7 +1291,7 @@ function resumeSavedSession() {
       questions = state.questions;
       sessionAnswers = state.sessionAnswers || [];
       qIndex = Math.max(qIndex, sessionAnswers.length);
-      window.BTExamBridge?.onPaperResume?.({paperId: currentPaper});
+      window.BTExamBridge?.onPaperResume?.({paperId: currentPaper, attempt: state.btLeaderboardAttempt});
       
       document.getElementById('quiz-paper-label').textContent = PAPERS[currentPaper].title;
       showScreen('quiz');
@@ -1449,7 +1450,7 @@ function selectAnswer(selectedIdx, correctIdx, origIdx, q) {
   updateScorePill();
   showExplanation(isCorrect, false, q);
   saveProgress();
-  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.indexOf(q), selectedOriginalIndex: origIdx, correct: isCorrect, remainingSeconds: timeLeft, source: 'answer'});
+  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.findIndex(item => item.q === q.q && JSON.stringify(item.opts) === JSON.stringify(q.opts)), selectedOriginalIndex: origIdx, correct: isCorrect, remainingSeconds: timeLeft, source: 'answer'});
 }
 
 function timeoutQ() {
@@ -1475,7 +1476,7 @@ function timeoutQ() {
   updateScorePill();
   showExplanation(false, true, q);
   saveProgress();
-  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.indexOf(q), selectedOriginalIndex: -1, correct: false, remainingSeconds: 0, source: 'timeout'});
+  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.findIndex(item => item.q === q.q && JSON.stringify(item.opts) === JSON.stringify(q.opts)), selectedOriginalIndex: -1, correct: false, remainingSeconds: 0, source: 'timeout'});
 }
 
 function showExplanation(isCorrect, isTimeout, q) {
