@@ -205,7 +205,7 @@ async function session(u){
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
-  close();listen();restoreCloudSession();sync();
+  close();if(typeof checkSavedSession==='function')checkSavedSession();listen();restoreCloudSession();sync();
  }catch(e){gate('setup',errorMessage(e));}
 }
 async function checkForUpdates(){
