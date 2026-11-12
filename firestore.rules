@@ -94,7 +94,7 @@ service cloud.firestore {
     allow update, delete: if false;
   }
   match /scoreEvents/{id} {
-    allow get: if logged() && resource.data.uid == request.auth.uid;
+    allow get: if logged() && id.matches('^' + request.auth.uid + '_.*');
     allow list: if false;
     allow create: if logged()
       && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','earnedAt','claimId'])
