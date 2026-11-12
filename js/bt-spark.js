@@ -43,8 +43,8 @@ async function register(name,password,outlet){
    tx.set(reg,{uid:created.user.uid,authEmail});
    tx.set(u,{uid:created.user.uid,username:name,usernameLower:norm(name),outlet,avatar:'',totalPoints:0,totalAnswers:0,weeklyPoints:{},monthlyPoints:{},outletPoints:{},outletWeeklyPoints:{},outletAnswers:{},outletWeeklyAnswers:{},lastEventId:'',createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()});
   });
-  await session(created.user);
  }catch(e){try{await A.deleteUser(created.user)}catch(_){}throw e;}
+ await session(created.user);
 }
 async function login(name,password){
  if(!valid(name))throw Error('Invalid username.');
@@ -59,7 +59,7 @@ function getQueue(){try{return JSON.parse(localStorage.getItem(qkey())||'[]')}ca
 function saveQueue(q){localStorage.setItem(qkey(),JSON.stringify(q))}
 function onStart(paper){if(!user)return;active={id:rand(),paper,dayKey:day(),startedAt:Date.now()};localStorage.setItem(akey(),JSON.stringify(active));}
 function onResume(paper){if(!user)return;try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}if(!active||active.paper!==paper)onStart(paper);}
-function onFinish(){if(user)localStorage.removeItem(akey());active=null;}
+function onFinish(){if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
 async function onAnswer(a){
  if(!user||!profile||!active||active.paper!==a.paperId)return;
  const index=Number(a.originalQuestionIndex),selected=Number(a.selectedOriginalIndex);
@@ -70,7 +70,23 @@ async function onAnswer(a){
  const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,weekKey:week(),monthKey:day().slice(0,7),outlet:profile.outlet,earnedAt:Date.now(),claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
  q.push(entry);saveQueue(q);note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
 }
-window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId),onAnswer,onPaperComplete:onFinish,onProgress:()=>{},onScreenChange:()=>{}};
+window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>{}};
+let cloudTimer=null;
+function saveCloudSession(snapshot){
+ if(!user||!navigator.onLine)return;
+ clearTimeout(cloudTimer);
+ cloudTimer=setTimeout(()=>{
+  if(!user)return;
+  F.setDoc(F.doc(db,'savedSessions',user.uid),{uid:user.uid,snapshot,updatedAt:F.serverTimestamp()})
+    .catch(e=>console.warn('Session sync failed:',e.code||e));
+ },9000);
+}
+async function restoreCloudSession(){
+ if(!user||!navigator.onLine||localStorage.getItem(storageKey()))return;
+ try{const snap=await F.getDoc(F.doc(db,'savedSessions',user.uid));
+  if(snap.exists()&&snap.data().snapshot){localStorage.setItem(storageKey(),JSON.stringify(snap.data().snapshot));if(typeof checkSavedSession==='function')checkSavedSession();}
+ }catch(e){console.warn('Resume restore unavailable:',e.code||e);}
+}
 async function sync(){
  if(!user||!profile||syncing||!navigator.onLine)return;syncing=true;
  try{
@@ -182,7 +198,7 @@ async function session(u){
   profile=snap.data();admins=(await F.getDoc(F.doc(db,'admins',u.uid))).exists();
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
-  close();listen();sync();
+  close();listen();restoreCloudSession();sync();
  }catch(e){gate('setup',errorMessage(e));}
 }
 window.addEventListener('online',sync);setInterval(sync,60000);
