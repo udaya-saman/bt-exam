@@ -7,7 +7,7 @@ service cloud.firestore {
   function slMonth(value) { let t = value + duration.value(330,'m'); return string(t.year()) + '-' + pad2(t.month()); }
   function logged() { return request.auth != null; }
   function mine(uid) { return logged() && request.auth.uid == uid; }
-  function admin() { return logged() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+  function admin() { return logged() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.enabled == true; }
   function validOutlet(o) { return o in ['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B']; }
   function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
   function eventPath(id) { return /databases/$(database)/documents/scoreEvents/$(id); }
