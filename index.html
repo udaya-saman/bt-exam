@@ -1193,6 +1193,8 @@ let qHistory = [];
 let sessionAnswers = [];
 let timerInterval = null;
 let timeLeft = 60;
+let btQuestionStartedAt = Date.now();
+let btResumeRemaining = null;
 let isTranslated = false;
 let _trShuffled = [];
 
@@ -1262,7 +1264,8 @@ function saveProgress() {
   const state = {
     currentPaper, qIndex, correct, wrong, skipped,
     qHistory, questions, sessionAnswers,
-    btLeaderboardAttempt: window.BTExamBridge?.getAttempt?.() || null
+    btLeaderboardAttempt: window.BTExamBridge?.getAttempt?.() || null,
+    btQuestionStartedAt
   };
   localStorage.setItem(window.BTExamBridge?.storageKey?.() || 'bt_exam_state', JSON.stringify(state));
 }
@@ -1291,6 +1294,8 @@ function resumeSavedSession() {
       questions = state.questions;
       sessionAnswers = state.sessionAnswers || [];
       qIndex = Math.max(qIndex, sessionAnswers.length);
+      btQuestionStartedAt = Number(state.btQuestionStartedAt) || Date.now();
+      btResumeRemaining = Math.max(0, 60 - Math.floor(Math.max(0, Date.now() - btQuestionStartedAt) / 1000));
       window.BTExamBridge?.onPaperResume?.({paperId: currentPaper, attempt: state.btLeaderboardAttempt});
       
       document.getElementById('quiz-paper-label').textContent = PAPERS[currentPaper].title;
@@ -1336,6 +1341,7 @@ function goHome() {
 function startPaper(paperId) {
   initAudio();
   currentPaper = paperId;
+  btResumeRemaining = null;
   window.BTExamBridge?.onPaperStart?.({paperId});
   qHistory = [];
   sessionAnswers = [];
@@ -1350,6 +1356,7 @@ function startPaper(paperId) {
 
 function renderQuestion() {
   if (qIndex >= questions.length) { showResults(); return; }
+  if (btResumeRemaining === null) btQuestionStartedAt = Date.now();
   saveProgress();
   
   answered = false;
@@ -1425,6 +1432,8 @@ function toggleTranslate() {
 // ══════════════════════════════════════════════════════════════
 function selectAnswer(selectedIdx, correctIdx, origIdx, q) {
   if (answered) return;
+  timeLeft = Math.max(0, 60 - Math.floor(Math.max(0, Date.now() - btQuestionStartedAt) / 1000));
+  if (timeLeft <= 0) { timeoutQ(); return; }
   answered = true;
   clearTimer();
   
@@ -1514,13 +1523,15 @@ function goPrevQuestion() {
 
 function startTimer() {
   clearTimer();
-  timeLeft = 60;
+  timeLeft = btResumeRemaining === null ? 60 : btResumeRemaining;
+  btResumeRemaining = null;
   updateTimerUI();
+  if (timeLeft <= 0) { setTimeout(() => timeoutQ(), 0); return; }
   timerInterval = setInterval(() => {
-    timeLeft--;
+    timeLeft = Math.max(0, 60 - Math.floor(Math.max(0, Date.now() - btQuestionStartedAt) / 1000));
     updateTimerUI();
     if (timeLeft <= 0) { clearTimer(); timeoutQ(); }
-  }, 1000);
+  }, 250);
 }
 
 function clearTimer() {
