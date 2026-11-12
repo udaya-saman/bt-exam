@@ -1180,6 +1180,7 @@ paper3: {
 // ══════════════════════════════════════════════════════════════
 // STATE & AUDIO
 // ══════════════════════════════════════════════════════════════
+window.BT_EXAM_PAPERS = PAPERS;
 let currentPaper = null;
 let questions = [];
 let qIndex = 0;
@@ -1262,11 +1263,11 @@ function saveProgress() {
     currentPaper, qIndex, correct, wrong, skipped,
     qHistory, questions, sessionAnswers
   };
-  localStorage.setItem('bt_exam_state', JSON.stringify(state));
+  localStorage.setItem(window.BTExamBridge?.storageKey?.() || 'bt_exam_state', JSON.stringify(state));
 }
 
 function checkSavedSession() {
-  const saved = localStorage.getItem('bt_exam_state');
+  const saved = localStorage.getItem(window.BTExamBridge?.storageKey?.() || 'bt_exam_state');
   const banner = document.getElementById('resume-banner');
   if (saved) {
     banner.style.display = 'flex';
@@ -1276,7 +1277,7 @@ function checkSavedSession() {
 }
 
 function resumeSavedSession() {
-  const saved = localStorage.getItem('bt_exam_state');
+  const saved = localStorage.getItem(window.BTExamBridge?.storageKey?.() || 'bt_exam_state');
   if (saved) {
     try {
       const state = JSON.parse(saved);
@@ -1288,6 +1289,8 @@ function resumeSavedSession() {
       qHistory = state.qHistory;
       questions = state.questions;
       sessionAnswers = state.sessionAnswers || [];
+      qIndex = Math.max(qIndex, sessionAnswers.length);
+      window.BTExamBridge?.onPaperResume?.({paperId: currentPaper});
       
       document.getElementById('quiz-paper-label').textContent = PAPERS[currentPaper].title;
       showScreen('quiz');
@@ -1306,6 +1309,7 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
   checkSavedSession();
+  window.BTExamBridge?.onScreenChange?.();
 }
 
 function goHome() {
@@ -1331,6 +1335,7 @@ function goHome() {
 function startPaper(paperId) {
   initAudio();
   currentPaper = paperId;
+  window.BTExamBridge?.onPaperStart?.({paperId});
   qHistory = [];
   sessionAnswers = [];
   const p = PAPERS[paperId];
@@ -1362,7 +1367,8 @@ function renderQuestion() {
   document.getElementById('next-btn').classList.remove('show');
   
   const prevBtn = document.getElementById('prev-btn');
-  prevBtn.disabled = (qIndex === 0);
+  prevBtn.disabled = true;
+  prevBtn.title = 'Review answers after completing this exam';
 
   const btnTrans = document.getElementById('translate-btn');
   btnTrans.className = 'translate-btn';
@@ -1442,6 +1448,8 @@ function selectAnswer(selectedIdx, correctIdx, origIdx, q) {
   
   updateScorePill();
   showExplanation(isCorrect, false, q);
+  saveProgress();
+  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.indexOf(q), selectedOriginalIndex: origIdx, correct: isCorrect, remainingSeconds: timeLeft, source: 'answer'});
 }
 
 function timeoutQ() {
@@ -1466,6 +1474,8 @@ function timeoutQ() {
   
   updateScorePill();
   showExplanation(false, true, q);
+  saveProgress();
+  window.BTExamBridge?.onAnswer?.({paperId: currentPaper, originalQuestionIndex: PAPERS[currentPaper].qs.indexOf(q), selectedOriginalIndex: -1, correct: false, remainingSeconds: 0, source: 'timeout'});
 }
 
 function showExplanation(isCorrect, isTimeout, q) {
@@ -1497,14 +1507,8 @@ function nextQuestion() {
 }
 
 function goPrevQuestion() {
-  if (qHistory.length === 0) return;
-  clearTimer();
-  const snap = qHistory.pop();
-  qIndex = snap.qIndex; correct = snap.correct; wrong = snap.wrong; skipped = snap.skipped;
-  sessionAnswers.pop(); // Remove last recorded answer
-  const qBody = document.querySelector('.quiz-body');
-  if(qBody) qBody.scrollTop = 0;
-  renderQuestion();
+  // Locked answers cannot be modified or replayed during an exam.
+  return;
 }
 
 function startTimer() {
@@ -1558,7 +1562,8 @@ function confirmReset() {
 // ══════════════════════════════════════════════════════════════
 function showResults() {
   clearTimer();
-  localStorage.removeItem('bt_exam_state'); // Clear save upon finish
+  localStorage.removeItem(window.BTExamBridge?.storageKey?.() || 'bt_exam_state');
+  window.BTExamBridge?.onPaperComplete?.();
   
   const total = questions.length;
   const pct = Math.round((correct / total) * 100);
@@ -1677,5 +1682,8 @@ window.addEventListener('popstate', function() {
     });
   }
 </script>
+<!-- BT-SPARK-INTEGRATION-v3 -->
+<script src="./firebase-config.js"></script>
+<script type="module" src="./js/bt-spark.js"></script>
 </body>
 </html>
