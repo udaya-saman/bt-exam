@@ -119,6 +119,14 @@ service cloud.firestore {
       && getAfter(userPath(request.auth.uid)).data.lastEventId == id;
     allow update, delete: if false;
   }
+  match /savedSessions/{uid} {
+    allow read, delete: if mine(uid);
+    allow create, update: if mine(uid)
+      && request.resource.data.keys().hasOnly(['uid','snapshot','updatedAt'])
+      && request.resource.data.uid == uid
+      && request.resource.data.snapshot is map
+      && request.resource.data.snapshot.keys().hasAll(['currentPaper','qIndex','questions','sessionAnswers']);
+  }
   match /outletRequests/{id} {
     allow read: if logged() && (admin() || resource.data.uid == request.auth.uid);
     allow create: if logged()
