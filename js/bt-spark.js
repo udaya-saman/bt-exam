@@ -42,7 +42,7 @@ async function register(name,password,outlet){
    const reg=F.doc(db,'usernames',norm(name)),u=F.doc(db,'users',created.user.uid);
    if((await tx.get(reg)).exists())throw Error('Username already taken.');
    tx.set(reg,{uid:created.user.uid,authEmail});
-   tx.set(u,{uid:created.user.uid,username:name,usernameLower:norm(name),outlet,avatar:'',totalPoints:0,totalAnswers:0,weeklyPoints:{},monthlyPoints:{},outletPoints:{},outletWeeklyPoints:{},outletAnswers:{},outletWeeklyAnswers:{},lastEventId:'',createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()});
+   tx.set(u,{uid:created.user.uid,username:name,usernameLower:norm(name),outlet,avatar:'',totalPoints:0,totalAnswers:0,weeklyPoints:{},monthlyPoints:{},outletPoints:{},outletWeeklyPoints:{},outletMonthlyPoints:{},outletAnswers:{},outletWeeklyAnswers:{},outletMonthlyAnswers:{},lastEventId:'',createdAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()});
   });
  }catch(e){try{await A.deleteUser(created.user)}catch(_){}throw e;}
  await session(created.user);
@@ -102,11 +102,13 @@ async function sync(){
      if(claim.exists()&&claim.data().attemptId!==e.attemptId)throw Error('PRACTICE_ONLY');
      if(!u.exists()||u.data().outlet!==e.outlet)throw Error('OUTLET_CHANGED');
      const p=u.data(),change=(m,k,v)=>Object.assign({},m||{},{[k]:Number((m||{})[k]||0)+v}),wk=e.weekKey+'__'+e.outlet;
-     tx.set(er,{uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,earnedAt:F.Timestamp.fromMillis(e.earnedAt),claimId:e.claimId});
+     tx.set(er,{uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,outletMonthKey:e.monthKey+'__'+e.outlet,earnedAt:F.Timestamp.fromMillis(e.earnedAt),claimId:e.claimId});
      if(!claim.exists())tx.set(cr,{uid:e.uid,paper:e.paper,dayKey:e.dayKey,attemptId:e.attemptId,startedAt:F.Timestamp.fromMillis(e.startedAt||e.earnedAt)});
      tx.update(ur,{lastEventId:e.id,totalPoints:Number(p.totalPoints||0)+e.points,totalAnswers:Number(p.totalAnswers||0)+1,
       weeklyPoints:change(p.weeklyPoints,e.weekKey,e.points),monthlyPoints:change(p.monthlyPoints,e.monthKey,e.points),
       outletPoints:change(p.outletPoints,e.outlet,e.points),outletWeeklyPoints:change(p.outletWeeklyPoints,wk,e.points),
+      outletMonthlyPoints:change(p.outletMonthlyPoints,e.monthKey+'__'+e.outlet,e.points),
+      outletMonthlyAnswers:change(p.outletMonthlyAnswers,e.monthKey+'__'+e.outlet,1),
       outletAnswers:change(p.outletAnswers,e.outlet,1),outletWeeklyAnswers:change(p.outletWeeklyAnswers,wk,1),updatedAt:F.serverTimestamp()});
     });done.push(e.id);
    }catch(err){
@@ -141,8 +143,8 @@ function monthly(){
  const d=Number(day().slice(8)),p=day().slice(0,7),previous=new Date(Date.UTC(Number(p.slice(0,4)),Number(p.slice(5,7))-2,1)).toISOString().slice(0,7);
  if(d<4||!user||!users.length)return;
  const key='bt_spark_champion_'+user.uid+'_'+previous;if(localStorage.getItem(key))return;
- const top=users.map(u=>({name:u.username,outlet:u.outlet,score:Number(u.monthlyPoints?.[previous]||0)})).sort((a,b)=>b.score-a.score);
- if(top[0]?.score>0){localStorage.setItem(key,'1');const box=open('🏆 Monthly champion','Congratulations to '+top[0].name+' of '+top[0].outlet+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/congratulations/monthly-champion.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();box.prepend(image);box.append(btn('Continue',close));}
+ const top=users.map(u=>{const outlets=Object.entries(u.outletMonthlyPoints||{}).filter(([k])=>k.startsWith(previous+'__')).sort((a,b)=>b[1]-a[1]);return{name:u.username,outlet:outlets[0]?.[0].slice(previous.length+2)||u.outlet,score:Number(u.monthlyPoints?.[previous]||0)};}).sort((a,b)=>b.score-a.score);
+ if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/congratulations/monthly-champion.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();box.prepend(image);box.append(btn('Continue',close));}
 }
 function listen(){
  if(unsubscribe)unsubscribe();
