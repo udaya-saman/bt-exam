@@ -1293,9 +1293,10 @@ function resumeSavedSession() {
       qHistory = state.qHistory;
       questions = state.questions;
       sessionAnswers = state.sessionAnswers || [];
+      const previousQuestionWasAnswered = sessionAnswers.length > qIndex;
       qIndex = Math.max(qIndex, sessionAnswers.length);
-      btQuestionStartedAt = Number(state.btQuestionStartedAt) || Date.now();
-      btResumeRemaining = Math.max(0, 60 - Math.floor(Math.max(0, Date.now() - btQuestionStartedAt) / 1000));
+      btQuestionStartedAt = previousQuestionWasAnswered ? Date.now() : (Number(state.btQuestionStartedAt) || Date.now());
+      btResumeRemaining = previousQuestionWasAnswered ? null : Math.max(0, 60 - Math.floor(Math.max(0, Date.now() - btQuestionStartedAt) / 1000));
       window.BTExamBridge?.onPaperResume?.({paperId: currentPaper, attempt: state.btLeaderboardAttempt});
       
       document.getElementById('quiz-paper-label').textContent = PAPERS[currentPaper].title;
