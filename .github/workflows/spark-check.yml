@@ -1,0 +1,32 @@
+name: Spark integration checks
+on:
+  push:
+    branches: [feature/firebase-spark-leaderboard, main]
+  pull_request:
+    branches: [main]
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Spark script syntax
+        run: node --check js/bt-spark.js
+      - name: Check service worker syntax
+        run: node --check sw.js
+      - name: Check index inline scripts syntax
+        run: |
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
+          for (let i=0;i<scripts.length;i++) {
+            const source=scripts[i][1];if(source.trim())new vm.Script(source,{filename:'index inline script '+(i+1)});
+          }
+          if(!html.includes('BT-SPARK-INTEGRATION-v3'))throw Error('Spark script injection missing');
+          if(!html.includes('function goPrevQuestion()'))throw Error('Quiz navigation missing');
+          if(html.includes('sessionAnswers.pop()'))throw Error('Answer rollback exploit still present');
+          console.log('Inline scripts parsed and anti-repeat guards present');
+          NODE

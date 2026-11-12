@@ -1,0 +1,164 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function pad2(value) { return value < 10 ? '0' + string(value) : string(value); }
+  function slDate(value) { let t = value + duration.value(330,'m'); return string(t.year()) + '-' + pad2(t.month()) + '-' + pad2(t.day()); }
+  function slWeek(value) { let t = value + duration.value(330,'m'); let monday = t - duration.value((t.dayOfWeek() + 5) % 7,'d'); return string(monday.year()) + '-' + pad2(monday.month()) + '-' + pad2(monday.day()); }
+  function slMonth(value) { let t = value + duration.value(330,'m'); return string(t.year()) + '-' + pad2(t.month()); }
+  function logged() { return request.auth != null; }
+  function mine(uid) { return logged() && request.auth.uid == uid; }
+  function admin() { return logged() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.enabled == true; }
+  function validOutlet(o) { return o in ['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B']; }
+  function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+  function eventPath(id) { return /databases/$(database)/documents/scoreEvents/$(id); }
+  function keyPath(id) { return /databases/$(database)/documents/answerKeys/$(id); }
+  function claimPath(id) { return /databases/$(database)/documents/rankedClaims/$(id); }
+  function usernamePath(id) { return /databases/$(database)/documents/usernames/$(id); }
+  function profileEdit() {
+    return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['username','usernameLower','avatar','updatedAt'])
+      && request.resource.data.username is string
+      && request.resource.data.username.size() >= 3 && request.resource.data.username.size() <= 24
+      && request.resource.data.usernameLower is string
+      && request.resource.data.avatar is string && request.resource.data.avatar.size() <= 25000
+      && getAfter(usernamePath(request.resource.data.usernameLower)).data.uid == request.auth.uid;
+  }
+  function scoringUpdate(uid) {
+    let id = request.resource.data.lastEventId;
+    let e = getAfter(eventPath(id)).data;
+    return id is string && id.size() <= 210
+      && !exists(eventPath(id))
+      && e.uid == uid
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+        ['lastEventId','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt'])
+      && request.resource.data.totalPoints == resource.data.totalPoints + e.points
+      && request.resource.data.totalAnswers == resource.data.totalAnswers + 1
+      && request.resource.data.weeklyPoints.diff(resource.data.weeklyPoints).affectedKeys().hasOnly([e.weekKey])
+      && request.resource.data.weeklyPoints[e.weekKey] == resource.data.weeklyPoints.get(e.weekKey,0) + e.points
+      && request.resource.data.monthlyPoints.diff(resource.data.monthlyPoints).affectedKeys().hasOnly([e.monthKey])
+      && request.resource.data.monthlyPoints[e.monthKey] == resource.data.monthlyPoints.get(e.monthKey,0) + e.points
+      && request.resource.data.outletPoints.diff(resource.data.outletPoints).affectedKeys().hasOnly([e.outlet])
+      && request.resource.data.outletPoints[e.outlet] == resource.data.outletPoints.get(e.outlet,0) + e.points
+      && request.resource.data.outletWeeklyPoints.diff(resource.data.outletWeeklyPoints).affectedKeys().hasOnly([e.outletWeekKey])
+      && request.resource.data.outletWeeklyPoints[e.outletWeekKey] == resource.data.outletWeeklyPoints.get(e.outletWeekKey,0) + e.points
+      && request.resource.data.outletMonthlyPoints.diff(resource.data.outletMonthlyPoints).affectedKeys().hasOnly([e.outletMonthKey])
+      && request.resource.data.outletMonthlyPoints[e.outletMonthKey] == resource.data.outletMonthlyPoints.get(e.outletMonthKey,0) + e.points
+      && request.resource.data.outletMonthlyAnswers.diff(resource.data.outletMonthlyAnswers).affectedKeys().hasOnly([e.outletMonthKey])
+      && request.resource.data.outletMonthlyAnswers[e.outletMonthKey] == resource.data.outletMonthlyAnswers.get(e.outletMonthKey,0) + 1
+      && request.resource.data.outletAnswers.diff(resource.data.outletAnswers).affectedKeys().hasOnly([e.outlet])
+      && request.resource.data.outletAnswers[e.outlet] == resource.data.outletAnswers.get(e.outlet,0) + 1
+      && request.resource.data.outletWeeklyAnswers.diff(resource.data.outletWeeklyAnswers).affectedKeys().hasOnly([e.outletWeekKey])
+      && request.resource.data.outletWeeklyAnswers[e.outletWeekKey] == resource.data.outletWeeklyAnswers.get(e.outletWeekKey,0) + 1;
+  }
+  match /admins/{uid} { allow get: if mine(uid); allow list: if false; allow write: if false; }
+  match /usernames/{name} {
+    allow get: if true;
+    allow list: if false;
+    allow create: if logged() && name.matches('^[a-z0-9._-]{3,24}$')
+      && request.resource.data.keys().hasOnly(['uid','authEmail'])
+      && request.resource.data.uid == request.auth.uid
+      && request.resource.data.authEmail == request.auth.token.email
+      && getAfter(userPath(request.auth.uid)).data.usernameLower == name;
+    allow delete: if logged() && resource.data.uid == request.auth.uid
+      && getAfter(userPath(request.auth.uid)).data.usernameLower != name;
+    allow update: if false;
+  }
+  match /users/{uid} {
+    allow read: if logged();
+    allow create: if mine(uid)
+      && request.resource.data.keys().hasAll(['uid','username','usernameLower','outlet','avatar','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','lastEventId','createdAt','updatedAt'])
+      && request.resource.data.uid == uid
+      && validOutlet(request.resource.data.outlet)
+      && request.resource.data.username is string
+      && request.resource.data.username.size() >= 3 && request.resource.data.username.size() <= 24
+      && request.resource.data.avatar == ''
+      && request.resource.data.totalPoints == 0 && request.resource.data.totalAnswers == 0
+      && request.resource.data.weeklyPoints == {} && request.resource.data.monthlyPoints == {}
+      && request.resource.data.outletPoints == {} && request.resource.data.outletWeeklyPoints == {} && request.resource.data.outletMonthlyPoints == {} && request.resource.data.outletMonthlyAnswers == {}
+      && request.resource.data.outletAnswers == {} && request.resource.data.outletWeeklyAnswers == {}
+      && request.resource.data.lastEventId == ''
+      && getAfter(usernamePath(request.resource.data.usernameLower)).data.uid == uid;
+    allow update: if (mine(uid) && (profileEdit() || scoringUpdate(uid)))
+      || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet','updatedAt'])
+      && validOutlet(request.resource.data.outlet));
+    allow delete: if false;
+  }
+  match /answerKeys/{id} {
+    allow read: if false;
+    allow write: if admin() && request.resource.data.keys().hasOnly(['answer','paper','index'])
+      && request.resource.data.answer is int && request.resource.data.answer >= 0 && request.resource.data.answer <= 5;
+  }
+  match /rankedClaims/{id} {
+    allow get: if logged();
+    allow list: if false;
+    allow create: if logged()
+      && request.resource.data.keys().hasOnly(['uid','paper','dayKey','attemptId','startedAt'])
+      && request.resource.data.uid == request.auth.uid
+      && request.resource.data.attemptId is string && request.resource.data.attemptId.size() >= 12
+      && request.resource.data.paper in ['past2024','questions','paper1','paper2','paper3']
+      && id == request.resource.data.uid + '_' + request.resource.data.dayKey + '_' + request.resource.data.paper
+      && request.resource.data.startedAt is timestamp
+      && request.resource.data.dayKey == slDate(request.resource.data.startedAt)
+      && request.resource.data.startedAt <= request.time + duration.value(5, 'm')
+      && request.resource.data.startedAt >= request.time - duration.value(72, 'h');
+    allow update, delete: if false;
+  }
+  match /scoreEvents/{id} {
+    allow get: if logged() && id.matches('^' + request.auth.uid + '_.*');
+    allow list: if false;
+    allow create: if logged()
+      && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','outletMonthKey','earnedAt','claimId'])
+      && request.resource.data.uid == request.auth.uid
+      && request.resource.data.paper in ['past2024','questions','paper1','paper2','paper3']
+      && request.resource.data.index is int && request.resource.data.index >= 0
+      && request.resource.data.index < (request.resource.data.paper == 'past2024' ? 29 : request.resource.data.paper == 'questions' ? 40 : request.resource.data.paper == 'paper3' ? 45 : 50)
+      && request.resource.data.selected is int && request.resource.data.selected >= -1 && request.resource.data.selected <= 5
+      && request.resource.data.remaining is int && request.resource.data.remaining >= 0 && request.resource.data.remaining <= 60
+      && request.resource.data.points is int && request.resource.data.points >= 0 && request.resource.data.points <= 70
+      && request.resource.data.outlet == get(userPath(request.auth.uid)).data.outlet
+      && request.resource.data.outletWeekKey == request.resource.data.weekKey + '__' + request.resource.data.outlet
+      && request.resource.data.outletMonthKey == request.resource.data.monthKey + '__' + request.resource.data.outlet
+      && request.resource.data.earnedAt is timestamp
+      && request.resource.data.weekKey == slWeek(request.resource.data.earnedAt)
+      && request.resource.data.monthKey == slMonth(request.resource.data.earnedAt)
+      && request.resource.data.earnedAt <= request.time + duration.value(5,'m')
+      && request.resource.data.earnedAt >= request.time - duration.value(72,'h')
+      && id == request.resource.data.uid + '_' + request.resource.data.attemptId + '_' + request.resource.data.paper + '_' + request.resource.data.index
+      && exists(keyPath(request.resource.data.paper + '_' + request.resource.data.index))
+      && request.resource.data.points == (request.resource.data.selected == get(keyPath(request.resource.data.paper + '_' + request.resource.data.index)).data.answer ? 10 + request.resource.data.remaining : 0)
+      && request.resource.data.claimId == request.resource.data.uid + '_' + request.resource.data.dayKey + '_' + request.resource.data.paper
+      && getAfter(claimPath(request.resource.data.claimId)).data.uid == request.auth.uid
+      && getAfter(claimPath(request.resource.data.claimId)).data.attemptId == request.resource.data.attemptId
+      && getAfter(userPath(request.auth.uid)).data.lastEventId == id;
+    allow update, delete: if false;
+  }
+  match /savedSessions/{uid} {
+    allow read, delete: if mine(uid);
+    allow create, update: if mine(uid)
+      && request.resource.data.keys().hasOnly(['uid','snapshot','updatedAt'])
+      && request.resource.data.uid == uid
+      && request.resource.data.snapshot is map
+      && request.resource.data.snapshot.keys().hasAll(['currentPaper','qIndex','questions','sessionAnswers']);
+  }
+  match /outletRequests/{id} {
+    allow read: if logged() && (admin() || resource.data.uid == request.auth.uid);
+    allow create: if logged()
+      && request.resource.data.keys().hasOnly(['uid','from','to','status','createdAt'])
+      && request.resource.data.uid == request.auth.uid
+      && request.resource.data.from == get(userPath(request.auth.uid)).data.outlet
+      && validOutlet(request.resource.data.to)
+      && request.resource.data.to != request.resource.data.from
+      && request.resource.data.status == 'pending';
+    allow update: if admin()
+      && resource.data.status == 'pending'
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','reviewedBy','reviewedAt'])
+      && request.resource.data.status in ['approved','rejected']
+      && request.resource.data.reviewedBy == request.auth.uid;
+    allow delete: if false;
+  }
+  match /seenMonthly/{id} {
+    allow read: if logged() && id.matches('^' + request.auth.uid + '_.*');
+    allow create: if logged() && request.resource.data.uid == request.auth.uid && request.resource.data.month is string;
+    allow update,delete: if false;
+  }
+ }
+}

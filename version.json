@@ -1,0 +1,5 @@
+{
+  "version": "3.0.0-spark",
+  "releaseDate": "2026-11-13",
+  "notes": "Firebase Spark leaderboard, account profiles, offline queue, safe updates."
+}
