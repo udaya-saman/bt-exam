@@ -156,3 +156,22 @@ The new scoring fields (`correctAnswers`, `dailyActivity`, `rapidCorrectStreak`,
 ### Production limitations
 
 Live Firebase authentication, scoring, writes, quotas, and mobile performance still require tests against the actual project and devices. Security rules can validate score arithmetic and flag patterns, but cannot reliably prove elapsed time in an offline, browser-controlled exam. Keep the Cloud Firestore **Spark plan** and watch free usage limits. If real users have accumulated points on an older release, do not replace or discard those documents; the new achievement counters begin recording with new confirmed answers.
+
+
+## Version 3.3: Administrator user removal – TWO confirmation steps
+
+Once both administrator accounts are registered and granted `admins/{UID}` with `enabled: true`, an admin can open **Leaderboard → My Profile → Approve outlet requests → Manage users** and search by username or outlet. The app shows a **DELETE** control for eligible, non-admin accounts.
+
+1. First confirmation is a warning dialog explaining what will happen.
+2. Second confirmation asks the administrator to type **`DELETE username`** exactly and re-enter **their own administrator password**. The password is only used for Firebase reauthentication; it is not stored in Firestore.
+3. On successful confirmation, a single Firestore transaction adds an immutable `accountBlocks/{UID}` record, removes the user's `users/{UID}` private profile, releases their `usernames/{usernameLower}` claim, and removes their `publicRanks/{UID}` record when present.
+4. The old Firebase Authentication identity is blocked from accessing BT Exam data by the new security rules and signs out on next sign-in. The deleted user cannot simply sign in to resume their account.
+5. **Final permanent Auth deletion still requires you to go to Firebase Console → Authentication → Users and delete the original UID.** The app shows the UID after removal so you can find it. Do **not** delete other users by mistake. Firebase Spark does not let ordinary browser code securely invoke the privileged Admin SDK to delete another user's Auth identity.
+
+The deleted UID's `accountBlocks` record is deliberately retained to prevent reactivation and record which administrator removed access. Other historical collections (past `scoreEvents`, `rankedClaims`, `savedSessions`, previous `outletRequests`) are not automatically purged. Their data is inaccessible to blocked users under updated rules, but **full data-erasure requests still require owner-supervised cleanup in Firebase Console or trusted administrative tools**. Do not describe in-app deletion as complete legal-grade personal-data erasure.
+
+**Protection:** Neither signed-in administrators nor accounts named `indika` or `udaya` can be removed through this app. All administrators with an `admins/{UID}` document are protected at the database-rule level. Network access is required. Errors abort the transaction with no partial deletion.
+
+**Publish the NEW Firestore rules from this version before using Manage users.** Changing GitHub alone does not change Firebase security rules. The owner must copy the full current `firestore.rules` into Firestore Database → Rules → Publish.
+
+For safety, first test this feature with a disposable `Other` test account, not a real employee account.
