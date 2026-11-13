@@ -144,31 +144,62 @@ function ranked(period='weekly',outletView=false){
 }
 let period='weekly',outletView=false;
 function board(){
- const box=open(outletView?'Outlet crown':'Leaderboard','Live individual and outlet rankings · Asia/Colombo');
- box.append(btn('Weekly',()=>{period='weekly';board()},period!=='weekly'),btn('All-time',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'People':'Outlets',()=>{outletView=!outletView;board()},true));
- const list=ranked(period,outletView);
- if(outletView){const winner=list.find(x=>x.people>=3);const banner=document.createElement('p');banner.textContent=winner?'👑 '+winner.name+' · '+winner.score+' average points':'At least three active participants required for a crown.';box.append(banner);}
- for(const r of list){const d=document.createElement('div');d.className='entry';const l=document.createElement('span');if(!outletView){const avatar=document.createElement('img');avatar.src=r.avatar||'./images/default-avatar.svg';avatar.alt='';avatar.style.cssText='width:29px;height:29px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px';l.append(avatar);}l.append(document.createTextNode(r.rank+'. '+r.name+' · '+(outletView?r.people+' active':r.outlet)));const p=document.createElement('strong');p.textContent=r.score+' pts';d.append(l,p);box.append(d);}
- box.append(btn('My profile',()=>show('profile'),true),btn('Close',close,true));
+ const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
+ const hero=document.createElement('div');hero.className='pg-hero';
+ const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src='./images/mascot/pizza-champ.svg';mascot.alt='Cheering pizza slice mascot';hero.append(mascot);
+ const text=document.createElement('div');text.className='pg-hero-copy';
+ const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':'THE PIZZA ARENA';
+ const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
+ big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
+ const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':rankEligible({...profile,isAdmin:admins})?'Ready for your next victory?':'Private account · your points are yours alone';
+ text.append(label,big,sub);hero.append(text);box.append(hero);
+ const buttons=document.createElement('div');buttons.className='pg-nav';
+ buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
+ if(!rankEligible({...profile,isAdmin:admins})){const privateNote=document.createElement('div');privateNote.className='pg-private';privateNote.textContent='🔒 PRIVATE PLAYER · You still earn and see points in your profile. Other and administrator accounts never enter public rankings.';box.append(privateNote);}
+ const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=3).slice(0,3):records.slice(0,3);
+ if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
+  const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
+  if(!outletView){const picture=document.createElement('img');picture.src=r.avatar||'./images/default-avatar.svg';picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.svg';cell.append(picture);}
+  const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
+ }box.append(group);}
+ if(outletView){const crown=records.find(v=>v.people>=3);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 3 active players are needed.';box.append(status);}
+ const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
+ if(!records.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='🍕 The first ranked scores will appear here.';box.append(empty);}
+ for(const r of records){
+  const card=document.createElement('div');card.className='pg-leader-card';if(r.uid===user?.uid)card.classList.add('pg-you');
+  const place=document.createElement('span');place.className='pg-place';place.textContent=r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank;card.append(place);
+  if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=r.avatar||'./images/default-avatar.svg';pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.svg';card.append(pic);}
+  const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
+  const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
+ }
+ const footer=document.createElement('p');footer.className='pg-muted';footer.textContent='Only eligible accounts are ranked. Other and administrator points are always private. Offline results count after successful sync.';box.append(footer);
+ box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
+}
+function showRankMascot(risen,rank){
+ const box=open(risen?'🚀 RANK UP!':'⚔️ RANK CHALLENGE',risen?'Great work! You climbed the leaderboard.':'Another player overtook you. Practice and reclaim your position!');
+ const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-champ.svg':'./images/mascot/pizza-challenge.svg';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
+ const msg=document.createElement('div');msg.className='pg-private';msg.textContent='CURRENT WEEKLY RANK · #'+rank;box.append(msg,btn('LET’S GO!',close));
 }
 function monthly(){
  const d=Number(day().slice(8)),p=day().slice(0,7),previous=new Date(Date.UTC(Number(p.slice(0,4)),Number(p.slice(5,7))-2,1)).toISOString().slice(0,7);
  if(d<4||!user||!users.length)return;
  const key='bt_spark_champion_'+user.uid+'_'+previous;if(localStorage.getItem(key))return;
  const top=users.filter(rankEligible).map(u=>{const outlets=Object.entries(u.outletMonthlyPoints||{}).filter(([k])=>k.startsWith(previous+'__')).sort((a,b)=>b[1]-a[1]);return{name:u.name,outlet:outlets[0]?.[0].slice(previous.length+2)||u.outlet,score:Number(u.monthlyPoints?.[previous]||0)};}).sort((a,b)=>b.score-a.score);
- if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/congratulations/monthly-champion.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();box.prepend(image);box.append(btn('Continue',close));}
+ if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/mascot/pizza-champ.svg';image.alt='Pizza mascot celebrating';image.className='pg-celebration';box.prepend(image);box.append(btn('Continue',close));}
 }
 function listen(){
  if(unsubscribe)unsubscribe();
  unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),snap=>{
   users=snap.docs.map(d=>d.data()).filter(rankEligible);
   const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;note(risen?'🏆 Overtook another user · rank #'+mine:'Another user overtook you · rank #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden){const panel=open(risen?'🏆 Rank increased!':'Your rank changed',risen?'You moved ahead of another participant. New rank: #'+mine:'Another participant moved ahead of you. New rank: #'+mine);const image=document.createElement('img');image.src=risen?'./images/overtake/you-overtook.png':'./images/overtake/you-were-overtaken.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();panel.prepend(image);panel.append(btn('Continue',close));}}
+  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(risen,mine);}
   previousRank=mine;monthly();
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
- const box=open('My profile',profile.username+' · '+profile.outlet+' · '+profile.totalPoints+' total points · '+getQueue().length+' pending');
+ const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
+ const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src='./images/mascot/pizza-champ.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent=rankEligible({...profile,isAdmin:admins})?'YOUR PLAYER STATS':'PRIVATE SCORING MODE';const b=document.createElement('strong');b.textContent=Number(profile.totalPoints||0).toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=Number(profile.totalAnswers||0)+' answered · '+getQueue().length+' pending';info.append(a,b,c);hero.append(pic,info);box.append(hero);
+ if(!rankEligible({...profile,isAdmin:admins})){const x=document.createElement('div');x.className='pg-private';x.textContent='🔒 Your points are private. You are excluded from player standings and outlet crowns.';box.append(x);}
  const achieved=['First 100 points','500-point Star','1,000-point Master'].filter((_,i)=>Number(profile.totalPoints||0)>=[100,500,1000][i]);
  if(achieved.length){const badge=document.createElement('p');badge.textContent='🏅 Achievements: '+achieved.join(' · ');box.append(badge);}
  const weekAnswers=Object.entries(profile.outletWeeklyAnswers||{}).filter(([key])=>key.startsWith(week()+'__')).reduce((sum,[,n])=>sum+Number(n||0),0);
