@@ -151,8 +151,8 @@ async function sync(){
  try{
   const list=getQueue(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
   for(const e of list){
-   if(Date.now()-e.earnedAt>72*3600000){syncIssue='An old result is beyond the 72-hour sync window. It has been retained on this device for review.';break;}
-   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='A stored question does not match the installed paper. Result retained for review.';break;}
+   if(Date.now()-e.earnedAt>72*3600000){syncIssue='An old result is beyond the 72-hour sync window. It has been retained on this device for review.';continue;}
+   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='A stored question does not match the installed paper. Result retained for review.';continue;}
    const er=F.doc(db,'scoreEvents',e.id),cr=F.doc(db,'rankedClaims',e.claimId),ur=F.doc(db,'users',user.uid);
    try{
     await F.runTransaction(db,async tx=>{
