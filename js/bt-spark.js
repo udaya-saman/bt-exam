@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.3.0-admin-user-removal';let latestUpdate=null;
+const APP_VERSION='3.4.0-sticker-scoring';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -13,14 +13,39 @@ const norm=name=>String(name||'').trim().toLowerCase();
 const valid=name=>/^[A-Za-z0-9._-]{3,24}$/.test(name);
 const $=selector=>document.querySelector(selector);
 const clean=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,unsubscribeProfile=null,syncing=false,previousRank=null,boardOpen=false,showAllPlayers=false,rankNotice='';
+let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,unsubscribeProfile=null,syncing=false,syncIssue='',previousRank=null,boardOpen=false,showAllPlayers=false,rankNotice='';
 const root=document.createElement('div');root.id='bt-spark-root';root.hidden=true;document.body.append(root);
 const style=document.createElement('style');style.textContent='#bt-spark-root{position:fixed;inset:0;z-index:2147483000;background:#0a163ab8;display:grid;place-items:center;padding:12px;box-sizing:border-box;font:15px Arial,sans-serif;color:#26344a}#bt-spark-root[hidden]{display:none}#bt-spark-root .panel{background:white;border-radius:17px;width:min(100%,540px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px;box-sizing:border-box;box-shadow:0 15px 50px #0003}#bt-spark-root h2{font-size:22px;color:#21306b;margin:0 0 8px}#bt-spark-root p{font-size:13px;color:#63748b;line-height:1.45}#bt-spark-root label{display:block;font-weight:700;margin:12px 0 4px;font-size:12px}#bt-spark-root input,#bt-spark-root select{display:block;padding:11px;border-radius:10px;border:1px solid #cbd6e3;width:100%;box-sizing:border-box;font:inherit}#bt-spark-root button{padding:10px 13px;margin:6px 4px 4px 0;background:#0b71b4;color:white;border:0;border-radius:9px;font-weight:750;cursor:pointer}#bt-spark-root button.alt{background:#e8f0f9;color:#21306b}#bt-spark-root .err{color:#c00}#bt-spark-root .entry{padding:11px 0;border-bottom:1px solid #e5eaf0;display:flex;justify-content:space-between;gap:12px}#bt-spark-dock{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147482000;background:#21306b;color:white;border:0;border-radius:30px;padding:11px 14px;font-weight:800}';document.head.append(style);
 const dock=document.createElement('button');dock.id='bt-spark-dock';dock.textContent='🏆 Leaderboard';dock.onclick=()=>show('board');document.body.append(dock);
-function note(msg){console.info('[BT Spark]',msg);const n=document.createElement('div');n.textContent=msg;n.style.cssText='position:fixed;z-index:2147483200;top:12px;left:12px;right:12px;background:#21306b;color:#fff;padding:12px;border-radius:12px;text-align:center';document.body.append(n);setTimeout(()=>n.remove(),3300);}
+function note(msg){console.info('[BT Spark]',msg);const n=document.createElement('div');n.textContent=msg;n.className='pg-toast';document.body.append(n);setTimeout(()=>n.remove(),3200);}
+function award(points,correct){
+ const old=document.querySelector('.pg-earned-toast');if(old)old.remove();
+ const pill=document.createElement('div');pill.className='pg-earned-toast';pill.setAttribute('aria-live','polite');
+ const mascot=document.createElement('img');mascot.alt='';mascot.src=correct?'./images/mascot/pizza-correct.svg':'./images/mascot/pizza-wrong.svg';
+ const count=document.createElement('strong');count.textContent=(points>0?'+':'')+points+' PTS';
+ pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),1750);
+}
+function statTotals(){
+ const pending=getQueue().filter(q=>q.uid===user?.uid);
+ return{points:Number(profile?.totalPoints||0)+pending.reduce((a,e)=>a+Number(e.points||0),0),
+ answered:Number(profile?.totalAnswers||0)+pending.length,
+ correct:Number(profile?.correctAnswers||0)+pending.filter(e=>e.points>0).length,
+ syncCount:pending.length};
+}
+function syncDetail(err){
+ const msg=errorMessage(err);
+ if(/permission-denied|insufficient permissions/i.test(msg))return 'Firebase rejected the result. Check that answer keys were seeded and the latest Firestore rules were published.';
+ if(/unavailable|network/i.test(msg))return 'Connection unavailable. The result is saved on this device for retry.';
+ return msg;
+}
 function open(title,sub){root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
 function close(){root.hidden=true;root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
-function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;if(alt)b.className='alt';b.onclick=handler;return b;}
+function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
+ const low=String(label).toLowerCase();
+ if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
+ else if(/leaderboard|sync|my profile|player card|profile|back to users/.test(low))b.className='pg-btn-green';
+ else if(alt)b.className='alt';
+ b.onclick=handler;return b;}
 function label(parent,text,input){const l=document.createElement('label');l.textContent=text;parent.append(l,input);return input;}
 function field(parent,text,type='text'){const input=document.createElement('input');input.type=type;input.required=true;return label(parent,text,input);}
 function sel(parent,text){const s=document.createElement('select');OUTLETS.forEach(n=>{const o=document.createElement('option');o.textContent=n;o.value=n;s.append(o)});return label(parent,text,s);}
@@ -89,16 +114,16 @@ function onResume(paper,saved){
 function onFinish(){clearTimeout(cloudTimer);cloudTimer=null;pendingCloudSnapshot=null;if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
 async function onAnswer(a){
  if(!user||!profile||!active||active.paper!==a.paperId)return;
- if(active.ranked===false){note('Practice mode · this attempt earns no ranking points');return;}
+ if(active.ranked===false){award(0,Boolean(a.correct));return;}
  const index=Number(a.originalQuestionIndex),selected=Number(a.selectedOriginalIndex);
- if(!Number.isInteger(index)||!Number.isInteger(selected))return;
+ if(!Number.isInteger(index)||index<0||!Number.isInteger(selected))return;
  const id=user.uid+'_'+active.id+'_'+active.paper+'_'+index,q=getQueue();
  if(q.some(x=>x.id===id))return;
  const remaining=a.correct?Math.max(0,Math.min(60,Math.floor(Number(a.remainingSeconds)||0))):0;
  const earnedAt=Date.now(),earnedDate=new Date(earnedAt),answerDay=day(earnedDate);
  const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,startedAt:active.startedAt,weekKey:week(earnedDate),monthKey:answerDay.slice(0,7),activityDay:answerDay,outlet:profile.outlet,earnedAt,claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
  q.push(entry);saveQueue(q);localStorage.setItem(rankedKey(active.paper,active.dayKey),active.id);
- note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
+ award(entry.points,entry.points>0);sync();
 }
 window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>promptUpdate()};
 let cloudTimer=null, pendingCloudSnapshot=null;
@@ -126,7 +151,8 @@ async function sync(){
  try{
   const list=getQueue(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
   for(const e of list){
-   if(Date.now()-e.earnedAt>72*3600000||!maximum[e.paper]||e.index>=maximum[e.paper]){done.push(e.id);continue;}
+   if(Date.now()-e.earnedAt>72*3600000){syncIssue='An old result is beyond the 72-hour sync window. It has been retained on this device for review.';continue;}
+   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='A stored question does not match the installed paper. Result retained for review.';continue;}
    const er=F.doc(db,'scoreEvents',e.id),cr=F.doc(db,'rankedClaims',e.claimId),ur=F.doc(db,'users',user.uid);
    try{
     await F.runTransaction(db,async tx=>{
@@ -161,11 +187,12 @@ async function sync(){
     });done.push(e.id);
    }catch(err){
     const message=errorMessage(err);
-    if(/PRACTICE_ONLY|OUTLET_CHANGED|permission-denied|insufficient permissions|invalid-argument/i.test(message)){done.push(e.id);note('A score was not accepted as ranked.');}
-    else{console.warn('Sync paused:',message);break;}
+    if(/PRACTICE_ONLY/.test(message)){console.warn('Ranked claim conflict retained:',e.id);syncIssue='This attempt conflicts with an earlier ranked attempt. The local record is retained for review.';break;}
+    syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
   if(done.length){const removed=new Set(done);saveQueue(getQueue().filter(e=>!removed.has(e.id)));}
+  if(!getQueue().length)syncIssue='';
  }finally{syncing=false;}
 }
 function ranked(period='weekly',outletView=false){
@@ -189,12 +216,12 @@ function board(){
  const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
  const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
  big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
- const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':rankEligible({...profile,isAdmin:admins})?'Ready for your next victory?':'Private account · your points are yours alone';
+ const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':'Ready for your next victory?';
  text.append(label,big,sub);hero.append(text);box.append(hero);
  if(window.BTRewards){const season=window.BTRewards.season(day());if(season){const chip=document.createElement('div');chip.className='pg-season-chip';const crown=document.createElement('span');crown.className='pg-crown-icon';crown.textContent='👑';chip.append(crown,document.createTextNode(' WEEKLY SEASON · '+season.daysRemaining+' DAYS LEFT · Ends '+season.end));box.append(chip);}}
  const buttons=document.createElement('div');buttons.className='pg-nav';
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
- if(!rankEligible({...profile,isAdmin:admins})){const privateNote=document.createElement('div');privateNote.className='pg-private';privateNote.textContent='🔒 PRIVATE PLAYER · You still earn and see points in your profile. Other and administrator accounts never enter public rankings.';box.append(privateNote);}
+ 
  const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=3).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
   const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
@@ -221,7 +248,7 @@ function board(){
   const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
  }
  if(!outletView&&records.length>20){box.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board();},true));}
- const footer=document.createElement('p');footer.className='pg-muted';footer.textContent='Only eligible accounts are ranked. Other and administrator points are always private. Offline results count after successful sync.';box.append(footer);
+ 
  box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
 }
 function showRankMascot(risen,rank){
@@ -250,11 +277,12 @@ function listen(){
 async function profilePanel(){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
- const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.svg':'./images/mascot/pizza-private.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent=rankEligible({...profile,isAdmin:admins})?'YOUR PLAYER STATS':'PRIVATE SCORING MODE';const b=document.createElement('strong');b.textContent=Number(profile.totalPoints||0).toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=Number(profile.totalAnswers||0)+' answered · '+getQueue().length+' pending';info.append(a,b,c);hero.append(pic,info);box.append(hero);
- if(!rankEligible({...profile,isAdmin:admins})){const x=document.createElement('div');x.className='pg-private';x.textContent='🔒 Your points are private. You are excluded from player standings and outlet crowns.';box.append(x);}
+ const totals=statTotals();
+ const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.svg':'./images/mascot/pizza-private.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent='MY EXAM PROGRESS';const b=document.createElement('strong');b.textContent=totals.points.toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=totals.correct+' correct · '+totals.answered+' answered';info.append(a,b,c);hero.append(pic,info);box.append(hero);
+ if(totals.syncCount||syncIssue){const status=document.createElement('div');status.className='pg-sync-detail';status.textContent=(totals.syncCount?totals.syncCount+' local result(s) awaiting sync. ':'')+syncIssue;box.append(status);}
  const rewards=window.BTRewards;
  if(rewards){
-  const lvl=rewards.level(profile.totalPoints||0);
+  const lvl=rewards.level(Number(profile.totalPoints||0));
   const block=document.createElement('section');block.className='pg-rewards-section';
   const levelHeader=document.createElement('div');levelHeader.className='pg-section';levelHeader.textContent='⭐ LEVEL '+lvl.number+' · YOUR PROGRESSION';block.append(levelHeader);
   const stat=document.createElement('div');stat.className='pg-reward-stat';
@@ -303,10 +331,21 @@ async function profilePanel(){
  },true));
  const oldpass=field(box,'Current password','password'),newpass=field(box,'New password','password');
  box.append(btn('Change password',async()=>{try{if(newpass.value.length<8)throw Error('Password too short.');await A.reauthenticateWithCredential(user,A.EmailAuthProvider.credential(user.email,oldpass.value));await A.updatePassword(user,newpass.value);note('Password changed.');}catch(e){msg.textContent=errorMessage(e)}},true));
- const outlet=sel(box,'Request outlet change');outlet.value=profile.outlet;
- box.append(btn('Submit outlet request',async()=>{try{if(outlet.value===profile.outlet)throw Error('Select another outlet.');await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:outlet.value,status:'pending',createdAt:F.serverTimestamp()});note('Request sent for admin approval.');}catch(e){msg.textContent=errorMessage(e)}},true));
+ const outlet=sel(box,'Outlet');outlet.value=profile.outlet;
+ outlet.addEventListener('change',()=>{
+  if(outlet.value===profile.outlet)return;
+  const target=outlet.value;
+  const confirmation=open('CHANGE OUTLET?','Send an approval request to move from '+profile.outlet+' to '+target+'?');
+  const graphic=document.createElement('img');graphic.src='./images/mascot/pizza-update.svg';graphic.className='pg-celebration';graphic.alt='';confirmation.prepend(graphic);
+  confirmation.append(btn('SEND REQUEST',async()=>{
+   try{
+    await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:target,status:'pending',createdAt:F.serverTimestamp()});
+    note('Outlet request submitted for approval.');profilePanel();
+   }catch(e){note(errorMessage(e));profilePanel();}
+  }),btn('CANCEL',()=>profilePanel()));
+ });
  if(admins)box.append(btn('Approve outlet requests',adminPanel));
- box.append(btn('Leaderboard',board,true),btn('Sync',sync,true),btn('Sign out',async()=>{onFinish();await A.signOut(auth);},true),btn('Close',close,true));
+ box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{await A.signOut(auth);}),btn('Close',close));
 }
 function adminPanel(){
  const box=open('Outlet approvals','Both administrators can review pending requests.');
@@ -415,8 +454,28 @@ async function decide(req,yes){
  catch(e){note(errorMessage(e));}
 }
 async function seedKeys(){
- try{const bank=window.BTExamBridge.getPapers();const b=F.writeBatch(db);let count=0;for(const [paper,p] of Object.entries(bank))for(let i=0;i<p.qs.length;i++){b.set(F.doc(db,'answerKeys',paper+'_'+i),{answer:p.qs[i].ans,paper,index:i});count++}await b.commit();note('Seeded '+count+' answer keys.');}
- catch(e){note(errorMessage(e));}
+ if(!admins){note('Only administrators may initialise answer keys.');return;}
+ try{
+  const bank=window.BTExamBridge.getPapers(),items=[];
+  for(const [paper,p] of Object.entries(bank)){
+    if(!Array.isArray(p.qs))throw Error('Invalid paper: '+paper);
+    for(let i=0;i<p.qs.length;i++){
+      const ans=p.qs[i].ans;
+      if(!Number.isInteger(ans)||ans<0||ans>5)throw Error('Invalid answer key: '+paper+' #'+(i+1));
+      items.push({paper,index:i,answer:ans});
+    }
+  }
+  // Small batches reduce Spark plan spikes and rule-access pressure.
+  for(let start=0;start<items.length;start+=15){
+    const batch=F.writeBatch(db);
+    for(const x of items.slice(start,start+15)){
+      batch.set(F.doc(db,'answerKeys',x.paper+'_'+x.index),x);
+    }
+    await batch.commit();
+  }
+  note('Saved '+items.length+' answer keys. Previously retained results will now retry.');
+  await sync();
+ }catch(e){note('Could not seed answer keys: '+errorMessage(e));}
 }
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
@@ -424,7 +483,13 @@ async function session(u){
  try{
   const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
   if(blocked.exists()){await A.signOut(auth);note('This account has been removed. Contact the administrator if needed.');return;}
-  const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){await A.signOut(auth);note('This account has no active profile. Contact the administrator.');return;}
+  let snap=await F.getDoc(F.doc(db,'users',u.uid));
+  // Firebase Auth can fire before the registration transaction creates the user profile.
+  for(let retry=0;retry<6&&!snap.exists();retry++){
+    await new Promise(resolve=>setTimeout(resolve,500));
+    snap=await F.getDoc(F.doc(db,'users',u.uid));
+  }
+  if(!snap.exists()){gate('setup','Your account profile could not be loaded. Refresh the app or contact an administrator.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}

@@ -175,3 +175,32 @@ The deleted UID's `accountBlocks` record is deliberately retained to prevent rea
 **Publish the NEW Firestore rules from this version before using Manage users.** Changing GitHub alone does not change Firebase security rules. The owner must copy the full current `firestore.rules` into Firestore Database → Rules → Publish.
 
 For safety, first test this feature with a disposable `Other` test account, not a real employee account.
+
+## Version 3.4 – Sticker mascots, reliable scoring and redesigned home
+
+This release preserves every question and answer. It replaces the on-screen mascot SVG characters with a **single compressed WebP sprite created from your uploaded sticker sheet**, mapped to welcome, rank up, overtaken, timer, correct, incorrect, monthly, crown, private and update reactions. The sprite adapter lives in `js/bt-mascot-sprite.js`; the brand-red arcade home and button changes are in `css/pizza-v34.css`.
+
+**Important scoring change:** Answer points are displayed immediately as a simple animated point count beside the mascot. A user's player card shows their confirmed total plus device-local unsynchronised results, including total answers and correct answers. Local results are not guaranteed to be accepted by Firestore; the player card now gives a separate sync-status explanation. Failed Firestore submissions are **retained**, not silently deleted. Verified rewards still use confirmed points.
+
+### Required Firebase actions to make scores permanent
+
+1. Open <https://console.firebase.google.com/project/btexam-c1e63/firestore/rules> and publish the latest `firestore.rules` from the GitHub repository. This version corrects a Monday-based weekly-date validation error.
+2. Register `indika` and `udaya` if they do not already exist. Use strong, new passwords.
+3. In Firebase Authentication > Users, copy each UID. In Firestore, create `admins/{UID}` with `enabled` Boolean `true` for both accounts.
+4. Log in as an admin, open **Leaderboard → My Player Card → Approve outlet requests → Seed answer keys**. This operation creates private answer-key documents. Without those documents, **Firestore will reject all score events**, though locally earned points are displayed and saved for retry.
+5. On the test `udaya` account, open My Player Card and press green **Sync**. Verify that the answer count and correct-answer total remain after refreshing or logging in on another device. Run the same test with one `Other` and one ranked-outlet account.
+6. If sync still reports an error, preserve the browser's local data and share the error message (never credentials). Do not clear site data until it is resolved.
+
+### User interface and behaviour
+
+- **Back** is removed during the quiz because answered questions are intentionally locked. Answer review remains available on the results screen.
+- **My Player Card** sends an outlet-change approval request after the outlet dropdown is changed and confirmed; there is no permanent Submit button.
+- **Leaderboard**, **Sync** and profile navigation actions are green. **Sign out**, **Close** and Cancel actions are red.
+- Private accounts no longer get an explanatory English banner about public rankings.
+- The original paper data and question explanations remain unchanged, while the home uses modern game-like challenge cards and a mascot banner.
+
+### Remaining considerations
+
+The app still requires a live Firebase/Firestore test with seeded answer keys. GitHub Actions syntax and rules compilation alone do not prove that writes pass a real security-rules evaluation. The Spark free plan has document-read and write quotas. Time-based bonus points cannot be made cheat-proof in a fully offline browser; do not use this leaderboard as a certification audit record. If a user's results are older than the 72-hour acceptance window, this version keeps them locally for administrator-assisted review rather than silently deleting them.
+
+For future improvements, consider secure export/backup of unsynchronised scores, additional topic-based learning materials, clearer error diagnostics, and a separate administrator audit process. These should be approved and designed before modifying existing exam data.
