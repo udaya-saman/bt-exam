@@ -13,19 +13,20 @@ const norm=name=>String(name||'').trim().toLowerCase();
 const valid=name=>/^[A-Za-z0-9._-]{3,24}$/.test(name);
 const $=selector=>document.querySelector(selector);
 const clean=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,unsubscribeProfile=null,syncing=false,previousRank=null;
+let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,unsubscribeProfile=null,syncing=false,previousRank=null,boardOpen=false,showAllPlayers=false,rankNotice='';
 const root=document.createElement('div');root.id='bt-spark-root';root.hidden=true;document.body.append(root);
 const style=document.createElement('style');style.textContent='#bt-spark-root{position:fixed;inset:0;z-index:2147483000;background:#0a163ab8;display:grid;place-items:center;padding:12px;box-sizing:border-box;font:15px Arial,sans-serif;color:#26344a}#bt-spark-root[hidden]{display:none}#bt-spark-root .panel{background:white;border-radius:17px;width:min(100%,540px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px;box-sizing:border-box;box-shadow:0 15px 50px #0003}#bt-spark-root h2{font-size:22px;color:#21306b;margin:0 0 8px}#bt-spark-root p{font-size:13px;color:#63748b;line-height:1.45}#bt-spark-root label{display:block;font-weight:700;margin:12px 0 4px;font-size:12px}#bt-spark-root input,#bt-spark-root select{display:block;padding:11px;border-radius:10px;border:1px solid #cbd6e3;width:100%;box-sizing:border-box;font:inherit}#bt-spark-root button{padding:10px 13px;margin:6px 4px 4px 0;background:#0b71b4;color:white;border:0;border-radius:9px;font-weight:750;cursor:pointer}#bt-spark-root button.alt{background:#e8f0f9;color:#21306b}#bt-spark-root .err{color:#c00}#bt-spark-root .entry{padding:11px 0;border-bottom:1px solid #e5eaf0;display:flex;justify-content:space-between;gap:12px}#bt-spark-dock{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147482000;background:#21306b;color:white;border:0;border-radius:30px;padding:11px 14px;font-weight:800}';document.head.append(style);
 const dock=document.createElement('button');dock.id='bt-spark-dock';dock.textContent='🏆 Leaderboard';dock.onclick=()=>show('board');document.body.append(dock);
 function note(msg){console.info('[BT Spark]',msg);const n=document.createElement('div');n.textContent=msg;n.style.cssText='position:fixed;z-index:2147483200;top:12px;left:12px;right:12px;background:#21306b;color:#fff;padding:12px;border-radius:12px;text-align:center';document.body.append(n);setTimeout(()=>n.remove(),3300);}
 function open(title,sub){root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.innerHTML='';}
+function close(){root.hidden=true;root.innerHTML='';boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;if(alt)b.className='alt';b.onclick=handler;return b;}
 function label(parent,text,input){const l=document.createElement('label');l.textContent=text;parent.append(l,input);return input;}
 function field(parent,text,type='text'){const input=document.createElement('input');input.type=type;input.required=true;return label(parent,text,input);}
 function sel(parent,text){const s=document.createElement('select');OUTLETS.forEach(n=>{const o=document.createElement('option');o.textContent=n;o.value=n;s.append(o)});return label(parent,text,s);}
 function errorMessage(e){return String(e?.message||e||'Unknown error').replace('Firebase: ','').slice(0,240);}
 function gate(mode='login',message){
+ boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open(mode==='register'?'Create your account':mode==='setup'?'Firebase setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
@@ -149,6 +150,8 @@ function ranked(period='weekly',outletView=false){
 }
 let period='weekly',outletView=false;
 function board(){
+ boardOpen=true;
+ if(!unsubscribe)listen();
  const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
  const hero=document.createElement('div');hero.className='pg-hero';
  const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src='./images/mascot/pizza-champ.svg';mascot.alt='Cheering pizza slice mascot';hero.append(mascot);
@@ -170,13 +173,17 @@ function board(){
  if(outletView){const crown=records.find(v=>v.people>=3);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 3 active players are needed.';box.append(status);}
  const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
  if(!records.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='🍕 The first ranked scores will appear here.';box.append(empty);}
- for(const r of records){
+ const shown=(outletView||showAllPlayers)?records:records.slice(0,20);
+ const own=records.find(r=>r.uid===user?.uid);
+ if(!outletView&&!showAllPlayers&&own&&!shown.some(r=>r.uid===own.uid))shown.push(own);
+ for(const r of shown){
   const card=document.createElement('div');card.className='pg-leader-card';if(r.uid===user?.uid)card.classList.add('pg-you');
   const place=document.createElement('span');place.className='pg-place';place.textContent=r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank;card.append(place);
   if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=r.avatar||'./images/default-avatar.svg';pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.svg';card.append(pic);}
   const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
   const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
  }
+ if(!outletView&&records.length>20){box.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board();},true));}
  const footer=document.createElement('p');footer.className='pg-muted';footer.textContent='Only eligible accounts are ranked. Other and administrator points are always private. Offline results count after successful sync.';box.append(footer);
  box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
 }
@@ -193,15 +200,18 @@ function monthly(){
  if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/mascot/pizza-champ.svg';image.alt='Pizza mascot celebrating';image.className='pg-celebration';box.prepend(image);box.append(btn('Continue',close));}
 }
 function listen(){
- if(unsubscribe)unsubscribe();
+ if(unsubscribe)return;
  unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),snap=>{
   users=snap.docs.map(d=>d.data()).filter(rankEligible);
   const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
   if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(risen,mine);}
-  previousRank=mine;monthly();
+  previousRank=mine;
+  if(boardOpen&&!root.hidden)board();
+  monthly();
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
+ boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
  const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src='./images/mascot/pizza-champ.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent=rankEligible({...profile,isAdmin:admins})?'YOUR PLAYER STATS':'PRIVATE SCORING MODE';const b=document.createElement('strong');b.textContent=Number(profile.totalPoints||0).toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=Number(profile.totalAnswers||0)+' answered · '+getQueue().length+' pending';info.append(a,b,c);hero.append(pic,info);box.append(hero);
  if(!rankEligible({...profile,isAdmin:admins})){const x=document.createElement('div');x.className='pg-private';x.textContent='🔒 Your points are private. You are excluded from player standings and outlet crowns.';box.append(x);}
@@ -255,7 +265,7 @@ async function session(u){
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
   if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists())profile=d.data();});
-  close();if(typeof checkSavedSession==='function')checkSavedSession();listen();restoreCloudSession();sync();
+  close();if(typeof checkSavedSession==='function')checkSavedSession();restoreCloudSession();sync();
  }catch(e){gate('setup',errorMessage(e));}
 }
 async function checkForUpdates(){
