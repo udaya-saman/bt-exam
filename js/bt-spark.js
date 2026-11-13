@@ -151,7 +151,8 @@ async function sync(){
  try{
   const list=getQueue(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
   for(const e of list){
-   if(Date.now()-e.earnedAt>72*3600000||!maximum[e.paper]||e.index>=maximum[e.paper]){done.push(e.id);continue;}
+   if(Date.now()-e.earnedAt>72*3600000){syncIssue='An old result is beyond the 72-hour sync window. It has been retained on this device for review.';break;}
+   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='A stored question does not match the installed paper. Result retained for review.';break;}
    const er=F.doc(db,'scoreEvents',e.id),cr=F.doc(db,'rankedClaims',e.claimId),ur=F.doc(db,'users',user.uid);
    try{
     await F.runTransaction(db,async tx=>{
@@ -281,7 +282,7 @@ async function profilePanel(){
  if(totals.syncCount||syncIssue){const status=document.createElement('div');status.className='pg-sync-detail';status.textContent=(totals.syncCount?totals.syncCount+' local result(s) awaiting sync. ':'')+syncIssue;box.append(status);}
  const rewards=window.BTRewards;
  if(rewards){
-  const lvl=rewards.level(totals.points);
+  const lvl=rewards.level(Number(profile.totalPoints||0));
   const block=document.createElement('section');block.className='pg-rewards-section';
   const levelHeader=document.createElement('div');levelHeader.className='pg-section';levelHeader.textContent='⭐ LEVEL '+lvl.number+' · YOUR PROGRESSION';block.append(levelHeader);
   const stat=document.createElement('div');stat.className='pg-reward-stat';
@@ -292,7 +293,7 @@ async function profilePanel(){
   const fill=document.createElement('span');fill.style.width=lvl.percent+'%';track.append(fill);block.append(track);
   const leader=users.length?ranked('weekly',true).find(x=>x.people>=3):null;
   const onLeadingTeam=Boolean(rankEligible({...profile,isAdmin:admins})&&leader&&leader.name===profile.outlet);
-  const all=rewards.achievements({...profile,totalPoints:totals.points,correctAnswers:totals.correct},day(),week(),onLeadingTeam);
+  const all=rewards.achievements(profile,day(),week(),onLeadingTeam);
   const unlocked=all.filter(item=>item.unlocked).length;
   const heading=document.createElement('div');heading.className='pg-section';heading.textContent='🎖️ YOUR REWARDS · '+unlocked+'/'+all.length+' UNLOCKED';block.append(heading);
   const badges=document.createElement('div');badges.className='pg-reward-grid';
@@ -462,7 +463,13 @@ async function session(u){
  try{
   const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
   if(blocked.exists()){await A.signOut(auth);note('This account has been removed. Contact the administrator if needed.');return;}
-  const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){await A.signOut(auth);note('This account has no active profile. Contact the administrator.');return;}
+  let snap=await F.getDoc(F.doc(db,'users',u.uid));
+  // Firebase Auth can fire before the registration transaction creates the user profile.
+  for(let retry=0;retry<6&&!snap.exists();retry++){
+    await new Promise(resolve=>setTimeout(resolve,500));
+    snap=await F.getDoc(F.doc(db,'users',u.uid));
+  }
+  if(!snap.exists()){gate('setup','Your account profile could not be loaded. Refresh the app or contact an administrator.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
