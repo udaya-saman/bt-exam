@@ -32,3 +32,5 @@ jobs:
           NODE
       - name: Test Pizza Arena ranking privacy and outlet crown rules
         run: node tests/pizza-arena.test.cjs
+      - name: Test mascot, learning rewards and 15-second warning
+        run: node tests/mascot-rewards.test.cjs

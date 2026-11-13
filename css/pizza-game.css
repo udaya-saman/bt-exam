@@ -78,3 +78,44 @@ body #bt-spark-root .pg-muted{color:#d4bac0;font-size:12px}
 @keyframes pg-pop{0%{opacity:0;transform:scale(.7) rotate(-8deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @media (prefers-reduced-motion:reduce){body #bt-spark-root .pg-mascot,body #bt-spark-root .pg-celebration{animation:none}}
 @media(max-width:390px){body #bt-spark-root .pg-hero{padding:10px;gap:5px}body #bt-spark-root .pg-mascot{width:72px}body #bt-spark-root .pg-leader-card{gap:7px;padding:9px 7px}body #bt-spark-root .pg-score{font-size:12px}body #bt-spark-root .pg-podium-item img{width:34px;height:34px}}
+
+/* Quick, silent, non-modal SVG/CSS mascot urgency cue. Never captures touches. */
+.timer-row{position:relative}
+.bt-timer-warning{position:absolute;right:0;bottom:calc(100% + 7px);display:flex;align-items:center;gap:6px;padding:3px 9px 3px 0;border:1px solid #f2c868a8;background:linear-gradient(120deg,#491d1b,#b92c2d);color:#fff6dd;border-radius:100px;font-size:10px;white-space:nowrap;font-weight:900;letter-spacing:.04em;z-index:3;pointer-events:none!important;user-select:none;animation:bt-urgency 2.2s ease-out both;box-shadow:0 7px 17px #65131a45}
+.bt-timer-warning img{width:51px;height:51px;object-fit:contain;margin:-13px -5px -13px 0;animation:bt-mascot-wiggle .6s ease-in-out 2}
+@keyframes bt-urgency{0%{transform:translateY(10px) scale(.85);opacity:0}15%{transform:translateY(0) scale(1.05);opacity:1}29%{transform:translateY(0) scale(1);opacity:1}74%{opacity:1}100%{transform:translateY(-5px) scale(.97);opacity:0}}
+@keyframes bt-mascot-wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(7deg)}}
+.result-card{position:relative}
+.bt-answer-mascot{position:absolute;right:9px;top:-20px;width:55px;height:65px;object-fit:contain;pointer-events:none;animation:bt-answer-pop .45s both cubic-bezier(.2,1.4,.4,1)}
+@keyframes bt-answer-pop{from{opacity:0;transform:translateY(9px) scale(.8)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.bt-timer-warning,.bt-timer-warning img,.bt-answer-mascot{animation:none}.bt-timer-warning{opacity:1}}
+@media(max-width:390px){.bt-timer-warning{font-size:9px}.bt-timer-warning img{width:41px;height:41px}.bt-answer-mascot{width:43px;height:53px;top:-15px}}
+
+/* Milestone, streak and level progress cards, styled for the arcade leaderboard. */
+#bt-spark-root .pg-rewards-section{margin:15px 0 20px}
+#bt-spark-root .pg-reward-stat{display:flex;align-items:baseline;justify-content:space-between;gap:10px;color:#ffe9ad;margin:8px 0}
+#bt-spark-root .pg-reward-stat strong{font-size:19px}
+#bt-spark-root .pg-reward-stat small{color:#dbc6b5;font-size:11px}
+#bt-spark-root .pg-level-track{height:10px;border-radius:20px;background:#4b3234;overflow:hidden;box-shadow:inset 0 1px 4px #0008;margin-bottom:12px}
+#bt-spark-root .pg-level-track span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#e74c3d,#f4b344,#ffe4a2);transition:width .3s}
+#bt-spark-root .pg-reward-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#bt-spark-root .pg-reward-badge{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:5px;min-height:101px;text-align:center;border-radius:15px;background:#302329;border:1px solid #ffffff1b;padding:10px 7px}
+#bt-spark-root .pg-reward-badge.is-earned{background:linear-gradient(135deg,#663528,#4c2b29);border:1px solid #e6b86380;box-shadow:0 5px 16px #0004,inset 0 1px #ffffff18}
+#bt-spark-root .pg-reward-badge.is-locked{filter:saturate(.55);opacity:.64}
+#bt-spark-root .pg-reward-icon{font-size:26px}
+#bt-spark-root .pg-reward-badge strong{font-size:12px;color:#ffedcf}
+#bt-spark-root .pg-reward-badge small{font-size:10px;color:#e5c8a2}
+#bt-spark-root .pg-season-chip{margin:10px 0;padding:10px 12px;border:1px solid #f1bd6988;background:#552a23;border-radius:12px;color:#ffe8b4;font-size:12px;font-weight:750}
+#bt-spark-root .pg-season-chip strong{color:#fff6da}
+#bt-spark-root .pg-crown-icon{display:inline-block;animation:pg-crown-bob 2.5s ease-in-out infinite;transform-origin:center bottom}
+@keyframes pg-crown-bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){#bt-spark-root .pg-crown-icon{animation:none}}
+
+#bt-spark-root .pg-mini-badge{display:inline-block;margin-top:5px;padding:4px 7px;color:#ffdf96;background:#7a572859;border:1px solid #ecae486b;border-radius:99px;font-size:10px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#bt-spark-root .pg-review-item{padding:11px;border-radius:12px;border:1px solid #ffdb932e;background:#3a2b2c;display:flex;justify-content:space-between;gap:10px;margin:7px 0;align-items:center}
+#bt-spark-root .pg-review-item strong{color:#ffecd2;display:block;font-size:13px}
+#bt-spark-root .pg-review-item small{display:block;color:#dcc7bc;font-size:11px;margin-top:4px}
+
+/* Explicit ranked/practice feedback directly beside the existing paper label. */
+.pg-mode-label{display:inline-flex;width:max-content;max-width:100%;align-items:center;padding:3px 8px;margin:3px 0 0;border-radius:99px;background:#ecd59e22;color:var(--ph-red);font-size:10px;font-weight:900;letter-spacing:.025em;white-space:nowrap}
+@media(prefers-color-scheme:dark){.pg-mode-label{color:#ffd78b;background:#e3a74122}}

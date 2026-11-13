@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360" role="img" aria-label="Pizza Hut pizza mascot: rank up">
+<defs><linearGradient id="cheese" x1=".2" y1="0" x2=".8" y2="1"><stop stop-color="#fff0ab"/><stop offset=".55" stop-color="#ffbf39"/><stop offset="1" stop-color="#ed851b"/></linearGradient><linearGradient id="crust" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f8c27d"/><stop offset="1" stop-color="#a9571d"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#240b09" flood-opacity=".36"/></filter></defs>
+<g filter="url(#shadow)"><path d="M100 214Q60 240 41 276M195 226Q241 256 263 278" fill="none" stroke="#372529" stroke-width="17" stroke-linecap="round"/><path d="M42 273q-18 2-18 20l2 15h49v-30zM264 277l21 1q18 13 10 33h-52z" fill="#d51c26" stroke="#81202a" stroke-width="5"/>
+<path d="M81 137Q44 129 39 86M210 134Q264 108 270 75" fill="none" stroke="#35292b" stroke-width="14" stroke-linecap="round"/><circle cx="39" cy="82" r="15" fill="#33282c"/><circle cx="268" cy="70" r="15" fill="#33282c"/>
+<path d="M46 67Q160 20 279 67L160 297Z" fill="url(#cheese)" stroke="#c67823" stroke-width="7" stroke-linejoin="round"/><path d="M44 66Q159 13 279 66Q293 77 284 100Q169 60 44 103Q29 87 44 66Z" fill="url(#crust)" stroke="#a85620" stroke-width="7"/>
+<circle cx="90" cy="127" r="22" fill="#c83227" stroke="#f67d42" stroke-width="7"/><circle cx="222" cy="111" r="18" fill="#c83227" stroke="#f67d42" stroke-width="6"/><circle cx="165" cy="241" r="18" fill="#c83227" stroke="#f67d42" stroke-width="6"/>
+<ellipse cx="115" cy="163" rx="18" ry="23" fill="#fff"/><ellipse cx="193" cy="163" rx="18" ry="23" fill="#fff"/>
+<path d="M110 134q13-12 26-2M178 132q12-11 26 2" fill="none" stroke="#592920" stroke-width="7" stroke-linecap="round"/>
+<path d="M104 166q13-21 26 0" stroke="#342322" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M178 166q13-21 26 0" stroke="#342322" stroke-width="8" stroke-linecap="round" fill="none"/><path d="M121 190Q160 267 201 193Q163 206 121 190Z" fill="#502527"/><path d="M146 230q20-17 38 0" stroke="#ed6666" stroke-width="11"/>
+<circle cx="92" cy="192" r="8" fill="#f77d62" opacity=".65"/><circle cx="218" cy="192" r="8" fill="#f77d62" opacity=".65"/>
+<!-- Same red cap, exact position and same Pizza Hut roof/lettering on each mascot -->
+<path d="M80 51q82-52 150-1l-13 17q-66-32-123 2Z" fill="#d41420" stroke="#941621" stroke-width="5"/>
+<path d="M81 51q81-11 144 2" stroke="#fff4d6" stroke-width="4" fill="none"/>
+<g transform="translate(147 21) rotate(-5)"><path d="M-8 0l7-7 13 0 4 7 9 2v5h-37v-5z" fill="#fff"/><text x="7" y="19" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" font-style="italic" font-weight="900" fill="#fff" letter-spacing="-1">Pizza Hut</text></g>
+<g transform="translate(251 9)"><path d="M3 22h29v15q0 26-15 26T3 37z" fill="#ffc33c" stroke="#bb6c1e" stroke-width="5"/><path d="M3 26h-10q-4 22 11 22M32 26h10q4 22-11 22" fill="none" stroke="#d28729" stroke-width="5"/><path d="M17 62v16M7 79h22" stroke="#d28729" stroke-width="6" stroke-linecap="round"/><path d="M17 29l4 9 9 2-7 6 2 10-8-5-8 5 2-10-7-6 9-2z" fill="#fff2b9"/></g>
+</g></svg>

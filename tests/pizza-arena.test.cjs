@@ -55,5 +55,5 @@ assert.match(rules,/match \/publicRanks\/\{uid\}/,'Public score collection');
 assert.match(rules,/allow read: if mine\(uid\) \|\| admin\(\)/,'Private user score security');
 assert.match(rules,/outlet != 'Other'/,'Other excluded by Firestore public score rules');
 assert.ok(html.includes('css/pizza-game.css'),'Theme loaded');
-assert.ok(js.includes('images/mascot/pizza-champ.svg'),'Mascot referenced');
+assert.ok(js.includes('images/mascot/pizza-welcome.svg') && js.includes('images/mascot/pizza-crown.svg'),'Matching mascots referenced');
 console.log('Pizza Arena privacy/ranking tests passed (15 key expectations).');

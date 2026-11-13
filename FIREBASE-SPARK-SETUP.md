@@ -127,3 +127,32 @@ This is **not** a complete recreation of the former server-backed package. In pa
 The app uses a Pizza Hut–inspired red, near-black, cream and warm-gold arcade theme. The original vector pizza mascot is stored in `images/mascot/pizza-champ.svg` and `images/mascot/pizza-challenge.svg`. Styles live in `css/pizza-game.css`. These are cached offline by the updated service worker. SVG artwork is original, not a licensed Pizza Hut trademark or character.
 
 **Security note:** Client-reported offline answer timing is not proof against manipulated devices. Firestore validates scoring increments against answer keys but cannot provide server-verified elapsed times on Spark. Points are educational motivation, not an audit-grade certification system.
+
+## Pizza Arena 3.2 – mascots, silent warning, achievements, and activity review
+
+This release includes ten consistent original pizza-mascot states in `images/mascot/pizza-*.svg`, all using the same cap and Pizza Hut mark. The states are **welcome, rank-up, overtaken, timer, correct, wrong, monthly, crown, private, and update**. Replacing any illustration later does not require changing quiz data.
+
+- **Timer:** A silent, transparent-to-touch SVG/CSS mascot appears once when a question enters its last **15 seconds**, then disappears automatically. It has no modal backdrop, sound, or focus changes. Reduced-motion accessibility is supported.
+- **Answer feedback:** Correct, incorrect and timeout feedback show a small matching mascot.
+- **Levels and badges:** The profile displays a 500-points-per-level meter, points milestones, verified correct-answer rewards (10, 50, 100), daily streaks (3, 7, 14), a 50-question weekly challenge, 20-question outlet contribution, and the **Crown Squad** badge for members of the qualifying leading outlet.
+- **Streaks:** Days are calculated in **Asia/Colombo** time and only from confirmed Firestore answer events. The current streak may include yesterday if no answer has been recorded yet today.
+- **Review only:** Seven consecutive confirmed correct answers with 58–60 seconds remaining set a **reviewSuggested** flag. This does not remove points, disqualify users, or establish cheating. Admins can open **Review activity flags** and clear the flag after checking. Client-controlled offline timing cannot be used as proof.
+- **Leaderboard traffic:** A live Firestore listener is opened only while the leaderboard is displayed. The UI shows the top 20 and the viewer's own position, with **View All** to display everyone. For accurate weekly and outlet calculations, the current implementation still downloads eligible public ranking documents while the leaderboard is open, so monitor Spark document reads as usage grows.
+- **Cross-device resume:** Incomplete exam snapshots are now sent to `savedSessions/{uid}` at most once per approximately 12 seconds while a user is online. Offline progress stays local until a successful connection. Only the account owner can read saved questions.
+
+### IMPORTANT: Publish updated Firestore rules again
+
+The new scoring fields (`correctAnswers`, `dailyActivity`, `rapidCorrectStreak`, `reviewSuggested`, and `scoreEvents.activityDay`) require the new rules. **GitHub Pages deployment does not update the Firebase Console rules.**
+
+1. Open [Firebase Firestore Rules](https://console.firebase.google.com/project/btexam-c1e63/firestore/rules).
+2. Open the repository's [firestore.rules](https://github.com/udaya-saman/bt-exam/blob/main/firestore.rules).
+3. Copy all the rule text into Firebase and click **Publish**.
+4. Confirm that Authentication/Email-Password and the authorized domain `udaya-saman.github.io` are enabled.
+5. Register `indika` and `udaya` with NEW, strong, case-sensitive passwords. Locate their UIDs under Firebase Authentication > Users.
+6. In Firestore Data, create `admins/{UID}` documents for both accounts with field `enabled` (Boolean) = `true`.
+7. Sign out, sign back in as either administrator, then open **Leaderboard > My Profile > Approve outlet requests > Seed answer keys**. The current source includes 214 questions.
+8. Test registration and ranking with an ordinary outlet user and `Other`. Neither `Other` nor administrator scores should appear in the public leaderboard, though both retain private totals.
+
+### Production limitations
+
+Live Firebase authentication, scoring, writes, quotas, and mobile performance still require tests against the actual project and devices. Security rules can validate score arithmetic and flag patterns, but cannot reliably prove elapsed time in an offline, browser-controlled exam. Keep the Cloud Firestore **Spark plan** and watch free usage limits. If real users have accumulated points on an older release, do not replace or discard those documents; the new achievement counters begin recording with new confirmed answers.
