@@ -1,5 +1,5 @@
 {
-  "version": "3.2.0-mascot-rewards",
+  "version": "3.3.0-admin-user-removal",
   "releaseDate": "2026-11-13",
-  "notes": "Ten consistent Pizza Hut cap mascots, silent 15s timer cue, arcade levels, achievements, streaks, outlet rewards, review flags, top-20 leaderboards and optimised syncing."
+  "notes": "Administrator Manage Users, double-confirmed account removal, administrator-password verification, Firebase app-access blocking and separate manual Authentication identity cleanup."
 }
