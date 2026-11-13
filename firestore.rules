@@ -236,8 +236,8 @@ service cloud.firestore {
       && request.resource.data.earnedAt <= request.time + duration.value(5,'m')
       && request.resource.data.earnedAt >= request.time - duration.value(72,'h')
       && id == request.resource.data.uid + '_' + request.resource.data.attemptId + '_' + request.resource.data.paper + '_' + string(request.resource.data.index)
-      && exists(keyPath(request.resource.data.paper + '_' + request.resource.data.index))
-      && request.resource.data.points == (request.resource.data.selected == get(keyPath(request.resource.data.paper + '_' + request.resource.data.index)).data.answer ? 10 + request.resource.data.remaining : 0)
+      && exists(keyPath(request.resource.data.paper + '_' + string(request.resource.data.index)))
+      && request.resource.data.points == (request.resource.data.selected == get(keyPath(request.resource.data.paper + '_' + string(request.resource.data.index))).data.answer ? 10 + request.resource.data.remaining : 0)
       && request.resource.data.claimId == request.resource.data.uid + '_' + request.resource.data.dayKey + '_' + request.resource.data.paper
       && getAfter(claimPath(request.resource.data.claimId)).data.uid == request.auth.uid
       && getAfter(claimPath(request.resource.data.claimId)).data.attemptId == request.resource.data.attemptId
