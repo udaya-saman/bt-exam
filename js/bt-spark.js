@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.2.0-mascot-rewards';let latestUpdate=null;
+const APP_VERSION='3.3.0-admin-user-removal';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -312,7 +312,82 @@ function adminPanel(){
  const box=open('Outlet approvals','Both administrators can review pending requests.');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
- box.append(btn('Seed answer keys',seedKeys,true),btn('Review activity flags',reviewActivityFlags,true),btn('Close',close,true));
+ box.append(btn('Manage users',manageUsers,true),btn('Seed answer keys',seedKeys,true),btn('Review activity flags',reviewActivityFlags,true),btn('Close',close,true));
+}
+async function manageUsers(){
+ if(!admins)return;
+ const box=open('MANAGE USER ACCOUNTS','Remove a user from the app using two confirmations. Firebase Authentication deletion requires one later manual Console action.');
+ const status=document.createElement('p');status.className='pg-muted';status.textContent='Fetching user accounts…';box.append(status);
+ const search=field(box,'Search username or outlet');search.required=false;
+ const list=document.createElement('div');box.append(list);
+ const draw=(entries)=>{
+   list.replaceChildren();
+   if(!entries.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='No matching users.';list.append(empty);return;}
+   entries.forEach(item=>{
+    const line=document.createElement('div');line.className='pg-review-item';
+    const detail=document.createElement('div');const label=document.createElement('strong');label.textContent=item.username+' · '+item.outlet;
+    const sub=document.createElement('small');sub.textContent=(item.totalPoints||0)+' pts · UID '+item.uid.slice(0,8)+'…';
+    detail.append(label,sub);line.append(detail);
+    const reserved=RESERVED.has(norm(item.username));
+    const blocked=item.uid===user.uid||reserved||item.isAdmin;
+    line.append(btn(blocked?'PROTECTED':'DELETE',()=>confirmUserRemoval(item),blocked));
+    if(blocked)line.lastChild.disabled=true;
+    list.append(line);
+   });
+ };
+ try{
+  const snap=await F.getDocs(F.query(F.collection(db,'users'),F.limit(250)));
+  const records=snap.docs.map(doc=>({...doc.data(),uid:doc.id}));
+  const roleDocs=await Promise.all(records.map(p=>F.getDoc(F.doc(db,'admins',p.uid)).catch(()=>null)));
+  const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()===true}));
+  status.textContent='Showing up to 250 accounts. Protected administrator accounts cannot be removed here.';
+  const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));};
+  search.addEventListener('input',render);render();
+ }catch(err){status.textContent='Could not load users: '+errorMessage(err);}
+ box.append(btn('BACK',adminPanel,true),btn('CLOSE',close,true));
+}
+async function confirmUserRemoval(person){
+ if(!admins||!user||person.uid===user.uid||RESERVED.has(norm(person.username))||person.isAdmin){
+  note('Protected accounts cannot be deleted.');return;
+ }
+ const text='Delete '+person.username+' from the app?\n\nThis blocks their login, removes their profile and public ranking, and releases their username. Their score history and Firebase Authentication identity require separate administrator cleanup.';
+ if(!confirm(text))return; // First independent confirmation.
+ const box=open('VERIFY USER DELETION','Second verification. This cannot be undone from this screen.');
+ const warning=document.createElement('div');warning.className='pg-private';
+ warning.textContent='You are removing '+person.username+' ('+person.outlet+'). To proceed, type DELETE '+person.username+' exactly and enter YOUR administrator password. No other user will be affected.';box.append(warning);
+ const phrase=field(box,'Confirmation phrase');phrase.autocomplete='off';phrase.placeholder='DELETE '+person.username;
+ const password=field(box,'Your current administrator password','password');password.autocomplete='current-password';
+ const failure=document.createElement('p');failure.className='err';box.append(failure);
+ const confirmButton=btn('CONFIRM DELETION',async()=>{
+  if(!navigator.onLine){failure.textContent='You must be online to remove an account.';return;}
+  if(phrase.value.trim()!=='DELETE '+person.username){failure.textContent='Confirmation phrase does not match. No changes were made.';return;}
+  if(!password.value){failure.textContent='Administrator password is required.';return;}
+  confirmButton.disabled=true;failure.textContent='';
+  try{
+   const credential=A.EmailAuthProvider.credential(user.email,password.value);
+   await A.reauthenticateWithCredential(user,credential);
+   await F.runTransaction(db,async tx=>{
+    const personRef=F.doc(db,'users',person.uid),rankRef=F.doc(db,'publicRanks',person.uid),
+      regRef=F.doc(db,'usernames',norm(person.username)),blockRef=F.doc(db,'accountBlocks',person.uid),
+      roleRef=F.doc(db,'admins',person.uid);
+    const [account,rank,registry,blocked,role]=await Promise.all([
+      tx.get(personRef),tx.get(rankRef),tx.get(regRef),tx.get(blockRef),tx.get(roleRef)
+    ]);
+    if(!account.exists()||blocked.exists()||role.exists()||RESERVED.has(norm(account.data().username))||person.uid===user.uid)
+       throw Error('User is already removed or protected.');
+    if(!registry.exists()||registry.data().uid!==person.uid)throw Error('Username registry mismatch. Nothing was removed.');
+    tx.set(blockRef,{uid:person.uid,username:account.data().username,blockedBy:user.uid,blockedAt:F.serverTimestamp(),reason:'admin_removed'});
+    tx.delete(personRef);tx.delete(regRef);if(rank.exists())tx.delete(rankRef);
+   });
+   box.replaceChildren();
+   const ok=document.createElement('div');ok.className='pg-private';
+   ok.textContent=person.username+' is now blocked from BT Exam Prep. Their profile and public ranking were removed. Final step: open Firebase Console > Authentication > Users, find UID '+person.uid+' and delete that Authentication user manually.';
+   box.append(ok,btn('BACK TO USERS',manageUsers,true),btn('CLOSE',close,true));
+   note('User removed from app; Firebase Auth cleanup is still required.');
+  }catch(err){failure.textContent='Account was not removed: '+errorMessage(err);}
+  finally{confirmButton.disabled=false;password.value='';}
+ });
+ box.append(confirmButton,btn('CANCEL',manageUsers,true));
 }
 async function reviewActivityFlags(){
  if(!admins)return;
@@ -346,7 +421,10 @@ async function seedKeys(){
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
- try{const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){gate('setup','The account profile is missing. Contact the administrator.');return;}
+ try{
+  const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
+  if(blocked.exists()){await A.signOut(auth);note('This account has been removed. Contact the administrator if needed.');return;}
+  const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){await A.signOut(auth);note('This account has no active profile. Contact the administrator.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}

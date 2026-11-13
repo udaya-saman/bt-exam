@@ -1,5 +1,5 @@
 /* BT Exam Prep – Spark-plan offline cache. No Cloud Functions, Storage or push SDK required. */
-const CACHE = 'bt-exam-mascot-rewards-v5';
+const CACHE = 'bt-exam-user-management-v6';
 const SHELL = ['./','./index.html','./manifest.json','./firebase-config.js','./js/bt-spark.js','./js/bt-rewards.js','./version.json','./images/default-avatar.svg','./css/pizza-game.css','./images/mascot/pizza-champ.svg','./images/mascot/pizza-challenge.svg','./images/mascot/pizza-welcome.svg','./images/mascot/pizza-rank-up.svg','./images/mascot/pizza-overtaken.svg','./images/mascot/pizza-timer.svg','./images/mascot/pizza-correct.svg','./images/mascot/pizza-wrong.svg','./images/mascot/pizza-monthly.svg','./images/mascot/pizza-crown.svg','./images/mascot/pizza-private.svg','./images/mascot/pizza-update.svg','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
