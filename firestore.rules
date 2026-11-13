@@ -152,7 +152,7 @@ service cloud.firestore {
       || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet'])
         && request.resource.data.outlet == getAfter(userPath(uid)).data.outlet
         && request.resource.data.outlet != 'Other');
-    allow delete: if admin();
+    allow delete: if admin() || (mine(uid) && (getAfter(userPath(uid)).data.usernameLower in ['indika','udaya'] || getAfter(userPath(uid)).data.outlet == 'Other'));
   }
   match /answerKeys/{id} {
     allow read: if false;
