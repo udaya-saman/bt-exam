@@ -18,5 +18,7 @@ jobs:
           java-version: '21'
       - name: Install Firebase CLI
         run: npm install --global firebase-tools@15.34.2
-      - name: Start Firestore emulator and compile rules
-        run: firebase emulators:exec --only firestore --project demo-bt-exam "node -e \"console.log('Firestore rules loaded')\""
+      - name: Install Firestore rule testing dependencies
+        run: npm install --no-save firebase@13.2.0 @firebase/rules-unit-testing@6.0.0
+      - name: Test accepted score transactions against emulator rules
+        run: firebase emulators:exec --only firestore --project demo-bt-exam "node tests/firestore-score-emulator.test.cjs"
