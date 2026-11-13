@@ -2,8 +2,10 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.0.0-spark';let latestUpdate=null;
-const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B'];
+const APP_VERSION='3.1.0-pizza-arena';let latestUpdate=null;
+const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
+const RESERVED=new Set(['indika','udaya']);
+const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
 const rand=()=>crypto.randomUUID().replace(/-/g,'');
 const day=(date=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Colombo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);const g=t=>p.find(v=>v.type===t).value;return g('year')+'-'+g('month')+'-'+g('day');};
 const week=(date=new Date())=>{const d=new Date(day(date)+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10)};
@@ -11,7 +13,7 @@ const norm=name=>String(name||'').trim().toLowerCase();
 const valid=name=>/^[A-Za-z0-9._-]{3,24}$/.test(name);
 const $=selector=>document.querySelector(selector);
 const clean=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,syncing=false,previousRank=null;
+let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,unsubscribeProfile=null,syncing=false,previousRank=null;
 const root=document.createElement('div');root.id='bt-spark-root';root.hidden=true;document.body.append(root);
 const style=document.createElement('style');style.textContent='#bt-spark-root{position:fixed;inset:0;z-index:2147483000;background:#0a163ab8;display:grid;place-items:center;padding:12px;box-sizing:border-box;font:15px Arial,sans-serif;color:#26344a}#bt-spark-root[hidden]{display:none}#bt-spark-root .panel{background:white;border-radius:17px;width:min(100%,540px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px;box-sizing:border-box;box-shadow:0 15px 50px #0003}#bt-spark-root h2{font-size:22px;color:#21306b;margin:0 0 8px}#bt-spark-root p{font-size:13px;color:#63748b;line-height:1.45}#bt-spark-root label{display:block;font-weight:700;margin:12px 0 4px;font-size:12px}#bt-spark-root input,#bt-spark-root select{display:block;padding:11px;border-radius:10px;border:1px solid #cbd6e3;width:100%;box-sizing:border-box;font:inherit}#bt-spark-root button{padding:10px 13px;margin:6px 4px 4px 0;background:#0b71b4;color:white;border:0;border-radius:9px;font-weight:750;cursor:pointer}#bt-spark-root button.alt{background:#e8f0f9;color:#21306b}#bt-spark-root .err{color:#c00}#bt-spark-root .entry{padding:11px 0;border-bottom:1px solid #e5eaf0;display:flex;justify-content:space-between;gap:12px}#bt-spark-dock{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147482000;background:#21306b;color:white;border:0;border-radius:30px;padding:11px 14px;font-weight:800}';document.head.append(style);
 const dock=document.createElement('button');dock.id='bt-spark-dock';dock.textContent='🏆 Leaderboard';dock.onclick=()=>show('board');document.body.append(dock);
@@ -97,19 +99,29 @@ async function sync(){
    const er=F.doc(db,'scoreEvents',e.id),cr=F.doc(db,'rankedClaims',e.claimId),ur=F.doc(db,'users',user.uid);
    try{
     await F.runTransaction(db,async tx=>{
-     const [claim,event,u]=await Promise.all([tx.get(cr),tx.get(er),tx.get(ur)]);
+     const pr=F.doc(db,'publicRanks',user.uid),ad=F.doc(db,'admins',user.uid);
+     const [claim,event,u,publicScore,role]=await Promise.all([tx.get(cr),tx.get(er),tx.get(ur),tx.get(pr),tx.get(ad)]);
      if(event.exists())return;
      if(claim.exists()&&claim.data().attemptId!==e.attemptId)throw Error('PRACTICE_ONLY');
      if(!u.exists()||u.data().outlet!==e.outlet)throw Error('OUTLET_CHANGED');
      const p=u.data(),change=(m,k,v)=>Object.assign({},m||{},{[k]:Number((m||{})[k]||0)+v}),wk=e.weekKey+'__'+e.outlet;
      tx.set(er,{uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,outletMonthKey:e.monthKey+'__'+e.outlet,earnedAt:F.Timestamp.fromMillis(e.earnedAt),claimId:e.claimId});
      if(!claim.exists())tx.set(cr,{uid:e.uid,paper:e.paper,dayKey:e.dayKey,attemptId:e.attemptId,startedAt:F.Timestamp.fromMillis(e.startedAt||e.earnedAt)});
+     const publish=p.outlet!=='Other'&&!RESERVED.has(String(p.username||'').toLowerCase())&&!(role.exists()&&role.data().enabled===true);
      tx.update(ur,{lastEventId:e.id,totalPoints:Number(p.totalPoints||0)+e.points,totalAnswers:Number(p.totalAnswers||0)+1,
       weeklyPoints:change(p.weeklyPoints,e.weekKey,e.points),monthlyPoints:change(p.monthlyPoints,e.monthKey,e.points),
       outletPoints:change(p.outletPoints,e.outlet,e.points),outletWeeklyPoints:change(p.outletWeeklyPoints,wk,e.points),
       outletMonthlyPoints:change(p.outletMonthlyPoints,e.monthKey+'__'+e.outlet,e.points),
       outletMonthlyAnswers:change(p.outletMonthlyAnswers,e.monthKey+'__'+e.outlet,1),
       outletAnswers:change(p.outletAnswers,e.outlet,1),outletWeeklyAnswers:change(p.outletWeeklyAnswers,wk,1),updatedAt:F.serverTimestamp()});
+     if(publish){
+       const b=publicScore.exists()?publicScore.data():{},mk=e.monthKey+'__'+e.outlet;
+       tx.set(pr,{uid:user.uid,name:p.username,outlet:p.outlet,avatar:p.avatar||'',lastEventId:e.id,totalPoints:Number(b.totalPoints||0)+e.points,
+        weeklyPoints:change(b.weeklyPoints,e.weekKey,e.points),monthlyPoints:change(b.monthlyPoints,e.monthKey,e.points),
+        outletPoints:change(b.outletPoints,e.outlet,e.points),outletWeeklyPoints:change(b.outletWeeklyPoints,wk,e.points),
+        outletMonthlyPoints:change(b.outletMonthlyPoints,mk,e.points),outletAnswers:change(b.outletAnswers,e.outlet,1),
+        outletWeeklyAnswers:change(b.outletWeeklyAnswers,wk,1),outletMonthlyAnswers:change(b.outletMonthlyAnswers,mk,1),updatedAt:F.serverTimestamp()});
+     }
     });done.push(e.id);
    }catch(err){
     const message=errorMessage(err);
@@ -122,9 +134,9 @@ async function sync(){
 }
 function ranked(period='weekly',outletView=false){
  let list=[];const w=week();
- if(!outletView)list=users.map(u=>({name:u.username,outlet:u.outlet,avatar:u.avatar,uid:u.uid,score:period==='weekly'?Number(u.weeklyPoints?.[w]||0):Number(u.totalPoints||0)}));
- else list=OUTLETS.map(name=>{
-  let sum=0,people=0;for(const u of users){const key=period==='weekly'?w+'__'+name:name;const ans=period==='weekly'?Number(u.outletWeeklyAnswers?.[key]||0):Number(u.outletAnswers?.[key]||0);sum+=period==='weekly'?Number(u.outletWeeklyPoints?.[key]||0):Number(u.outletPoints?.[key]||0);if(ans>0)people++;}
+ if(!outletView)list=users.filter(rankEligible).map(u=>({name:u.name,outlet:u.outlet,avatar:u.avatar,uid:u.uid,score:period==='weekly'?Number(u.weeklyPoints?.[w]||0):Number(u.totalPoints||0)}));
+ else list=OUTLETS.filter(name=>name!=='Other').map(name=>{
+  let sum=0,people=0;for(const u of users.filter(rankEligible)){const key=period==='weekly'?w+'__'+name:name;const ans=period==='weekly'?Number(u.outletWeeklyAnswers?.[key]||0):Number(u.outletAnswers?.[key]||0);sum+=period==='weekly'?Number(u.outletWeeklyPoints?.[key]||0):Number(u.outletPoints?.[key]||0);if(ans>0)people++;}
   return{name,score:people?Math.round(sum/people):0,people};
  });
  list.sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
@@ -132,31 +144,62 @@ function ranked(period='weekly',outletView=false){
 }
 let period='weekly',outletView=false;
 function board(){
- const box=open(outletView?'Outlet crown':'Leaderboard','Live individual and outlet rankings · Asia/Colombo');
- box.append(btn('Weekly',()=>{period='weekly';board()},period!=='weekly'),btn('All-time',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'People':'Outlets',()=>{outletView=!outletView;board()},true));
- const list=ranked(period,outletView);
- if(outletView){const winner=list.find(x=>x.people>=3);const banner=document.createElement('p');banner.textContent=winner?'👑 '+winner.name+' · '+winner.score+' average points':'At least three active participants required for a crown.';box.append(banner);}
- for(const r of list){const d=document.createElement('div');d.className='entry';const l=document.createElement('span');if(!outletView){const avatar=document.createElement('img');avatar.src=r.avatar||'./images/default-avatar.svg';avatar.alt='';avatar.style.cssText='width:29px;height:29px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px';l.append(avatar);}l.append(document.createTextNode(r.rank+'. '+r.name+' · '+(outletView?r.people+' active':r.outlet)));const p=document.createElement('strong');p.textContent=r.score+' pts';d.append(l,p);box.append(d);}
- box.append(btn('My profile',()=>show('profile'),true),btn('Close',close,true));
+ const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
+ const hero=document.createElement('div');hero.className='pg-hero';
+ const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src='./images/mascot/pizza-champ.svg';mascot.alt='Cheering pizza slice mascot';hero.append(mascot);
+ const text=document.createElement('div');text.className='pg-hero-copy';
+ const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':'THE PIZZA ARENA';
+ const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
+ big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
+ const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':rankEligible({...profile,isAdmin:admins})?'Ready for your next victory?':'Private account · your points are yours alone';
+ text.append(label,big,sub);hero.append(text);box.append(hero);
+ const buttons=document.createElement('div');buttons.className='pg-nav';
+ buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
+ if(!rankEligible({...profile,isAdmin:admins})){const privateNote=document.createElement('div');privateNote.className='pg-private';privateNote.textContent='🔒 PRIVATE PLAYER · You still earn and see points in your profile. Other and administrator accounts never enter public rankings.';box.append(privateNote);}
+ const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=3).slice(0,3):records.slice(0,3);
+ if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
+  const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
+  if(!outletView){const picture=document.createElement('img');picture.src=r.avatar||'./images/default-avatar.svg';picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.svg';cell.append(picture);}
+  const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
+ }box.append(group);}
+ if(outletView){const crown=records.find(v=>v.people>=3);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 3 active players are needed.';box.append(status);}
+ const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
+ if(!records.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='🍕 The first ranked scores will appear here.';box.append(empty);}
+ for(const r of records){
+  const card=document.createElement('div');card.className='pg-leader-card';if(r.uid===user?.uid)card.classList.add('pg-you');
+  const place=document.createElement('span');place.className='pg-place';place.textContent=r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank;card.append(place);
+  if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=r.avatar||'./images/default-avatar.svg';pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.svg';card.append(pic);}
+  const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
+  const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
+ }
+ const footer=document.createElement('p');footer.className='pg-muted';footer.textContent='Only eligible accounts are ranked. Other and administrator points are always private. Offline results count after successful sync.';box.append(footer);
+ box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
+}
+function showRankMascot(risen,rank){
+ const box=open(risen?'🚀 RANK UP!':'⚔️ RANK CHALLENGE',risen?'Great work! You climbed the leaderboard.':'Another player overtook you. Practice and reclaim your position!');
+ const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-champ.svg':'./images/mascot/pizza-challenge.svg';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
+ const msg=document.createElement('div');msg.className='pg-private';msg.textContent='CURRENT WEEKLY RANK · #'+rank;box.append(msg,btn('LET’S GO!',close));
 }
 function monthly(){
  const d=Number(day().slice(8)),p=day().slice(0,7),previous=new Date(Date.UTC(Number(p.slice(0,4)),Number(p.slice(5,7))-2,1)).toISOString().slice(0,7);
  if(d<4||!user||!users.length)return;
  const key='bt_spark_champion_'+user.uid+'_'+previous;if(localStorage.getItem(key))return;
- const top=users.map(u=>{const outlets=Object.entries(u.outletMonthlyPoints||{}).filter(([k])=>k.startsWith(previous+'__')).sort((a,b)=>b[1]-a[1]);return{name:u.username,outlet:outlets[0]?.[0].slice(previous.length+2)||u.outlet,score:Number(u.monthlyPoints?.[previous]||0)};}).sort((a,b)=>b.score-a.score);
- if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/congratulations/monthly-champion.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();box.prepend(image);box.append(btn('Continue',close));}
+ const top=users.filter(rankEligible).map(u=>{const outlets=Object.entries(u.outletMonthlyPoints||{}).filter(([k])=>k.startsWith(previous+'__')).sort((a,b)=>b[1]-a[1]);return{name:u.name,outlet:outlets[0]?.[0].slice(previous.length+2)||u.outlet,score:Number(u.monthlyPoints?.[previous]||0)};}).sort((a,b)=>b.score-a.score);
+ if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/mascot/pizza-champ.svg';image.alt='Pizza mascot celebrating';image.className='pg-celebration';box.prepend(image);box.append(btn('Continue',close));}
 }
 function listen(){
  if(unsubscribe)unsubscribe();
- unsubscribe=F.onSnapshot(F.collection(db,'users'),snap=>{
-  users=snap.docs.map(d=>d.data());profile=users.find(x=>x.uid===user?.uid)||profile;
+ unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),snap=>{
+  users=snap.docs.map(d=>d.data()).filter(rankEligible);
   const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;note(risen?'🏆 Overtook another user · rank #'+mine:'Another user overtook you · rank #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden){const panel=open(risen?'🏆 Rank increased!':'Your rank changed',risen?'You moved ahead of another participant. New rank: #'+mine:'Another participant moved ahead of you. New rank: #'+mine);const image=document.createElement('img');image.src=risen?'./images/overtake/you-overtook.png':'./images/overtake/you-were-overtaken.png';image.alt='';image.style.cssText='max-height:150px;max-width:100%;display:block;margin:10px auto';image.onerror=()=>image.remove();panel.prepend(image);panel.append(btn('Continue',close));}}
+  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(risen,mine);}
   previousRank=mine;monthly();
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
- const box=open('My profile',profile.username+' · '+profile.outlet+' · '+profile.totalPoints+' total points · '+getQueue().length+' pending');
+ const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
+ const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src='./images/mascot/pizza-champ.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent=rankEligible({...profile,isAdmin:admins})?'YOUR PLAYER STATS':'PRIVATE SCORING MODE';const b=document.createElement('strong');b.textContent=Number(profile.totalPoints||0).toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=Number(profile.totalAnswers||0)+' answered · '+getQueue().length+' pending';info.append(a,b,c);hero.append(pic,info);box.append(hero);
+ if(!rankEligible({...profile,isAdmin:admins})){const x=document.createElement('div');x.className='pg-private';x.textContent='🔒 Your points are private. You are excluded from player standings and outlet crowns.';box.append(x);}
  const achieved=['First 100 points','500-point Star','1,000-point Master'].filter((_,i)=>Number(profile.totalPoints||0)>=[100,500,1000][i]);
  if(achieved.length){const badge=document.createElement('p');badge.textContent='🏅 Achievements: '+achieved.join(' · ');box.append(badge);}
  const weekAnswers=Object.entries(profile.outletWeeklyAnswers||{}).filter(([key])=>key.startsWith(week()+'__')).reduce((sum,[,n])=>sum+Number(n||0),0);
@@ -167,14 +210,14 @@ async function profilePanel(){
    const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
    const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),scale=Math.max(96/img.width,96/img.height);x.fillStyle='white';x.fillRect(0,0,96,96);x.drawImage(img,(96-img.width*scale)/2,(96-img.height*scale)/2,img.width*scale,img.height*scale);
    const avatar=c.toDataURL('image/jpeg',.65);if(avatar.length>24000)throw Error('Image too large');
-   await F.updateDoc(F.doc(db,'users',user.uid),{avatar,updatedAt:F.serverTimestamp()});note('Picture updated.');
+   await F.updateDoc(F.doc(db,'users',user.uid),{avatar,updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar,updatedAt:F.serverTimestamp()});}note('Picture updated.');
   }catch(e){msg.textContent=errorMessage(e)}
  };
- box.append(btn('Remove picture',async()=>{await F.updateDoc(F.doc(db,'users',user.uid),{avatar:'',updatedAt:F.serverTimestamp()});note('Picture removed.');},true));
+ box.append(btn('Remove picture',async()=>{await F.updateDoc(F.doc(db,'users',user.uid),{avatar:'',updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar:'',updatedAt:F.serverTimestamp()});}note('Picture removed.');},true));
  const newname=field(box,'Change username');newname.value=profile.username;
  box.append(btn('Save username',async()=>{
   try{const n=newname.value.trim();if(!valid(n))throw Error('Invalid username.');
-   await F.runTransaction(db,async tx=>{const old=F.doc(db,'usernames',profile.usernameLower),next=F.doc(db,'usernames',norm(n)),u=F.doc(db,'users',user.uid);if(norm(n)!==profile.usernameLower){if((await tx.get(next)).exists())throw Error('Username taken.');tx.set(next,{uid:user.uid,authEmail:user.email});tx.delete(old);}tx.update(u,{username:n,usernameLower:norm(n),updatedAt:F.serverTimestamp()});});note('Username updated.');
+   await F.runTransaction(db,async tx=>{const old=F.doc(db,'usernames',profile.usernameLower),next=F.doc(db,'usernames',norm(n)),u=F.doc(db,'users',user.uid);const pub=F.doc(db,'publicRanks',user.uid);const pubSnapshot=await tx.get(pub);if(norm(n)!==profile.usernameLower){if((await tx.get(next)).exists())throw Error('Username taken.');tx.set(next,{uid:user.uid,authEmail:user.email});tx.delete(old);}tx.update(u,{username:n,usernameLower:norm(n),updatedAt:F.serverTimestamp()});if(pubSnapshot.exists()){if(RESERVED.has(norm(n)))tx.delete(pub);else tx.update(pub,{name:n,updatedAt:F.serverTimestamp()});}});note('Username updated.');
   }catch(e){msg.textContent=errorMessage(e)}
  },true));
  const oldpass=field(box,'Current password','password'),newpass=field(box,'New password','password');
@@ -191,7 +234,7 @@ function adminPanel(){
  box.append(btn('Seed answer keys',seedKeys,true),btn('Close',close,true));
 }
 async function decide(req,yes){
- try{await F.runTransaction(db,async tx=>{const r=F.doc(db,'outletRequests',req.id),u=F.doc(db,'users',req.uid);const [a,b]=await Promise.all([tx.get(r),tx.get(u)]);if(!a.exists()||a.data().status!=='pending'||!b.exists())throw Error('Request not pending');tx.update(r,{status:yes?'approved':'rejected',reviewedBy:user.uid,reviewedAt:F.serverTimestamp()});if(yes)tx.update(u,{outlet:req.to,updatedAt:F.serverTimestamp()});});note('Request processed.');}
+ try{await F.runTransaction(db,async tx=>{const r=F.doc(db,'outletRequests',req.id),u=F.doc(db,'users',req.uid),p=F.doc(db,'publicRanks',req.uid);const [a,b,pub]=await Promise.all([tx.get(r),tx.get(u),tx.get(p)]);if(!a.exists()||a.data().status!=='pending'||!b.exists()||b.data().outlet!==a.data().from)throw Error('Request no longer pending');tx.update(r,{status:yes?'approved':'rejected',reviewedBy:user.uid,reviewedAt:F.serverTimestamp()});if(yes){tx.update(u,{outlet:req.to,updatedAt:F.serverTimestamp()});if(pub.exists()){if(req.to==='Other')tx.delete(p);else tx.update(p,{outlet:req.to});}}});note('Request processed.');}
  catch(e){note(errorMessage(e));}
 }
 async function seedKeys(){
@@ -200,11 +243,13 @@ async function seedKeys(){
 }
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
- user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
+ user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
  try{const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){gate('setup','The account profile is missing. Contact the administrator.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
+  if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
+  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists())profile=d.data();});
   close();if(typeof checkSavedSession==='function')checkSavedSession();listen();restoreCloudSession();sync();
  }catch(e){gate('setup',errorMessage(e));}
 }

@@ -95,3 +95,35 @@ The app cannot deploy rules or make you an admin automatically; those actions mu
 This is **not** a complete recreation of the former server-backed package. In particular, scheduled push notifications, trusted server-side score aggregation, secure no-email password recovery, and infallible offline anti-cheating are not achievable with the pure Spark browser-only setup. Firestore offline quota usage and browser storage eviction still apply.
 
 **No live Firebase project has been configured or tested yet.** Do not hand the app out until the above checks pass.
+
+
+## Pizza Arena v3.1 – IMPORTANT NEW FIRESTORE RULES (13 November 2026)
+
+**Before testing registration or scoring, re-publish the updated [firestore.rules](firestore.rules) in Firebase Console.** Rules uploaded to GitHub do not deploy to Firebase automatically. The app now stores private totals in `users/{uid}` and only publishes eligible totals in `publicRanks/{uid}`. Until new rules are published, leaderboard reads and score writes will be rejected.
+
+### "Other" outlet / admin privacy
+
+- Registration and outlet-change menus include **Other**.
+- "Other" players still sign in, receive private score points, see points in **My Profile**, and can practice, but are excluded from weekly, all-time, outlet-average, crown, monthly champion and public podium.
+- The two original administrator usernames (`indika`, `udaya`, case insensitive) are **always private**; their scores never enter the public list, including before the Firestore admin UID document is added.
+- Any account with a Firestore `admins/{UID}` document (`enabled: true`) is also excluded from public score writes.
+- When an admin approves changing an outlet to `Other`, the existing public rank document is deleted. If that person later returns to a regular outlet, their **new** ranked scores can appear, but their historical private points do not move to the public board.
+- **For future admin promotions of accounts other than `indika` / `udaya`, manually delete that user's existing `publicRanks/{UID}` document in Firestore Console immediately when granting the admin role.** No paid Cloud Function is used to auto-remove records. Their later sign-in attempts removal as a fallback.
+- Admins can continue to view the public leaderboard, but their own points are shown privately in **My Profile**.
+
+### What to do right now
+
+1. The GitHub app update is already handled by merging the PR once GitHub tests pass. No ZIP or command line needed.
+2. Go to Firebase Console > Firestore Database > Rules and paste the latest [firestore.rules](firestore.rules), then press **Publish**.
+3. Verify **Authentication > Sign-in method > Email/Password** is enabled; **Firestore Database** already exists; and `udaya-saman.github.io` is an authorized Authentication domain.
+4. Register administrators `indika` and `udaya` using new strong passwords. Do not reuse passwords posted in chats.
+5. From Firebase > Authentication > Users copy each account's UID. Create an `admins` collection with one UID-named document each and a Boolean field `enabled: true`.
+6. After re-signing in, open Leaderboard > My Profile > Approve outlet requests > **Seed answer keys** (214 questions).
+7. Test three accounts: **Other**, one eligible outlet, and an admin. Check the private totals increase for each, while **only the eligible account appears in weekly, all-time, outlet, podium and monthly rankings**.
+8. Test outlet changes to/from **Other**, offline score queue sync, and rank-change mascot reactions.
+
+### Theme / mascot
+
+The app uses a Pizza Hut–inspired red, near-black, cream and warm-gold arcade theme. The original vector pizza mascot is stored in `images/mascot/pizza-champ.svg` and `images/mascot/pizza-challenge.svg`. Styles live in `css/pizza-game.css`. These are cached offline by the updated service worker. SVG artwork is original, not a licensed Pizza Hut trademark or character.
+
+**Security note:** Client-reported offline answer timing is not proof against manipulated devices. Firestore validates scoring increments against answer keys but cannot provide server-verified elapsed times on Spark. Points are educational motivation, not an audit-grade certification system.

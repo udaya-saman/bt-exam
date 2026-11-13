@@ -30,3 +30,5 @@ jobs:
           if(html.includes('sessionAnswers.pop()'))throw Error('Answer rollback exploit still present');
           console.log('Inline scripts parsed and anti-repeat guards present');
           NODE
+      - name: Test Pizza Arena ranking privacy and outlet crown rules
+        run: node tests/pizza-arena.test.cjs

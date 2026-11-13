@@ -8,7 +8,7 @@ service cloud.firestore {
   function logged() { return request.auth != null; }
   function mine(uid) { return logged() && request.auth.uid == uid; }
   function admin() { return logged() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.enabled == true; }
-  function validOutlet(o) { return o in ['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B']; }
+  function validOutlet(o) { return o in ['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other']; }
   function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
   function eventPath(id) { return /databases/$(database)/documents/scoreEvents/$(id); }
   function keyPath(id) { return /databases/$(database)/documents/answerKeys/$(id); }
@@ -63,7 +63,7 @@ service cloud.firestore {
     allow update: if false;
   }
   match /users/{uid} {
-    allow read: if logged();
+    allow read: if mine(uid) || admin();
     allow create: if mine(uid)
       && request.resource.data.keys().hasAll(['uid','username','usernameLower','outlet','avatar','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','lastEventId','createdAt','updatedAt'])
       && request.resource.data.uid == uid
@@ -81,6 +81,78 @@ service cloud.firestore {
       || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet','updatedAt'])
       && validOutlet(request.resource.data.outlet));
     allow delete: if false;
+  }
+  // Unlike /users, only eligible ranked accounts are visible to other players.
+  function allowedToPublish(uid, name, outlet) {
+    return mine(uid) && outlet != 'Other'
+      && name.lower() != 'indika' && name.lower() != 'udaya'
+      && !admin()
+      && getAfter(userPath(uid)).data.outlet != 'Other'
+      && getAfter(userPath(uid)).data.username == name
+      && getAfter(userPath(uid)).data.outlet == outlet;
+  }
+  function publicEvent(uid) {
+    return getAfter(eventPath(request.resource.data.lastEventId)).data;
+  }
+  function publicFieldsOk(uid) {
+    let e=publicEvent(uid);
+    return request.resource.data.keys().hasAll(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt'])
+      && request.resource.data.keys().hasOnly(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt'])
+      && request.resource.data.uid == uid
+      && request.resource.data.avatar == getAfter(userPath(uid)).data.avatar
+      && request.resource.data.lastEventId == getAfter(userPath(uid)).data.lastEventId
+      && e.uid == uid
+      && e.outlet == request.resource.data.outlet
+      && e.points >= 0 && e.points <= 70;
+  }
+  function publicIncrement(prev, uid) {
+    let e=publicEvent(uid);
+    return request.resource.data.totalPoints == prev.totalPoints + e.points
+      && request.resource.data.weeklyPoints.diff(prev.weeklyPoints).affectedKeys().hasOnly([e.weekKey])
+      && request.resource.data.weeklyPoints[e.weekKey] == prev.weeklyPoints.get(e.weekKey, 0) + e.points
+      && request.resource.data.monthlyPoints.diff(prev.monthlyPoints).affectedKeys().hasOnly([e.monthKey])
+      && request.resource.data.monthlyPoints[e.monthKey] == prev.monthlyPoints.get(e.monthKey, 0) + e.points
+      && request.resource.data.outletPoints.diff(prev.outletPoints).affectedKeys().hasOnly([e.outlet])
+      && request.resource.data.outletPoints[e.outlet] == prev.outletPoints.get(e.outlet, 0) + e.points
+      && request.resource.data.outletWeeklyPoints.diff(prev.outletWeeklyPoints).affectedKeys().hasOnly([e.outletWeekKey])
+      && request.resource.data.outletWeeklyPoints[e.outletWeekKey] == prev.outletWeeklyPoints.get(e.outletWeekKey, 0) + e.points
+      && request.resource.data.outletMonthlyPoints.diff(prev.outletMonthlyPoints).affectedKeys().hasOnly([e.outletMonthKey])
+      && request.resource.data.outletMonthlyPoints[e.outletMonthKey] == prev.outletMonthlyPoints.get(e.outletMonthKey, 0) + e.points
+      && request.resource.data.outletAnswers.diff(prev.outletAnswers).affectedKeys().hasOnly([e.outlet])
+      && request.resource.data.outletAnswers[e.outlet] == prev.outletAnswers.get(e.outlet, 0) + 1
+      && request.resource.data.outletWeeklyAnswers.diff(prev.outletWeeklyAnswers).affectedKeys().hasOnly([e.outletWeekKey])
+      && request.resource.data.outletWeeklyAnswers[e.outletWeekKey] == prev.outletWeeklyAnswers.get(e.outletWeekKey, 0) + 1
+      && request.resource.data.outletMonthlyAnswers.diff(prev.outletMonthlyAnswers).affectedKeys().hasOnly([e.outletMonthKey])
+      && request.resource.data.outletMonthlyAnswers[e.outletMonthKey] == prev.outletMonthlyAnswers.get(e.outletMonthKey, 0) + 1;
+  }
+  function zeroRank() {
+    return {
+      'totalPoints':0, 'weeklyPoints':{}, 'monthlyPoints':{},
+      'outletPoints':{}, 'outletWeeklyPoints':{}, 'outletMonthlyPoints':{},
+      'outletAnswers':{}, 'outletWeeklyAnswers':{}, 'outletMonthlyAnswers':{}
+    };
+  }
+  match /publicRanks/{uid} {
+    allow read: if logged();
+    allow create: if allowedToPublish(uid, request.resource.data.name, request.resource.data.outlet)
+      && publicFieldsOk(uid)
+      && publicIncrement(zeroRank(), uid);
+    allow update: if (allowedToPublish(uid, request.resource.data.name, request.resource.data.outlet)
+      && publicFieldsOk(uid)
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt','name','avatar'])
+      && publicIncrement(resource.data, uid))
+      || (mine(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','avatar','updatedAt'])
+        && request.resource.data.name == getAfter(userPath(uid)).data.username
+        && request.resource.data.avatar == getAfter(userPath(uid)).data.avatar
+        && getAfter(userPath(uid)).data.outlet != 'Other'
+        && request.resource.data.name.lower() != 'indika'
+        && request.resource.data.name.lower() != 'udaya'
+        && !admin())
+      || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet'])
+        && request.resource.data.outlet == getAfter(userPath(uid)).data.outlet
+        && request.resource.data.outlet != 'Other');
+    allow delete: if admin() || (mine(uid) && (getAfter(userPath(uid)).data.usernameLower in ['indika','udaya'] || getAfter(userPath(uid)).data.outlet == 'Other'));
   }
   match /answerKeys/{id} {
     allow read: if false;

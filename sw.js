@@ -1,6 +1,6 @@
 /* BT Exam Prep – Spark-plan offline cache. No Cloud Functions, Storage or push SDK required. */
-const CACHE = 'bt-exam-spark-v3';
-const SHELL = ['./','./index.html','./manifest.json','./firebase-config.js','./js/bt-spark.js','./version.json','./images/default-avatar.svg','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE = 'bt-exam-pizza-arena-v4';
+const SHELL = ['./','./index.html','./manifest.json','./firebase-config.js','./js/bt-spark.js','./version.json','./images/default-avatar.svg','./css/pizza-game.css','./images/mascot/pizza-champ.svg','./images/mascot/pizza-challenge.svg','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
  await Promise.all(SHELL.map(async url=>{try{await cache.add(url)}catch(e){console.warn('Cache skip',url,e)} }));
