@@ -115,3 +115,7 @@ body #bt-spark-root .pg-muted{color:#d4bac0;font-size:12px}
 #bt-spark-root .pg-review-item{padding:11px;border-radius:12px;border:1px solid #ffdb932e;background:#3a2b2c;display:flex;justify-content:space-between;gap:10px;margin:7px 0;align-items:center}
 #bt-spark-root .pg-review-item strong{color:#ffecd2;display:block;font-size:13px}
 #bt-spark-root .pg-review-item small{display:block;color:#dcc7bc;font-size:11px;margin-top:4px}
+
+/* Explicit ranked/practice feedback directly beside the existing paper label. */
+.pg-mode-label{display:inline-flex;width:max-content;max-width:100%;align-items:center;padding:3px 8px;margin:3px 0 0;border-radius:99px;background:#ecd59e22;color:var(--ph-red);font-size:10px;font-weight:900;letter-spacing:.025em;white-space:nowrap}
+@media(prefers-color-scheme:dark){.pg-mode-label{color:#ffd78b;background:#e3a74122}}
