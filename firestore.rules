@@ -29,9 +29,14 @@ service cloud.firestore {
       && !exists(eventPath(id))
       && e.uid == uid
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
-        ['lastEventId','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt'])
+        ['lastEventId','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','rapidCorrectStreak','reviewSuggested','updatedAt'])
       && request.resource.data.totalPoints == resource.data.totalPoints + e.points
       && request.resource.data.totalAnswers == resource.data.totalAnswers + 1
+      && request.resource.data.correctAnswers == resource.data.get('correctAnswers',0) + (e.points > 0 ? 1 : 0)
+      && request.resource.data.dailyActivity.diff(resource.data.get('dailyActivity',{})).affectedKeys().hasOnly([e.activityDay])
+      && request.resource.data.dailyActivity[e.activityDay] == resource.data.get('dailyActivity',{}).get(e.activityDay,0) + 1
+      && request.resource.data.rapidCorrectStreak == (e.points >= 68 ? resource.data.get('rapidCorrectStreak',0) + 1 : 0)
+      && request.resource.data.reviewSuggested == (resource.data.get('reviewSuggested',false) || request.resource.data.rapidCorrectStreak >= 7)
       && request.resource.data.weeklyPoints.diff(resource.data.weeklyPoints).affectedKeys().hasOnly([e.weekKey])
       && request.resource.data.weeklyPoints[e.weekKey] == resource.data.weeklyPoints.get(e.weekKey,0) + e.points
       && request.resource.data.monthlyPoints.diff(resource.data.monthlyPoints).affectedKeys().hasOnly([e.monthKey])
@@ -65,13 +70,15 @@ service cloud.firestore {
   match /users/{uid} {
     allow read: if mine(uid) || admin();
     allow create: if mine(uid)
-      && request.resource.data.keys().hasAll(['uid','username','usernameLower','outlet','avatar','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','lastEventId','createdAt','updatedAt'])
+      && request.resource.data.keys().hasAll(['uid','username','usernameLower','outlet','avatar','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','rapidCorrectStreak','reviewSuggested','lastEventId','createdAt','updatedAt'])
       && request.resource.data.uid == uid
       && validOutlet(request.resource.data.outlet)
       && request.resource.data.username is string
       && request.resource.data.username.size() >= 3 && request.resource.data.username.size() <= 24
       && request.resource.data.avatar == ''
       && request.resource.data.totalPoints == 0 && request.resource.data.totalAnswers == 0
+      && request.resource.data.correctAnswers == 0 && request.resource.data.dailyActivity == {}
+      && request.resource.data.rapidCorrectStreak == 0 && request.resource.data.reviewSuggested == false
       && request.resource.data.weeklyPoints == {} && request.resource.data.monthlyPoints == {}
       && request.resource.data.outletPoints == {} && request.resource.data.outletWeeklyPoints == {} && request.resource.data.outletMonthlyPoints == {} && request.resource.data.outletMonthlyAnswers == {}
       && request.resource.data.outletAnswers == {} && request.resource.data.outletWeeklyAnswers == {}
@@ -96,8 +103,8 @@ service cloud.firestore {
   }
   function publicFieldsOk(uid) {
     let e=publicEvent(uid);
-    return request.resource.data.keys().hasAll(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt'])
-      && request.resource.data.keys().hasOnly(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt'])
+    return request.resource.data.keys().hasAll(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt'])
+      && request.resource.data.keys().hasOnly(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt'])
       && request.resource.data.uid == uid
       && request.resource.data.avatar == getAfter(userPath(uid)).data.avatar
       && request.resource.data.lastEventId == getAfter(userPath(uid)).data.lastEventId
@@ -108,6 +115,9 @@ service cloud.firestore {
   function publicIncrement(prev, uid) {
     let e=publicEvent(uid);
     return request.resource.data.totalPoints == prev.totalPoints + e.points
+      && request.resource.data.correctAnswers == prev.get('correctAnswers',0) + (e.points > 0 ? 1 : 0)
+      && request.resource.data.dailyActivity.diff(prev.get('dailyActivity',{})).affectedKeys().hasOnly([e.activityDay])
+      && request.resource.data.dailyActivity[e.activityDay] == prev.get('dailyActivity',{}).get(e.activityDay,0) + 1
       && request.resource.data.weeklyPoints.diff(prev.weeklyPoints).affectedKeys().hasOnly([e.weekKey])
       && request.resource.data.weeklyPoints[e.weekKey] == prev.weeklyPoints.get(e.weekKey, 0) + e.points
       && request.resource.data.monthlyPoints.diff(prev.monthlyPoints).affectedKeys().hasOnly([e.monthKey])
@@ -129,7 +139,8 @@ service cloud.firestore {
     return {
       'totalPoints':0, 'weeklyPoints':{}, 'monthlyPoints':{},
       'outletPoints':{}, 'outletWeeklyPoints':{}, 'outletMonthlyPoints':{},
-      'outletAnswers':{}, 'outletWeeklyAnswers':{}, 'outletMonthlyAnswers':{}
+      'outletAnswers':{}, 'outletWeeklyAnswers':{}, 'outletMonthlyAnswers':{},
+      'correctAnswers':0, 'dailyActivity':{}
     };
   }
   match /publicRanks/{uid} {
@@ -139,7 +150,7 @@ service cloud.firestore {
       && publicIncrement(zeroRank(), uid);
     allow update: if (allowedToPublish(uid, request.resource.data.name, request.resource.data.outlet)
       && publicFieldsOk(uid)
-      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','updatedAt','name','avatar'])
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt','name','avatar'])
       && publicIncrement(resource.data, uid))
       || (mine(uid)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','avatar','updatedAt'])
@@ -178,7 +189,7 @@ service cloud.firestore {
     allow get: if logged() && id.matches('^' + request.auth.uid + '_.*');
     allow list: if false;
     allow create: if logged()
-      && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','outletMonthKey','earnedAt','claimId'])
+      && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','outletMonthKey','activityDay','earnedAt','claimId'])
       && request.resource.data.uid == request.auth.uid
       && request.resource.data.paper in ['past2024','questions','paper1','paper2','paper3']
       && request.resource.data.index is int && request.resource.data.index >= 0
@@ -192,6 +203,7 @@ service cloud.firestore {
       && request.resource.data.earnedAt is timestamp
       && request.resource.data.weekKey == slWeek(request.resource.data.earnedAt)
       && request.resource.data.monthKey == slMonth(request.resource.data.earnedAt)
+      && request.resource.data.activityDay == slDate(request.resource.data.earnedAt)
       && request.resource.data.earnedAt <= request.time + duration.value(5,'m')
       && request.resource.data.earnedAt >= request.time - duration.value(72,'h')
       && id == request.resource.data.uid + '_' + request.resource.data.attemptId + '_' + request.resource.data.paper + '_' + request.resource.data.index
