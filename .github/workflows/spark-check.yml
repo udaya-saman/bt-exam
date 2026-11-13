@@ -26,7 +26,7 @@ jobs:
             const source=scripts[i][1];if(source.trim())new vm.Script(source,{filename:'index inline script '+(i+1)});
           }
           if(!html.includes('BT-SPARK-INTEGRATION-v3'))throw Error('Spark script injection missing');
-          if(!html.includes('function goPrevQuestion()'))throw Error('Quiz navigation missing');
+          if(html.includes('id="prev-btn"'))throw Error('Disabled Back button should be removed');
           if(html.includes('sessionAnswers.pop()'))throw Error('Answer rollback exploit still present');
           console.log('Inline scripts parsed and anti-repeat guards present');
           NODE
