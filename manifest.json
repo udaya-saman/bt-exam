@@ -4,8 +4,8 @@
   "description": "Buddy Trainer Mock Questions",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F8FAFC",
-  "theme_color": "#21306b",
+  "background_color": "#fbf7f0",
+  "theme_color": "#d41420",
   "icons": [
     {
       "src": "icons/icon-192.png",
