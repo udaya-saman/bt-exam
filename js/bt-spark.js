@@ -454,8 +454,28 @@ async function decide(req,yes){
  catch(e){note(errorMessage(e));}
 }
 async function seedKeys(){
- try{const bank=window.BTExamBridge.getPapers();const b=F.writeBatch(db);let count=0;for(const [paper,p] of Object.entries(bank))for(let i=0;i<p.qs.length;i++){b.set(F.doc(db,'answerKeys',paper+'_'+i),{answer:p.qs[i].ans,paper,index:i});count++}await b.commit();note('Seeded '+count+' answer keys.');}
- catch(e){note(errorMessage(e));}
+ if(!admins){note('Only administrators may initialise answer keys.');return;}
+ try{
+  const bank=window.BTExamBridge.getPapers(),items=[];
+  for(const [paper,p] of Object.entries(bank)){
+    if(!Array.isArray(p.qs))throw Error('Invalid paper: '+paper);
+    for(let i=0;i<p.qs.length;i++){
+      const ans=p.qs[i].ans;
+      if(!Number.isInteger(ans)||ans<0||ans>5)throw Error('Invalid answer key: '+paper+' #'+(i+1));
+      items.push({paper,index:i,answer:ans});
+    }
+  }
+  // Small batches reduce Spark plan spikes and rule-access pressure.
+  for(let start=0;start<items.length;start+=15){
+    const batch=F.writeBatch(db);
+    for(const x of items.slice(start,start+15)){
+      batch.set(F.doc(db,'answerKeys',x.paper+'_'+x.index),x);
+    }
+    await batch.commit();
+  }
+  note('Saved '+items.length+' answer keys. Previously retained results will now retry.');
+  await sync();
+ }catch(e){note('Could not seed answer keys: '+errorMessage(e));}
 }
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
