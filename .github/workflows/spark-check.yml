@@ -36,3 +36,5 @@ jobs:
         run: node tests/mascot-rewards.test.cjs
       - name: Test administrator account removal safety
         run: node tests/admin-user-removal.test.cjs
+      - name: Test sticker mascot and scoring fixes
+        run: node tests/sticker-scoring.test.cjs
