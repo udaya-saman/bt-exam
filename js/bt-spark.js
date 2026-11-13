@@ -215,12 +215,12 @@ function board(){
  const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
  const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
  big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
- const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':rankEligible({...profile,isAdmin:admins})?'Ready for your next victory?':'Private account · your points are yours alone';
+ const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':'Ready for your next victory?';
  text.append(label,big,sub);hero.append(text);box.append(hero);
  if(window.BTRewards){const season=window.BTRewards.season(day());if(season){const chip=document.createElement('div');chip.className='pg-season-chip';const crown=document.createElement('span');crown.className='pg-crown-icon';crown.textContent='👑';chip.append(crown,document.createTextNode(' WEEKLY SEASON · '+season.daysRemaining+' DAYS LEFT · Ends '+season.end));box.append(chip);}}
  const buttons=document.createElement('div');buttons.className='pg-nav';
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
- if(!rankEligible({...profile,isAdmin:admins})){const privateNote=document.createElement('div');privateNote.className='pg-private';privateNote.textContent='🔒 PRIVATE PLAYER · You still earn and see points in your profile. Other and administrator accounts never enter public rankings.';box.append(privateNote);}
+ 
  const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=3).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
   const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
@@ -247,7 +247,7 @@ function board(){
   const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
  }
  if(!outletView&&records.length>20){box.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board();},true));}
- const footer=document.createElement('p');footer.className='pg-muted';footer.textContent='Only eligible accounts are ranked. Other and administrator points are always private. Offline results count after successful sync.';box.append(footer);
+ 
  box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
 }
 function showRankMascot(risen,rank){
@@ -330,10 +330,21 @@ async function profilePanel(){
  },true));
  const oldpass=field(box,'Current password','password'),newpass=field(box,'New password','password');
  box.append(btn('Change password',async()=>{try{if(newpass.value.length<8)throw Error('Password too short.');await A.reauthenticateWithCredential(user,A.EmailAuthProvider.credential(user.email,oldpass.value));await A.updatePassword(user,newpass.value);note('Password changed.');}catch(e){msg.textContent=errorMessage(e)}},true));
- const outlet=sel(box,'Request outlet change');outlet.value=profile.outlet;
- box.append(btn('Submit outlet request',async()=>{try{if(outlet.value===profile.outlet)throw Error('Select another outlet.');await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:outlet.value,status:'pending',createdAt:F.serverTimestamp()});note('Request sent for admin approval.');}catch(e){msg.textContent=errorMessage(e)}},true));
+ const outlet=sel(box,'Outlet');outlet.value=profile.outlet;
+ outlet.addEventListener('change',()=>{
+  if(outlet.value===profile.outlet)return;
+  const target=outlet.value;
+  const confirmation=open('CHANGE OUTLET?','Send an approval request to move from '+profile.outlet+' to '+target+'?');
+  const graphic=document.createElement('img');graphic.src='./images/mascot/pizza-update.svg';graphic.className='pg-celebration';graphic.alt='';confirmation.prepend(graphic);
+  confirmation.append(btn('SEND REQUEST',async()=>{
+   try{
+    await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:target,status:'pending',createdAt:F.serverTimestamp()});
+    note('Outlet request submitted for approval.');profilePanel();
+   }catch(e){note(errorMessage(e));profilePanel();}
+  }),btn('CANCEL',()=>profilePanel()));
+ });
  if(admins)box.append(btn('Approve outlet requests',adminPanel));
- box.append(btn('Leaderboard',board,true),btn('Sync',sync,true),btn('Sign out',async()=>{onFinish();await A.signOut(auth);},true),btn('Close',close,true));
+ box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{onFinish();await A.signOut(auth);}),btn('Close',close));
 }
 function adminPanel(){
  const box=open('Outlet approvals','Both administrators can review pending requests.');
