@@ -144,7 +144,7 @@ async function sync(){
 }
 function ranked(period='weekly',outletView=false){
  let list=[];const w=week();
- if(!outletView)list=users.filter(rankEligible).map(u=>({name:u.name,outlet:u.outlet,avatar:u.avatar,uid:u.uid,score:period==='weekly'?Number(u.weeklyPoints?.[w]||0):Number(u.totalPoints||0)}));
+ if(!outletView)list=users.filter(rankEligible).map(u=>({name:u.name,outlet:u.outlet,avatar:u.avatar,uid:u.uid,correctAnswers:Number(u.correctAnswers||0),dailyActivity:u.dailyActivity||{},lifetimePoints:Number(u.totalPoints||0),score:period==='weekly'?Number(u.weeklyPoints?.[w]||0):Number(u.totalPoints||0)}));
  else list=OUTLETS.filter(name=>name!=='Other').map(name=>{
   let sum=0,people=0;for(const u of users.filter(rankEligible)){const key=period==='weekly'?w+'__'+name:name;const ans=period==='weekly'?Number(u.outletWeeklyAnswers?.[key]||0):Number(u.outletAnswers?.[key]||0);sum+=period==='weekly'?Number(u.outletWeeklyPoints?.[key]||0):Number(u.outletPoints?.[key]||0);if(ans>0)people++;}
   return{name,score:people?Math.round(sum/people):0,people};
@@ -165,6 +165,7 @@ function board(){
  big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
  const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':rankEligible({...profile,isAdmin:admins})?'Ready for your next victory?':'Private account · your points are yours alone';
  text.append(label,big,sub);hero.append(text);box.append(hero);
+ if(window.BTRewards){const season=window.BTRewards.season(day());if(season){const chip=document.createElement('div');chip.className='pg-season-chip';const crown=document.createElement('span');crown.className='pg-crown-icon';crown.textContent='👑';chip.append(crown,document.createTextNode(' WEEKLY SEASON · '+season.daysRemaining+' DAYS LEFT · Ends '+season.end));box.append(chip);}}
  const buttons=document.createElement('div');buttons.className='pg-nav';
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
  if(!rankEligible({...profile,isAdmin:admins})){const privateNote=document.createElement('div');privateNote.className='pg-private';privateNote.textContent='🔒 PRIVATE PLAYER · You still earn and see points in your profile. Other and administrator accounts never enter public rankings.';box.append(privateNote);}
@@ -185,6 +186,12 @@ function board(){
   const place=document.createElement('span');place.className='pg-place';place.textContent=r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank;card.append(place);
   if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=r.avatar||'./images/default-avatar.svg';pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.svg';card.append(pic);}
   const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
+  if(!outletView&&window.BTRewards){
+   const badges=window.BTRewards.achievements({totalPoints:r.lifetimePoints,correctAnswers:r.correctAnswers,dailyActivity:r.dailyActivity},day(),week());
+   const priority=['centurion','streak-14','legend','streak-7','super-student','rising-star','sharp-mind'];
+   const earned=priority.map(id=>badges.find(b=>b.id===id&&b.unlocked)).find(Boolean);
+   if(earned){const tiny=document.createElement('small');tiny.className='pg-mini-badge';tiny.textContent=earned.icon+' '+earned.label;detail.append(tiny);}
+  }
   const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
  }
  if(!outletView&&records.length>20){box.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board();},true));}
@@ -277,7 +284,28 @@ function adminPanel(){
  const box=open('Outlet approvals','Both administrators can review pending requests.');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
- box.append(btn('Seed answer keys',seedKeys,true),btn('Close',close,true));
+ box.append(btn('Seed answer keys',seedKeys,true),btn('Review activity flags',reviewActivityFlags,true),btn('Close',close,true));
+}
+async function reviewActivityFlags(){
+ if(!admins)return;
+ const box=open('ACTIVITY REVIEW','These flags are non-punitive learning integrity indicators, not proof of cheating.');
+ const loading=document.createElement('p');loading.textContent='Loading accounts suggested for review…';box.append(loading);
+ try{
+  const results=await F.getDocs(F.query(F.collection(db,'users'),F.where('reviewSuggested','==',true),F.limit(30)));
+  loading.remove();
+  if(results.empty){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='✅ No accounts currently need review.';box.append(empty);}
+  for(const doc of results.docs){
+   const p=doc.data();const line=document.createElement('div');line.className='pg-review-item';
+   const info=document.createElement('div');const name=document.createElement('strong');name.textContent=p.username+' · '+p.outlet;
+   const stats=document.createElement('small');stats.textContent=(p.rapidCorrectStreak||0)+' consecutive near-instant correct · '+(p.correctAnswers||0)+' confirmed correct';info.append(name,stats);line.append(info);
+   line.append(btn('Mark reviewed',async()=>{
+    if(!confirm('Clear the review flag for '+p.username+'? This will NOT change scores.'))return;
+    try{await F.updateDoc(F.doc(db,'users',doc.id),{reviewSuggested:false,updatedAt:F.serverTimestamp()});line.remove();note('Review flag cleared; scores unchanged.');}
+    catch(e){note(errorMessage(e));}
+   },true));box.append(line);
+  }
+ }catch(e){loading.textContent='Unable to load review flags: '+errorMessage(e);}
+ box.append(btn('BACK TO ADMIN',adminPanel,true),btn('CLOSE',close,true));
 }
 async function decide(req,yes){
  try{await F.runTransaction(db,async tx=>{const r=F.doc(db,'outletRequests',req.id),u=F.doc(db,'users',req.uid),p=F.doc(db,'publicRanks',req.uid);const [a,b,pub]=await Promise.all([tx.get(r),tx.get(u),tx.get(p)]);if(!a.exists()||a.data().status!=='pending'||!b.exists()||b.data().outlet!==a.data().from)throw Error('Request no longer pending');tx.update(r,{status:yes?'approved':'rejected',reviewedBy:user.uid,reviewedAt:F.serverTimestamp()});if(yes){tx.update(u,{outlet:req.to,updatedAt:F.serverTimestamp()});if(pub.exists()){if(req.to==='Other')tx.delete(p);else tx.update(p,{outlet:req.to});}}});note('Request processed.');}
