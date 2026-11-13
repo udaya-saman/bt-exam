@@ -63,7 +63,7 @@ function getQueue(){try{return JSON.parse(localStorage.getItem(qkey())||'[]')}ca
 function saveQueue(q){localStorage.setItem(qkey(),JSON.stringify(q))}
 function onStart(paper){if(!user)return;active={id:rand(),paper,dayKey:day(),startedAt:Date.now()};localStorage.setItem(akey(),JSON.stringify(active));}
 function onResume(paper,saved){if(!user)return;try{active=saved||JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}if(!active||active.paper!==paper)onStart(paper);else localStorage.setItem(akey(),JSON.stringify(active));}
-function onFinish(){clearTimeout(cloudTimer);if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
+function onFinish(){clearTimeout(cloudTimer);cloudTimer=null;pendingCloudSnapshot=null;if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
 async function onAnswer(a){
  if(!user||!profile||!active||active.paper!==a.paperId)return;
  const index=Number(a.originalQuestionIndex),selected=Number(a.selectedOriginalIndex);
@@ -75,15 +75,19 @@ async function onAnswer(a){
  q.push(entry);saveQueue(q);note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
 }
 window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>promptUpdate()};
-let cloudTimer=null;
+let cloudTimer=null, pendingCloudSnapshot=null;
 function saveCloudSession(snapshot){
  if(!user||!navigator.onLine)return;
- clearTimeout(cloudTimer);
+ pendingCloudSnapshot=snapshot;
+ if(cloudTimer)return; // Batch frequent question transitions into one cloud write.
  cloudTimer=setTimeout(()=>{
-  if(!user)return;
-  F.setDoc(F.doc(db,'savedSessions',user.uid),{uid:user.uid,snapshot,updatedAt:F.serverTimestamp()})
+  cloudTimer=null;
+  if(!user||!pendingCloudSnapshot)return;
+  const current=pendingCloudSnapshot;
+  pendingCloudSnapshot=null;
+  F.setDoc(F.doc(db,'savedSessions',user.uid),{uid:user.uid,snapshot:current,updatedAt:F.serverTimestamp()})
     .catch(e=>console.warn('Session sync failed:',e.code||e));
- },1800);
+ },12000);
 }
 async function restoreCloudSession(){
  if(!user||!navigator.onLine||localStorage.getItem(storageKey()))return;
