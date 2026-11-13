@@ -1,8 +1,8 @@
-/* Firebase Spark (free): replace ONLY the public web-app values below.
-   No Cloud Functions, no Cloud Storage, no billing account required. */
+/* Public Firebase Web App configuration for BT Exam Prep (Spark plan).
+   Authentication and Cloud Firestore only. No secrets or service credentials here. */
 window.BT_FIREBASE_CONFIG = {
-  apiKey: "REPLACE_WITH_WEB_API_KEY",
-  authDomain: "REPLACE_WITH_PROJECT_ID.firebaseapp.com",
-  projectId: "REPLACE_WITH_PROJECT_ID",
-  appId: "REPLACE_WITH_WEB_APP_ID"
+  apiKey: "AIzaSyD0VQFoxtXa5_w7GStu-30x6mD0_BT070M",
+  authDomain: "btexam-c1e63.firebaseapp.com",
+  projectId: "btexam-c1e63",
+  appId: "1:408186747464:web:090455ffac75082216367d"
 };
