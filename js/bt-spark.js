@@ -62,18 +62,43 @@ const akey=()=>user?'bt_spark_attempt_'+user.uid:'';
 const storageKey=()=>user?'bt_exam_state:'+user.uid:null;
 function getQueue(){try{return JSON.parse(localStorage.getItem(qkey())||'[]')}catch(_){return []}}
 function saveQueue(q){localStorage.setItem(qkey(),JSON.stringify(q))}
-function onStart(paper){if(!user)return;active={id:rand(),paper,dayKey:day(),startedAt:Date.now()};localStorage.setItem(akey(),JSON.stringify(active));}
-function onResume(paper,saved){if(!user)return;try{active=saved||JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}if(!active||active.paper!==paper)onStart(paper);else localStorage.setItem(akey(),JSON.stringify(active));}
+function rankedKey(paper,dayKey){return 'bt_spark_daily_ranked_'+user.uid+'_'+dayKey+'_'+paper;}
+function modeBadge(){
+ let label=document.getElementById('bt-exam-mode');
+ if(!label){label=document.createElement('span');label.id='bt-exam-mode';label.className='pg-mode-label';document.getElementById('quiz-paper-label')?.after(label);}
+ if(label)label.textContent=active?.ranked===false?'📚 PRACTICE · NO RANK POINTS':'🏅 DAILY RANKED';
+}
+function onStart(paper){
+ if(!user)return;
+ const today=day(),previous=localStorage.getItem(rankedKey(paper,today));
+ const current={id:rand(),paper,dayKey:today,startedAt:Date.now(),ranked:!previous};
+ active=current;localStorage.setItem(akey(),JSON.stringify(active));modeBadge();
+ if(!navigator.onLine)return;
+ const claimId=user.uid+'_'+today+'_'+paper;
+ F.getDoc(F.doc(db,'rankedClaims',claimId)).then(doc=>{
+  if(active!==current||!doc.exists())return;
+  if(doc.data().attemptId!==current.id){current.ranked=false;localStorage.setItem(akey(),JSON.stringify(active));modeBadge();}
+ }).catch(err=>console.info('Ranked mode check unavailable:',err.code||err));
+}
+function onResume(paper,saved){
+ if(!user)return;
+ try{active=saved||JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
+ if(!active||active.paper!==paper)onStart(paper);
+ else{localStorage.setItem(akey(),JSON.stringify(active));modeBadge();}
+}
 function onFinish(){clearTimeout(cloudTimer);cloudTimer=null;pendingCloudSnapshot=null;if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
 async function onAnswer(a){
  if(!user||!profile||!active||active.paper!==a.paperId)return;
+ if(active.ranked===false){note('Practice mode · this attempt earns no ranking points');return;}
  const index=Number(a.originalQuestionIndex),selected=Number(a.selectedOriginalIndex);
  if(!Number.isInteger(index)||!Number.isInteger(selected))return;
  const id=user.uid+'_'+active.id+'_'+active.paper+'_'+index,q=getQueue();
  if(q.some(x=>x.id===id))return;
  const remaining=a.correct?Math.max(0,Math.min(60,Math.floor(Number(a.remainingSeconds)||0))):0;
- const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,startedAt:active.startedAt,weekKey:week(),monthKey:day().slice(0,7),activityDay:day(),outlet:profile.outlet,earnedAt:Date.now(),claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
- q.push(entry);saveQueue(q);note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
+ const earnedAt=Date.now(),earnedDate=new Date(earnedAt),answerDay=day(earnedDate);
+ const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,startedAt:active.startedAt,weekKey:week(earnedDate),monthKey:answerDay.slice(0,7),activityDay:answerDay,outlet:profile.outlet,earnedAt,claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
+ q.push(entry);saveQueue(q);localStorage.setItem(rankedKey(active.paper,active.dayKey),active.id);
+ note(entry.points+' points · '+(navigator.onLine?'Pending confirmation':'Saved offline'));sync();
 }
 window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>promptUpdate()};
 let cloudTimer=null, pendingCloudSnapshot=null;
