@@ -154,7 +154,7 @@ function board(){
  if(!unsubscribe)listen();
  const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
  const hero=document.createElement('div');hero.className='pg-hero';
- const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src='./images/mascot/pizza-champ.svg';mascot.alt='Cheering pizza slice mascot';hero.append(mascot);
+ const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.svg':'./images/mascot/pizza-welcome.svg';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
  const text=document.createElement('div');text.className='pg-hero-copy';
  const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':'THE PIZZA ARENA';
  const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
@@ -189,7 +189,7 @@ function board(){
 }
 function showRankMascot(risen,rank){
  const box=open(risen?'🚀 RANK UP!':'⚔️ RANK CHALLENGE',risen?'Great work! You climbed the leaderboard.':'Another player overtook you. Practice and reclaim your position!');
- const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-champ.svg':'./images/mascot/pizza-challenge.svg';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
+ const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-rank-up.svg':'./images/mascot/pizza-overtaken.svg';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
  const msg=document.createElement('div');msg.className='pg-private';msg.textContent='CURRENT WEEKLY RANK · #'+rank;box.append(msg,btn('LET’S GO!',close));
 }
 function monthly(){
@@ -197,7 +197,7 @@ function monthly(){
  if(d<4||!user||!users.length)return;
  const key='bt_spark_champion_'+user.uid+'_'+previous;if(localStorage.getItem(key))return;
  const top=users.filter(rankEligible).map(u=>{const outlets=Object.entries(u.outletMonthlyPoints||{}).filter(([k])=>k.startsWith(previous+'__')).sort((a,b)=>b[1]-a[1]);return{name:u.name,outlet:outlets[0]?.[0].slice(previous.length+2)||u.outlet,score:Number(u.monthlyPoints?.[previous]||0)};}).sort((a,b)=>b.score-a.score);
- if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/mascot/pizza-champ.svg';image.alt='Pizza mascot celebrating';image.className='pg-celebration';box.prepend(image);box.append(btn('Continue',close));}
+ if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/mascot/pizza-monthly.svg';image.alt='Pizza mascot celebrating';image.className='pg-celebration';box.prepend(image);box.append(btn('Continue',close));}
 }
 function listen(){
  if(unsubscribe)return;
@@ -213,12 +213,39 @@ function listen(){
 async function profilePanel(){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
- const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src='./images/mascot/pizza-champ.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent=rankEligible({...profile,isAdmin:admins})?'YOUR PLAYER STATS':'PRIVATE SCORING MODE';const b=document.createElement('strong');b.textContent=Number(profile.totalPoints||0).toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=Number(profile.totalAnswers||0)+' answered · '+getQueue().length+' pending';info.append(a,b,c);hero.append(pic,info);box.append(hero);
+ const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.svg':'./images/mascot/pizza-private.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent=rankEligible({...profile,isAdmin:admins})?'YOUR PLAYER STATS':'PRIVATE SCORING MODE';const b=document.createElement('strong');b.textContent=Number(profile.totalPoints||0).toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=Number(profile.totalAnswers||0)+' answered · '+getQueue().length+' pending';info.append(a,b,c);hero.append(pic,info);box.append(hero);
  if(!rankEligible({...profile,isAdmin:admins})){const x=document.createElement('div');x.className='pg-private';x.textContent='🔒 Your points are private. You are excluded from player standings and outlet crowns.';box.append(x);}
- const achieved=['First 100 points','500-point Star','1,000-point Master'].filter((_,i)=>Number(profile.totalPoints||0)>=[100,500,1000][i]);
- if(achieved.length){const badge=document.createElement('p');badge.textContent='🏅 Achievements: '+achieved.join(' · ');box.append(badge);}
- const weekAnswers=Object.entries(profile.outletWeeklyAnswers||{}).filter(([key])=>key.startsWith(week()+'__')).reduce((sum,[,n])=>sum+Number(n||0),0);
- if(weekAnswers>=50){const challenge=document.createElement('p');challenge.textContent='✅ Weekly challenge complete: 50 questions';box.append(challenge);}
+ const rewards=window.BTRewards;
+ if(rewards){
+  const lvl=rewards.level(profile.totalPoints||0);
+  const block=document.createElement('section');block.className='pg-rewards-section';
+  const levelHeader=document.createElement('div');levelHeader.className='pg-section';levelHeader.textContent='⭐ LEVEL '+lvl.number+' · YOUR PROGRESSION';block.append(levelHeader);
+  const stat=document.createElement('div');stat.className='pg-reward-stat';
+  const left=document.createElement('strong');left.textContent=String(lvl.points).replace(/\B(?=(\d{3})+(?!\d))/g,',')+' PTS';
+  const right=document.createElement('small');right.textContent=(lvl.next-lvl.points)+' to level '+(lvl.number+1);
+  stat.append(left,right);block.append(stat);
+  const track=document.createElement('div');track.className='pg-level-track';
+  const fill=document.createElement('span');fill.style.width=lvl.percent+'%';track.append(fill);block.append(track);
+  const all=rewards.achievements(profile,day(),week(),false);
+  const unlocked=all.filter(item=>item.unlocked).length;
+  const heading=document.createElement('div');heading.className='pg-section';heading.textContent='🎖️ YOUR REWARDS · '+unlocked+'/'+all.length+' UNLOCKED';block.append(heading);
+  const badges=document.createElement('div');badges.className='pg-reward-grid';
+  all.forEach(item=>{
+   const badge=document.createElement('div');badge.className='pg-reward-badge'+(item.unlocked?' is-earned':' is-locked');
+   const icon=document.createElement('span');icon.className='pg-reward-icon';icon.textContent=item.icon;
+   const title=document.createElement('strong');title.textContent=item.label;
+   const status=document.createElement('small');status.textContent=item.unlocked?'UNLOCKED · '+Math.min(item.current,item.target)+'/'+item.target:item.current+'/'+item.target;
+   badge.append(icon,title,status);badges.append(badge);
+  });block.append(badges);
+  const season=rewards.season(day());if(season){
+   const seasonPanel=document.createElement('div');seasonPanel.className='pg-private';
+   seasonPanel.textContent='🎯 Weekly Season · '+season.start+'–'+season.end+' · '+season.daysRemaining+' day(s) including today remaining';block.append(seasonPanel);
+  }
+  if(profile.reviewSuggested&&admins){
+   const flag=document.createElement('div');flag.className='pg-private';flag.textContent='ℹ️ Unusual rapid-answer pattern flagged for manual review; this is not proof of cheating.';block.append(flag);
+  }
+  box.append(block);
+ }
  const msg=document.createElement('p');msg.className='err';box.append(msg);
  const image=field(box,'Profile picture','file');image.accept='image/jpeg,image/png,image/webp';image.onchange=async()=>{
   try{const file=image.files[0],src=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
