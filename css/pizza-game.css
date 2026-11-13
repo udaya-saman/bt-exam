@@ -90,3 +90,23 @@ body #bt-spark-root .pg-muted{color:#d4bac0;font-size:12px}
 @keyframes bt-answer-pop{from{opacity:0;transform:translateY(9px) scale(.8)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.bt-timer-warning,.bt-timer-warning img,.bt-answer-mascot{animation:none}.bt-timer-warning{opacity:1}}
 @media(max-width:390px){.bt-timer-warning{font-size:9px}.bt-timer-warning img{width:41px;height:41px}.bt-answer-mascot{width:43px;height:53px;top:-15px}}
+
+/* Milestone, streak and level progress cards, styled for the arcade leaderboard. */
+#bt-spark-root .pg-rewards-section{margin:15px 0 20px}
+#bt-spark-root .pg-reward-stat{display:flex;align-items:baseline;justify-content:space-between;gap:10px;color:#ffe9ad;margin:8px 0}
+#bt-spark-root .pg-reward-stat strong{font-size:19px}
+#bt-spark-root .pg-reward-stat small{color:#dbc6b5;font-size:11px}
+#bt-spark-root .pg-level-track{height:10px;border-radius:20px;background:#4b3234;overflow:hidden;box-shadow:inset 0 1px 4px #0008;margin-bottom:12px}
+#bt-spark-root .pg-level-track span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#e74c3d,#f4b344,#ffe4a2);transition:width .3s}
+#bt-spark-root .pg-reward-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#bt-spark-root .pg-reward-badge{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:5px;min-height:101px;text-align:center;border-radius:15px;background:#302329;border:1px solid #ffffff1b;padding:10px 7px}
+#bt-spark-root .pg-reward-badge.is-earned{background:linear-gradient(135deg,#663528,#4c2b29);border:1px solid #e6b86380;box-shadow:0 5px 16px #0004,inset 0 1px #ffffff18}
+#bt-spark-root .pg-reward-badge.is-locked{filter:saturate(.55);opacity:.64}
+#bt-spark-root .pg-reward-icon{font-size:26px}
+#bt-spark-root .pg-reward-badge strong{font-size:12px;color:#ffedcf}
+#bt-spark-root .pg-reward-badge small{font-size:10px;color:#e5c8a2}
+#bt-spark-root .pg-season-chip{margin:10px 0;padding:10px 12px;border:1px solid #f1bd6988;background:#552a23;border-radius:12px;color:#ffe8b4;font-size:12px;font-weight:750}
+#bt-spark-root .pg-season-chip strong{color:#fff6da}
+#bt-spark-root .pg-crown-icon{display:inline-block;animation:pg-crown-bob 2.5s ease-in-out infinite;transform-origin:center bottom}
+@keyframes pg-crown-bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){#bt-spark-root .pg-crown-icon{animation:none}}
