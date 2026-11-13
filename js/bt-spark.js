@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.1.0-pizza-arena';let latestUpdate=null;
+const APP_VERSION='3.2.0-mascot-rewards';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -28,6 +28,7 @@ function errorMessage(e){return String(e?.message||e||'Unknown error').replace('
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open(mode==='register'?'Create your account':mode==='setup'?'Firebase setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
+ const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.svg':'./images/mascot/pizza-welcome.svg';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
  const outlet=mode==='register'?sel(form,'Select outlet'):null;
@@ -338,6 +339,7 @@ async function checkForUpdates(){
 function promptUpdate(){
  if(!latestUpdate||!root.hidden||$('#quiz')?.classList.contains('active'))return;
  const v=latestUpdate;const box=open('Update available','BT Exam Prep version '+v+' is available. Updating will reload the application.');
+ const picture=document.createElement('img');picture.className='pg-celebration';picture.src='./images/mascot/pizza-update.svg';picture.alt='Pizza mascot with refresh symbol';box.prepend(picture);
  box.append(btn('Update now',async()=>{
   try{const reg=await navigator.serviceWorker?.getRegistration();if(reg){await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});}}
   catch(e){console.warn('Update:',e);}
