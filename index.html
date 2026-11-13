@@ -278,6 +278,15 @@ button { outline: none; border: none; font-family: inherit; }
 <!-- HOME SCREEN -->
 <div id="home" class="screen active">
   <div class="home-content animate-in">
+    <header class="pg-home-hero">
+      <div class="pg-home-hero-copy">
+        <span class="pg-home-kicker">🍕 PIZZA ARENA · BT TRAINING</span>
+        <h1>Play. Learn.<span>Level up.</span></h1>
+        <p>Choose your challenge, sharpen your knowledge and celebrate every achievement.</p>
+        <div class="pg-home-actions"><button type="button" onclick="document.getElementById('bt-spark-dock')?.click()">🏆 LEADERBOARD</button><span>NEW SEASON · NEW CHALLENGES</span></div>
+      </div>
+      <div class="pg-home-hero-character" aria-hidden="true"><img src="./images/mascot/pizza-welcome.svg" alt="" loading="eager"></div>
+    </header>
     <div id="resume-banner" onclick="resumeSavedSession()">
       <div class="rb-info">
         <span class="rb-title">Resume Previous Session?</span>
@@ -287,7 +296,7 @@ button { outline: none; border: none; font-family: inherit; }
     </div>
 
     <div class="home-section-label">
-      <span>SELECT EXAM PAPER</span>
+      <span>🎮 CHOOSE YOUR CHALLENGE</span>
       <button id="sound-toggle" onclick="toggleSound()" style="background: var(--opt-bg); border: 1px solid var(--border-light); color: var(--text-main); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; cursor: pointer;">🔊 Sound On</button>
     </div>
 
@@ -420,7 +429,7 @@ button { outline: none; border: none; font-family: inherit; }
   <div class="bottom-bar">
     <button class="home-btn" onclick="goHome()">🏠 Home</button>
     <button class="reset-btn" onclick="confirmReset()">↺ Reset</button>
-    <button class="prev-btn" id="prev-btn" onclick="goPrevQuestion()">← Back</button>
+    
     <button class="next-btn" id="next-btn" onclick="nextQuestion()">ඊළඟ ප්‍රශ්නය →</button>
   </div>
 </div>
@@ -1380,9 +1389,6 @@ function renderQuestion() {
   document.getElementById('result-area').innerHTML = '';
   document.getElementById('next-btn').classList.remove('show');
   
-  const prevBtn = document.getElementById('prev-btn');
-  prevBtn.disabled = true;
-  prevBtn.title = 'Review answers after completing this exam';
 
   const btnTrans = document.getElementById('translate-btn');
   btnTrans.className = 'translate-btn';
@@ -1528,10 +1534,6 @@ function nextQuestion() {
   renderQuestion();
 }
 
-function goPrevQuestion() {
-  // Locked answers cannot be modified or replayed during an exam.
-  return;
-}
 
 function startTimer() {
   clearTimer();
@@ -1728,6 +1730,7 @@ window.addEventListener('popstate', function() {
   }
 </script>
 <!-- BT-SPARK-INTEGRATION-v3 -->
+<script src="./js/bt-mascot-sprite.js" defer></script>
 <script src="./js/bt-rewards.js"></script>
 <script src="./firebase-config.js"></script>
 <script type="module" src="./js/bt-spark.js"></script>
