@@ -1,5 +1,5 @@
 {
-  "version": "3.3.0-admin-user-removal",
-  "releaseDate": "2026-11-13",
-  "notes": "Administrator Manage Users, double-confirmed account removal, administrator-password verification, Firebase app-access blocking and separate manual Authentication identity cleanup."
+  "version": "3.4.0-sticker-scoring",
+  "releaseDate": "2026-11-14",
+  "notes": "New Pizza Hut sticker-sheet mascots, branded arcade home, scoring reliability fixes, private point display, outlet-change confirmation and performance optimisation."
 }
