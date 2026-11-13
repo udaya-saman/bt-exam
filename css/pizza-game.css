@@ -1,0 +1,80 @@
+/* BT EXAM — Pizza Hut–inspired arcade edition.
+   Red / near-black / warm cream, gold used only for achievements.
+   Retains all original quiz layouts, paper order and interaction patterns. */
+:root {
+  --ph-red:#d41420; --ph-dark-red:#9e0915;
+  --corp-navy:#201b1b; --corp-blue:#da1826; --corp-green:#32975a;
+  --bg-color:#fbf7f0; --card-bg:#fffdf9; --text-main:#231d1d; --text-muted:#716363;
+  --border-light:#40211b20; --opt-bg:#f6eee7; --nav-bar:#fffaf4ed;
+  --bottom-fade:linear-gradient(to top,#fbf7f0 75%,transparent);
+  --warning:#f5ac23; --danger:#d8202c;
+  --shadow-sm:0 4px 17px #4b15171a; --shadow-md:0 12px 28px #4b151729; --shadow-hover:0 14px 32px #4b151738;
+}
+@media (prefers-color-scheme:dark){
+ :root{--bg-color:#141111;--card-bg:#211a1a;--text-main:#fff8ef;--text-muted:#b7a6a6;--border-light:#ffffff19;--opt-bg:#302526;--nav-bar:#191313ee;--bottom-fade:linear-gradient(to top,#141111 75%,transparent);--shadow-sm:0 7px 18px #0004;--shadow-md:0 12px 28px #0006;--shadow-hover:0 18px 32px #0007}
+}
+body{background:var(--bg-color)}
+#home{background:radial-gradient(ellipse at 82% 0%,#d4142016,transparent 38%),var(--bg-color)}
+.home-section-label,.quiz-paper-label{color:var(--ph-red);letter-spacing:.075em}
+.paper-card{border:1px solid var(--border-light);box-shadow:var(--shadow-sm);border-radius:18px}
+.paper-card::after{content:"";pointer-events:none;position:absolute;right:-27px;top:-33px;width:85px;height:85px;border:1px solid #db1b2420;border-radius:50%}
+.paper-card:active{transform:scale(.985)}
+.pc-icon-wrap{background:linear-gradient(150deg,#fff0e1,#ffe7d1);box-shadow:inset 0 0 0 1px #d414201a}
+.pc-tag.blue-tag{background:#d414201b;color:var(--ph-red)}
+.pc-tag.gold-tag{background:#d79b2921;color:#a26b16}
+.pc-tag.green-tag{background:#2480491c;color:#217447}
+@media (prefers-color-scheme:dark){.pc-icon-wrap{background:#392728}.pc-tag.blue-tag{color:#ff8288}.pc-tag.gold-tag{color:#ffd07e}}
+#resume-banner{background:linear-gradient(115deg,#ad0918,#e3282b 75%,#ff8f36);box-shadow:0 10px 30px #b20b2838}
+.quiz-bar{box-shadow:0 3px 12px #a0141910}
+.score-pill{background:linear-gradient(130deg,#1b1818,#4a2427);color:#fff;box-shadow:0 6px 16px #0003}
+.timer-fill.ok,.prog-fill{background:linear-gradient(90deg,#d41420,#fb7732)}
+.opt-btn{transition:border-color .17s,transform .17s,box-shadow .17s}
+.opt-btn:active{transform:scale(.99)}
+.paper-card:focus-visible,.opt-btn:focus-visible,button:focus-visible{outline:3px solid #f7bc42;outline-offset:3px}
+#bt-spark-dock{background:linear-gradient(105deg,#b20a1b,#ed3138)!important;color:#fff!important;border:1px solid #ffae8880!important;border-radius:30px!important;padding:12px 16px!important;box-shadow:0 8px 26px #ba192b64!important;letter-spacing:.025em;font-size:12px!important}
+#bt-spark-dock::before{content:"🍕 ";font-size:16px}
+body #bt-spark-root{background:rgba(14,8,9,.83)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+body #bt-spark-root .panel{position:relative;border:1px solid #ffe3bf26;background:linear-gradient(180deg,#21191b 0%,#181416 100%)!important;box-shadow:0 24px 80px #0009,0 0 0 1px #de2b3435!important;color:#fff5ec!important;border-radius:22px!important;overflow-y:auto!important}
+body #bt-spark-root h2{color:#fff9f1!important;font-size:clamp(20px,5vw,27px)!important;letter-spacing:-.03em}
+body #bt-spark-root p{color:#bea9aa!important}
+body #bt-spark-root label{color:#f8e6e4!important}
+body #bt-spark-root input,body #bt-spark-root select{background:#332729!important;border:1px solid #805257!important;color:#fff6ef!important;min-height:44px}
+body #bt-spark-root input:focus,body #bt-spark-root select:focus{outline:2px solid #f3b650;outline-offset:1px}
+body #bt-spark-root button{background:linear-gradient(130deg,#b70d1d,#e12d36)!important;box-shadow:0 4px 13px #0003;border:1px solid #ef7e7648!important;min-height:40px}
+body #bt-spark-root button.alt{background:#3f3031!important;color:#ffeae2!important;border:1px solid #694848!important}
+body #bt-spark-root .entry{border-bottom:1px solid #ffffff16!important;color:#fcece1!important}
+body #bt-spark-root .err{color:#ff8a91!important}
+body #bt-spark-root .pg-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;background:#ffffff12;color:#ffda8c;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+body #bt-spark-root .pg-nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+body #bt-spark-root .pg-nav button{flex:1;min-width:92px}
+body #bt-spark-root .pg-hero{display:flex;align-items:center;gap:13px;padding:15px;border-radius:18px;background:linear-gradient(115deg,#4a161c,#a31327 88%);border:1px solid #fb977046;overflow:hidden;position:relative;margin:14px 0}
+body #bt-spark-root .pg-hero:after{content:"";position:absolute;width:160px;height:160px;border:1px solid #ffffff2e;border-radius:50%;right:-48px;top:-56px;pointer-events:none}
+body #bt-spark-root .pg-mascot{object-fit:contain;width:88px;max-height:115px;flex-shrink:0;filter:drop-shadow(0 7px 8px #0005);animation:pg-bob 3s ease-in-out infinite}
+body #bt-spark-root .pg-hero-copy{position:relative;z-index:1;min-width:0;flex:1}
+body #bt-spark-root .pg-hero-copy strong{display:block;font-size:24px;color:#fff;line-height:1.2;margin:4px 0}
+body #bt-spark-root .pg-hero-copy small{font-size:12px;color:#ffe0cb}
+body #bt-spark-root .pg-leader-card{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,#493034,#322629);border:1px solid #ffffff15;border-radius:13px;padding:11px;margin-bottom:7px}
+body #bt-spark-root .pg-leader-card.pg-you{border:1px solid #e9bd6f8e;background:linear-gradient(90deg,#674021,#322527);box-shadow:inset 3px 0 #f9c35c}
+body #bt-spark-root .pg-avatar{width:38px;height:38px;border-radius:13px;object-fit:cover;border:2px solid #ffffff3a;background:#fff4e6}
+body #bt-spark-root .pg-place{font-size:15px;font-weight:900;color:#ffde9a;width:38px;text-align:center}
+body #bt-spark-root .pg-person{flex:1;min-width:0}
+body #bt-spark-root .pg-person strong{font-size:13px;color:#fffaf2;display:block;overflow:hidden;text-overflow:ellipsis}
+body #bt-spark-root .pg-person small{font-size:11px;color:#cbb6b1;display:block;overflow:hidden;text-overflow:ellipsis}
+body #bt-spark-root .pg-score{font-size:14px;font-weight:900;color:#ffce6d;white-space:nowrap}
+body #bt-spark-root .pg-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+body #bt-spark-root .pg-podium-item{min-width:0;border:1px solid #efbc6c3d;background:linear-gradient(155deg,#654326,#311f20);border-radius:15px;text-align:center;padding:10px 7px}
+body #bt-spark-root .pg-podium-item:first-child{grid-column:2;grid-row:1;background:linear-gradient(155deg,#87521c,#4b2524)}
+body #bt-spark-root .pg-podium-item:nth-child(2){grid-column:1;grid-row:1;align-self:end}
+body #bt-spark-root .pg-podium-item:nth-child(3){grid-column:3;grid-row:1;align-self:end}
+body #bt-spark-root .pg-podium-item img{width:42px;height:42px;object-fit:cover;border-radius:50%;border:2px solid #f8cc79}
+body #bt-spark-root .pg-podium-item strong{display:block;color:#ffe2aa;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px}
+body #bt-spark-root .pg-podium-item small{display:block;color:#dbbd98;font-size:10px;margin-top:3px}
+body #bt-spark-root .pg-private{padding:12px 14px;margin:10px 0;border:1px dashed #f7c87387;border-radius:13px;background:#e3a32b0a;color:#ffe2a6;font-size:13px;line-height:1.5}
+body #bt-spark-root .pg-section{margin:20px 0 11px;font-size:12px;color:#ffe2aa;letter-spacing:.09em;text-transform:uppercase;font-weight:900}
+body #bt-spark-root .pg-celebration{display:block;margin:12px auto;max-width:min(190px,55vw);max-height:190px;filter:drop-shadow(0 6px 14px #0005);animation:pg-pop .45s cubic-bezier(.2,1.7,.5,1) both}
+body #bt-spark-root .pg-empty{padding:25px 12px;text-align:center;border:1px dashed #ffffff33;border-radius:14px;color:#bda5a3}
+body #bt-spark-root .pg-muted{color:#d4bac0;font-size:12px}
+@keyframes pg-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pg-pop{0%{opacity:0;transform:scale(.7) rotate(-8deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@media (prefers-reduced-motion:reduce){body #bt-spark-root .pg-mascot,body #bt-spark-root .pg-celebration{animation:none}}
+@media(max-width:390px){body #bt-spark-root .pg-hero{padding:10px;gap:5px}body #bt-spark-root .pg-mascot{width:72px}body #bt-spark-root .pg-leader-card{gap:7px;padding:9px 7px}body #bt-spark-root .pg-score{font-size:12px}body #bt-spark-root .pg-podium-item img{width:34px;height:34px}}
