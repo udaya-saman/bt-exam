@@ -19,7 +19,7 @@ const style=document.createElement('style');style.textContent='#bt-spark-root{po
 const dock=document.createElement('button');dock.id='bt-spark-dock';dock.textContent='🏆 Leaderboard';dock.onclick=()=>show('board');document.body.append(dock);
 function note(msg){console.info('[BT Spark]',msg);const n=document.createElement('div');n.textContent=msg;n.style.cssText='position:fixed;z-index:2147483200;top:12px;left:12px;right:12px;background:#21306b;color:#fff;padding:12px;border-radius:12px;text-align:center';document.body.append(n);setTimeout(()=>n.remove(),3300);}
 function open(title,sub){root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.innerHTML='';boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}}
+function close(){root.hidden=true;root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;if(alt)b.className='alt';b.onclick=handler;return b;}
 function label(parent,text,input){const l=document.createElement('label');l.textContent=text;parent.append(l,input);return input;}
 function field(parent,text,type='text'){const input=document.createElement('input');input.type=type;input.required=true;return label(parent,text,input);}
@@ -158,9 +158,9 @@ function board(){
  if(!unsubscribe)listen();
  const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
  const hero=document.createElement('div');hero.className='pg-hero';
- const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.svg':'./images/mascot/pizza-welcome.svg';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
+ const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.svg':rankNotice==='up'?'./images/mascot/pizza-rank-up.svg':rankNotice==='down'?'./images/mascot/pizza-overtaken.svg':'./images/mascot/pizza-welcome.svg';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
  const text=document.createElement('div');text.className='pg-hero-copy';
- const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':'THE PIZZA ARENA';
+ const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
  const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
  big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
  const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':rankEligible({...profile,isAdmin:admins})?'Ready for your next victory?':'Private account · your points are yours alone';
@@ -215,7 +215,7 @@ function listen(){
  unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),snap=>{
   users=snap.docs.map(d=>d.data()).filter(rankEligible);
   const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(risen,mine);}
+  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=risen?'up':'down';note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(risen,mine);}
   previousRank=mine;
   if(boardOpen&&!root.hidden)board();
   monthly();
@@ -237,7 +237,9 @@ async function profilePanel(){
   stat.append(left,right);block.append(stat);
   const track=document.createElement('div');track.className='pg-level-track';
   const fill=document.createElement('span');fill.style.width=lvl.percent+'%';track.append(fill);block.append(track);
-  const all=rewards.achievements(profile,day(),week(),false);
+  const leader=users.length?ranked('weekly',true).find(x=>x.people>=3):null;
+  const onLeadingTeam=Boolean(rankEligible({...profile,isAdmin:admins})&&leader&&leader.name===profile.outlet);
+  const all=rewards.achievements(profile,day(),week(),onLeadingTeam);
   const unlocked=all.filter(item=>item.unlocked).length;
   const heading=document.createElement('div');heading.className='pg-section';heading.textContent='🎖️ YOUR REWARDS · '+unlocked+'/'+all.length+' UNLOCKED';block.append(heading);
   const badges=document.createElement('div');badges.className='pg-reward-grid';
