@@ -1196,6 +1196,7 @@ let timerInterval = null;
 let timeLeft = 60;
 let btQuestionStartedAt = Date.now();
 let btResumeRemaining = null;
+let btTimerWarned = false;
 let isTranslated = false;
 let _trShuffled = [];
 
@@ -1362,6 +1363,8 @@ function renderQuestion() {
   saveProgress();
   
   answered = false;
+  btTimerWarned = false;
+  document.querySelector('.bt-timer-warning')?.remove();
   isTranslated = false;
   
   const q = questions[qIndex];
@@ -1504,6 +1507,12 @@ function showExplanation(isCorrect, isTimeout, q) {
     </div>`;
   
   document.getElementById('next-btn').classList.add('show');
+  const mascot = document.createElement('img');
+  mascot.className = 'bt-answer-mascot';
+  mascot.src = isTimeout ? './images/mascot/pizza-timer.svg' : isCorrect ? './images/mascot/pizza-correct.svg' : './images/mascot/pizza-wrong.svg';
+  mascot.alt = '';
+  mascot.setAttribute('aria-hidden', 'true');
+  area.querySelector('.result-card')?.append(mascot);
   
   setTimeout(() => {
     document.querySelector('.quiz-body').scrollTo({ top: document.querySelector('.quiz-body').scrollHeight, behavior: 'smooth' });
@@ -1538,6 +1547,26 @@ function startTimer() {
 
 function clearTimer() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  document.querySelector('.bt-timer-warning')?.remove();
+}
+
+function showTimeWarning() {
+  if (btTimerWarned || answered || timeLeft <= 0 || timeLeft > 15) return;
+  btTimerWarned = true;
+  const holder = document.querySelector('.timer-row');
+  if (!holder) return;
+  const chip = document.createElement('span');
+  chip.className = 'bt-timer-warning';
+  chip.setAttribute('aria-hidden', 'true');
+  const picture = document.createElement('img');
+  picture.src = './images/mascot/pizza-timer.svg';
+  picture.alt = '';
+  picture.decoding = 'async';
+  const label = document.createElement('span');
+  label.textContent = '15s LEFT';
+  chip.append(picture, label);
+  holder.append(chip);
+  setTimeout(() => chip.remove(), 2300);
 }
 
 function updateTimerUI() {
@@ -1550,6 +1579,7 @@ function updateTimerUI() {
   fill.style.width = pct + '%';
   
   const tv = document.getElementById('timer-val');
+  showTimeWarning();
   if(timeLeft > 15) { tv.className = 'timer-val ok'; fill.className = 'timer-fill ok'; }
   else { tv.className = 'timer-val crit'; fill.className = 'timer-fill crit'; }
 }
