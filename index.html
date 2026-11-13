@@ -1270,6 +1270,7 @@ function saveProgress() {
     btQuestionStartedAt
   };
   localStorage.setItem(window.BTExamBridge?.storageKey?.() || 'bt_exam_state', JSON.stringify(state));
+  window.BTExamBridge?.onProgress?.(state);
 }
 
 function checkSavedSession() {
