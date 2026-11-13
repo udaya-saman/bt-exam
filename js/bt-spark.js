@@ -329,7 +329,7 @@ async function manageUsers(){
     const sub=document.createElement('small');sub.textContent=(item.totalPoints||0)+' pts · UID '+item.uid.slice(0,8)+'…';
     detail.append(label,sub);line.append(detail);
     const reserved=RESERVED.has(norm(item.username));
-    const blocked=item.uid===user.uid||reserved;
+    const blocked=item.uid===user.uid||reserved||item.isAdmin;
     line.append(btn(blocked?'PROTECTED':'DELETE',()=>confirmUserRemoval(item),blocked));
     if(blocked)line.lastChild.disabled=true;
     list.append(line);
@@ -339,7 +339,7 @@ async function manageUsers(){
   const snap=await F.getDocs(F.query(F.collection(db,'users'),F.limit(250)));
   const records=snap.docs.map(doc=>({...doc.data(),uid:doc.id}));
   const roleDocs=await Promise.all(records.map(p=>F.getDoc(F.doc(db,'admins',p.uid)).catch(()=>null)));
-  const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()&&roleDocs[i].data()?.enabled===true}));
+  const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()===true}));
   status.textContent='Showing up to 250 accounts. Protected administrator accounts cannot be removed here.';
   const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));};
   search.addEventListener('input',render);render();
@@ -421,7 +421,10 @@ async function seedKeys(){
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
- try{const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){gate('setup','The account profile is missing. Contact the administrator.');return;}
+ try{
+  const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
+  if(blocked.exists()){await A.signOut(auth);note('This account has been removed. Contact the administrator if needed.');return;}
+  const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){await A.signOut(auth);note('This account has no active profile. Contact the administrator.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
