@@ -21,6 +21,7 @@
     const p=profile||{},points=Math.max(0,Number(p.totalPoints||0)),correct=Math.max(0,Number(p.correctAnswers||0));
     const currentStreak=streak(p.dailyActivity||{},today);
     const weeklyAnswers=Object.entries(p.outletWeeklyAnswers||{}).filter(([key])=>key.startsWith(weekKey+'__')).reduce((t,[,v])=>t+Math.max(0,Number(v)||0),0);
+    const outletAnswers=(p.outlet && p.outlet!=='Other') ? Math.max(0,Number(p.outletWeeklyAnswers?.[weekKey+'__'+p.outlet]||0)) : 0;
     const a=[
       ['first-slice','🍕','First Slice',100,points],
       ['rising-star','🌟','Rising Star',500,points],
@@ -32,7 +33,8 @@
       ['streak-7','⚡','7-Day Streak',7,currentStreak],
       ['streak-14','👑','14-Day Streak',14,currentStreak],
       ['weekly-50','🚀','Weekly Warrior',50,weeklyAnswers],
-      ['outlet-crown','🍕','Outlet Crown Squad',1,outletCrown?1:0]
+      ['outlet-drive','🍕','Outlet Challenger',20,outletAnswers],
+      ['outlet-crown','👑','Crown Squad',1,outletCrown?1:0]
     ];
     return a.map(([id,icon,label,target,current])=>({
       id,icon,label,target,current,unlocked:current>=target,
