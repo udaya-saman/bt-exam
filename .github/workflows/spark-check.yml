@@ -34,3 +34,5 @@ jobs:
         run: node tests/pizza-arena.test.cjs
       - name: Test mascot, learning rewards and 15-second warning
         run: node tests/mascot-rewards.test.cjs
+      - name: Test administrator account removal safety
+        run: node tests/admin-user-removal.test.cjs
