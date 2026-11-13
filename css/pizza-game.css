@@ -110,3 +110,8 @@ body #bt-spark-root .pg-muted{color:#d4bac0;font-size:12px}
 #bt-spark-root .pg-crown-icon{display:inline-block;animation:pg-crown-bob 2.5s ease-in-out infinite;transform-origin:center bottom}
 @keyframes pg-crown-bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
 @media(prefers-reduced-motion:reduce){#bt-spark-root .pg-crown-icon{animation:none}}
+
+#bt-spark-root .pg-mini-badge{display:inline-block;margin-top:5px;padding:4px 7px;color:#ffdf96;background:#7a572859;border:1px solid #ecae486b;border-radius:99px;font-size:10px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#bt-spark-root .pg-review-item{padding:11px;border-radius:12px;border:1px solid #ffdb932e;background:#3a2b2c;display:flex;justify-content:space-between;gap:10px;margin:7px 0;align-items:center}
+#bt-spark-root .pg-review-item strong{color:#ffecd2;display:block;font-size:13px}
+#bt-spark-root .pg-review-item small{display:block;color:#dcc7bc;font-size:11px;margin-top:4px}
