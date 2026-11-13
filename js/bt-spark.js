@@ -210,14 +210,14 @@ async function profilePanel(){
    const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
    const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),scale=Math.max(96/img.width,96/img.height);x.fillStyle='white';x.fillRect(0,0,96,96);x.drawImage(img,(96-img.width*scale)/2,(96-img.height*scale)/2,img.width*scale,img.height*scale);
    const avatar=c.toDataURL('image/jpeg',.65);if(avatar.length>24000)throw Error('Image too large');
-   await F.updateDoc(F.doc(db,'users',user.uid),{avatar,updatedAt:F.serverTimestamp()});note('Picture updated.');
+   await F.updateDoc(F.doc(db,'users',user.uid),{avatar,updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar,updatedAt:F.serverTimestamp()});}note('Picture updated.');
   }catch(e){msg.textContent=errorMessage(e)}
  };
- box.append(btn('Remove picture',async()=>{await F.updateDoc(F.doc(db,'users',user.uid),{avatar:'',updatedAt:F.serverTimestamp()});note('Picture removed.');},true));
+ box.append(btn('Remove picture',async()=>{await F.updateDoc(F.doc(db,'users',user.uid),{avatar:'',updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar:'',updatedAt:F.serverTimestamp()});}note('Picture removed.');},true));
  const newname=field(box,'Change username');newname.value=profile.username;
  box.append(btn('Save username',async()=>{
   try{const n=newname.value.trim();if(!valid(n))throw Error('Invalid username.');
-   await F.runTransaction(db,async tx=>{const old=F.doc(db,'usernames',profile.usernameLower),next=F.doc(db,'usernames',norm(n)),u=F.doc(db,'users',user.uid);if(norm(n)!==profile.usernameLower){if((await tx.get(next)).exists())throw Error('Username taken.');tx.set(next,{uid:user.uid,authEmail:user.email});tx.delete(old);}tx.update(u,{username:n,usernameLower:norm(n),updatedAt:F.serverTimestamp()});});note('Username updated.');
+   await F.runTransaction(db,async tx=>{const old=F.doc(db,'usernames',profile.usernameLower),next=F.doc(db,'usernames',norm(n)),u=F.doc(db,'users',user.uid);const pub=F.doc(db,'publicRanks',user.uid);const pubSnapshot=await tx.get(pub);if(norm(n)!==profile.usernameLower){if((await tx.get(next)).exists())throw Error('Username taken.');tx.set(next,{uid:user.uid,authEmail:user.email});tx.delete(old);}tx.update(u,{username:n,usernameLower:norm(n),updatedAt:F.serverTimestamp()});if(pubSnapshot.exists()){if(RESERVED.has(norm(n)))tx.delete(pub);else tx.update(pub,{name:n,updatedAt:F.serverTimestamp()});}});note('Username updated.');
   }catch(e){msg.textContent=errorMessage(e)}
  },true));
  const oldpass=field(box,'Current password','password'),newpass=field(box,'New password','password');
@@ -234,7 +234,7 @@ function adminPanel(){
  box.append(btn('Seed answer keys',seedKeys,true),btn('Close',close,true));
 }
 async function decide(req,yes){
- try{await F.runTransaction(db,async tx=>{const r=F.doc(db,'outletRequests',req.id),u=F.doc(db,'users',req.uid);const [a,b]=await Promise.all([tx.get(r),tx.get(u)]);if(!a.exists()||a.data().status!=='pending'||!b.exists())throw Error('Request not pending');tx.update(r,{status:yes?'approved':'rejected',reviewedBy:user.uid,reviewedAt:F.serverTimestamp()});if(yes)tx.update(u,{outlet:req.to,updatedAt:F.serverTimestamp()});});note('Request processed.');}
+ try{await F.runTransaction(db,async tx=>{const r=F.doc(db,'outletRequests',req.id),u=F.doc(db,'users',req.uid),p=F.doc(db,'publicRanks',req.uid);const [a,b,pub]=await Promise.all([tx.get(r),tx.get(u),tx.get(p)]);if(!a.exists()||a.data().status!=='pending'||!b.exists()||b.data().outlet!==a.data().from)throw Error('Request no longer pending');tx.update(r,{status:yes?'approved':'rejected',reviewedBy:user.uid,reviewedAt:F.serverTimestamp()});if(yes){tx.update(u,{outlet:req.to,updatedAt:F.serverTimestamp()});if(pub.exists()){if(req.to==='Other')tx.delete(p);else tx.update(p,{outlet:req.to});}}});note('Request processed.');}
  catch(e){note(errorMessage(e));}
 }
 async function seedKeys(){
@@ -246,6 +246,7 @@ async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
  try{const snap=await F.getDoc(F.doc(db,'users',u.uid));if(!snap.exists()){gate('setup','The account profile is missing. Contact the administrator.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
+  if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
   if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists())profile=d.data();});
