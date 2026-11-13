@@ -345,7 +345,7 @@ async function profilePanel(){
   }),btn('CANCEL',()=>profilePanel()));
  });
  if(admins)box.append(btn('Approve outlet requests',adminPanel));
- box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{onFinish();await A.signOut(auth);}),btn('Close',close));
+ box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{await A.signOut(auth);}),btn('Close',close));
 }
 function adminPanel(){
  const box=open('Outlet approvals','Both administrators can review pending requests.');
