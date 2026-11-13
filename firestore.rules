@@ -86,7 +86,9 @@ service cloud.firestore {
       && getAfter(usernamePath(request.resource.data.usernameLower)).data.uid == uid;
     allow update: if (mine(uid) && (profileEdit() || scoringUpdate(uid)))
       || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet','updatedAt'])
-      && validOutlet(request.resource.data.outlet));
+      && validOutlet(request.resource.data.outlet))
+      || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reviewSuggested','updatedAt'])
+      && request.resource.data.reviewSuggested == false);
     allow delete: if false;
   }
   // Unlike /users, only eligible ranked accounts are visible to other players.
