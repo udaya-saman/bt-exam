@@ -78,3 +78,15 @@ body #bt-spark-root .pg-muted{color:#d4bac0;font-size:12px}
 @keyframes pg-pop{0%{opacity:0;transform:scale(.7) rotate(-8deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @media (prefers-reduced-motion:reduce){body #bt-spark-root .pg-mascot,body #bt-spark-root .pg-celebration{animation:none}}
 @media(max-width:390px){body #bt-spark-root .pg-hero{padding:10px;gap:5px}body #bt-spark-root .pg-mascot{width:72px}body #bt-spark-root .pg-leader-card{gap:7px;padding:9px 7px}body #bt-spark-root .pg-score{font-size:12px}body #bt-spark-root .pg-podium-item img{width:34px;height:34px}}
+
+/* Quick, silent, non-modal SVG/CSS mascot urgency cue. Never captures touches. */
+.timer-row{position:relative}
+.bt-timer-warning{position:absolute;right:0;bottom:calc(100% + 7px);display:flex;align-items:center;gap:6px;padding:3px 9px 3px 0;border:1px solid #f2c868a8;background:linear-gradient(120deg,#491d1b,#b92c2d);color:#fff6dd;border-radius:100px;font-size:10px;white-space:nowrap;font-weight:900;letter-spacing:.04em;z-index:3;pointer-events:none!important;user-select:none;animation:bt-urgency 2.2s ease-out both;box-shadow:0 7px 17px #65131a45}
+.bt-timer-warning img{width:51px;height:51px;object-fit:contain;margin:-13px -5px -13px 0;animation:bt-mascot-wiggle .6s ease-in-out 2}
+@keyframes bt-urgency{0%{transform:translateY(10px) scale(.85);opacity:0}15%{transform:translateY(0) scale(1.05);opacity:1}29%{transform:translateY(0) scale(1);opacity:1}74%{opacity:1}100%{transform:translateY(-5px) scale(.97);opacity:0}}
+@keyframes bt-mascot-wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(7deg)}}
+.result-card{position:relative}
+.bt-answer-mascot{position:absolute;right:9px;top:-20px;width:55px;height:65px;object-fit:contain;pointer-events:none;animation:bt-answer-pop .45s both cubic-bezier(.2,1.4,.4,1)}
+@keyframes bt-answer-pop{from{opacity:0;transform:translateY(9px) scale(.8)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.bt-timer-warning,.bt-timer-warning img,.bt-answer-mascot{animation:none}.bt-timer-warning{opacity:1}}
+@media(max-width:390px){.bt-timer-warning{font-size:9px}.bt-timer-warning img{width:41px;height:41px}.bt-answer-mascot{width:43px;height:53px;top:-15px}}
