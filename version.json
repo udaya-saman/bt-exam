@@ -1,5 +1,5 @@
 {
-  "version": "3.4.0-sticker-scoring",
+  "version": "3.5.0-sharp-png",
   "releaseDate": "2026-11-14",
-  "notes": "New Pizza Hut sticker-sheet mascots, branded arcade home, scoring reliability fixes, private point display, outlet-change confirmation and performance optimisation."
+  "notes": "Sharp transparent PNG mascots, fixed overlapping mobile challenge cards, simplified messages, harder achievements, Udaya-only answer-key setup."
 }
