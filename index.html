@@ -286,7 +286,7 @@ button { outline: none; border: none; font-family: inherit; }
         <p>Choose your challenge, sharpen your knowledge and celebrate every achievement.</p>
         <div class="pg-home-actions"><button type="button" onclick="document.getElementById('bt-spark-dock')?.click()">🏆 LEADERBOARD</button><span>NEW SEASON · NEW CHALLENGES</span></div>
       </div>
-      <div class="pg-home-hero-character" aria-hidden="true"><img src="./images/mascot/pizza-welcome.svg" alt="" loading="eager"></div>
+      <div class="pg-home-hero-character" aria-hidden="true"><img src="./images/mascot/pizza-welcome.png" alt="" loading="eager"></div>
     </header>
     <div id="resume-banner" onclick="resumeSavedSession()">
       <div class="rb-info">
@@ -297,7 +297,7 @@ button { outline: none; border: none; font-family: inherit; }
     </div>
 
     <div class="home-section-label">
-      <span>🎮 CHOOSE YOUR CHALLENGE</span>
+      <span>CHOOSE YOUR CHALLENGE</span>
       <button id="sound-toggle" onclick="toggleSound()" style="background: var(--opt-bg); border: 1px solid var(--border-light); color: var(--text-main); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; cursor: pointer;">🔊 Sound On</button>
     </div>
 
@@ -1517,7 +1517,7 @@ function showExplanation(isCorrect, isTimeout, q) {
   document.getElementById('next-btn').classList.add('show');
   const mascot = document.createElement('img');
   mascot.className = 'bt-answer-mascot';
-  mascot.src = isTimeout ? './images/mascot/pizza-timer.svg' : isCorrect ? './images/mascot/pizza-correct.svg' : './images/mascot/pizza-wrong.svg';
+  mascot.src = isTimeout ? './images/mascot/pizza-timer.png' : isCorrect ? './images/mascot/pizza-correct.png' : './images/mascot/pizza-wrong.png';
   mascot.alt = '';
   mascot.setAttribute('aria-hidden', 'true');
   area.querySelector('.result-card')?.append(mascot);
@@ -1563,7 +1563,7 @@ function showTimeWarning() {
   chip.className = 'bt-timer-warning';
   chip.setAttribute('aria-hidden', 'true');
   const picture = document.createElement('img');
-  picture.src = './images/mascot/pizza-timer.svg';
+  picture.src = './images/mascot/pizza-timer.png';
   picture.alt = '';
   picture.decoding = 'async';
   const label = document.createElement('span');
@@ -1731,7 +1731,6 @@ window.addEventListener('popstate', function() {
   }
 </script>
 <!-- BT-SPARK-INTEGRATION-v3 -->
-<script src="./js/bt-mascot-sprite.js" defer></script>
 <script src="./js/bt-rewards.js"></script>
 <script src="./firebase-config.js"></script>
 <script type="module" src="./js/bt-spark.js"></script>

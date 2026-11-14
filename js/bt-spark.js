@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.4.0-sticker-scoring';let latestUpdate=null;
+const APP_VERSION='3.5.0-sharp-png';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -21,7 +21,7 @@ function note(msg){console.info('[BT Spark]',msg);const n=document.createElement
 function award(points,correct){
  const old=document.querySelector('.pg-earned-toast');if(old)old.remove();
  const pill=document.createElement('div');pill.className='pg-earned-toast';pill.setAttribute('aria-live','polite');
- const mascot=document.createElement('img');mascot.alt='';mascot.src=correct?'./images/mascot/pizza-correct.svg':'./images/mascot/pizza-wrong.svg';
+ const mascot=document.createElement('img');mascot.alt='';mascot.src=correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
  const count=document.createElement('strong');count.textContent=(points>0?'+':'')+points+' PTS';
  pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),1750);
 }
@@ -33,10 +33,12 @@ function statTotals(){
  syncCount:pending.length};
 }
 function syncDetail(err){
- const msg=errorMessage(err);
- if(/permission-denied|insufficient permissions/i.test(msg))return 'Firebase rejected the result. Check that answer keys were seeded and the latest Firestore rules were published.';
- if(/unavailable|network/i.test(msg))return 'Connection unavailable. The result is saved on this device for retry.';
- return msg;
+ const code=String(err?.code||''),detail=String(err?.message||'');
+ if(/permission-denied|insufficient permissions/i.test(code+' '+detail))
+   return 'Can’t sync yet. Please contact Udaya.';
+ if(/unavailable|network|deadline-exceeded/i.test(code+' '+detail))
+   return 'No internet. Your answers are safe. Try again later.';
+ return 'Sync didn’t work. Try again or ask for help.';
 }
 function open(title,sub){root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
 function close(){root.hidden=true;root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
@@ -49,11 +51,26 @@ function btn(label,handler,alt=false){const b=document.createElement('button');b
 function label(parent,text,input){const l=document.createElement('label');l.textContent=text;parent.append(l,input);return input;}
 function field(parent,text,type='text'){const input=document.createElement('input');input.type=type;input.required=true;return label(parent,text,input);}
 function sel(parent,text){const s=document.createElement('select');OUTLETS.forEach(n=>{const o=document.createElement('option');o.textContent=n;o.value=n;s.append(o)});return label(parent,text,s);}
-function errorMessage(e){return String(e?.message||e||'Unknown error').replace('Firebase: ','').slice(0,240);}
+function errorMessage(e){
+ const code=String(e?.code||'').toLowerCase(),message=String(e?.message||e||'');
+ if(/auth\/wrong-password|auth\/invalid-credential|auth\/invalid-email|auth\/user-not-found/.test(code))return 'Username or password is incorrect.';
+ if(/auth\/email-already-in-use/.test(code))return 'This username is already registered.';
+ if(/auth\/weak-password/.test(code))return 'Please choose a stronger password.';
+ if(/auth\/too-many-requests/.test(code))return 'Too many attempts. Please try again later.';
+ if(/auth\/network-request-failed|unavailable|network/i.test(code+' '+message))return 'No connection. Check your internet and try again.';
+ if(/permission-denied|insufficient permissions/i.test(code+' '+message))return 'Access denied. Please ask an administrator for help.';
+ if(/PRACTICE_ONLY/.test(message))return 'You have already completed today’s ranked attempt.';
+ if(/OUTLET_CHANGED/.test(message))return 'Your outlet has changed. Ask an administrator for help.';
+ if(/Username already taken/i.test(message))return 'That username is taken. Please choose another.';
+ if(/Image too large/i.test(message))return 'This picture is too large. Try a smaller PNG.';
+ if(/Please choose a PNG image/i.test(message))return 'Please choose a PNG image.';
+ if(/invalid-argument/i.test(message))return 'Some information is invalid. Please try again.';
+ return 'Something went wrong. Please try again or ask an administrator for help.';
+}
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open(mode==='register'?'Create your account':mode==='setup'?'Firebase setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
- const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.svg':'./images/mascot/pizza-welcome.svg';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
+ const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.png':'./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
  const outlet=mode==='register'?sel(form,'Select outlet'):null;
@@ -151,8 +168,8 @@ async function sync(){
  try{
   const list=getQueue(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
   for(const e of list){
-   if(Date.now()-e.earnedAt>72*3600000){syncIssue='An old result is beyond the 72-hour sync window. It has been retained on this device for review.';continue;}
-   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='A stored question does not match the installed paper. Result retained for review.';continue;}
+   if(Date.now()-e.earnedAt>72*3600000){syncIssue='Some older answers need help from an administrator.';continue;}
+   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='An answer could not be matched. Please ask an administrator for help.';continue;}
    const er=F.doc(db,'scoreEvents',e.id),cr=F.doc(db,'rankedClaims',e.claimId),ur=F.doc(db,'users',user.uid);
    try{
     await F.runTransaction(db,async tx=>{
@@ -187,7 +204,7 @@ async function sync(){
     });done.push(e.id);
    }catch(err){
     const message=errorMessage(err);
-    if(/PRACTICE_ONLY/.test(message)){console.warn('Ranked claim conflict retained:',e.id);syncIssue='This attempt conflicts with an earlier ranked attempt. The local record is retained for review.';break;}
+    if(/PRACTICE_ONLY/.test(message)){console.warn('Ranked claim conflict retained:',e.id);syncIssue='You already have a ranked attempt for this paper today.';break;}
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
@@ -211,7 +228,7 @@ function board(){
  if(!unsubscribe)listen();
  const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
  const hero=document.createElement('div');hero.className='pg-hero';
- const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.svg':rankNotice==='up'?'./images/mascot/pizza-rank-up.svg':rankNotice==='down'?'./images/mascot/pizza-overtaken.svg':'./images/mascot/pizza-welcome.svg';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
+ const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.png':rankNotice==='up'?'./images/mascot/pizza-rank-up.png':rankNotice==='down'?'./images/mascot/pizza-overtaken.png':'./images/mascot/pizza-welcome.png';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
  const text=document.createElement('div');text.className='pg-hero-copy';
  const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
  const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
@@ -225,7 +242,7 @@ function board(){
  const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=3).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
   const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
-  if(!outletView){const picture=document.createElement('img');picture.src=r.avatar||'./images/default-avatar.svg';picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.svg';cell.append(picture);}
+  if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
  if(outletView){const crown=records.find(v=>v.people>=3);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 3 active players are needed.';box.append(status);}
@@ -237,7 +254,7 @@ function board(){
  for(const r of shown){
   const card=document.createElement('div');card.className='pg-leader-card';if(r.uid===user?.uid)card.classList.add('pg-you');
   const place=document.createElement('span');place.className='pg-place';place.textContent=r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank;card.append(place);
-  if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=r.avatar||'./images/default-avatar.svg';pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.svg';card.append(pic);}
+  if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.png';card.append(pic);}
   const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
   if(!outletView&&window.BTRewards){
    const badges=window.BTRewards.achievements({totalPoints:r.lifetimePoints,correctAnswers:r.correctAnswers,dailyActivity:r.dailyActivity},day(),week());
@@ -253,7 +270,7 @@ function board(){
 }
 function showRankMascot(risen,rank){
  const box=open(risen?'🚀 RANK UP!':'⚔️ RANK CHALLENGE',risen?'Great work! You climbed the leaderboard.':'Another player overtook you. Practice and reclaim your position!');
- const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-rank-up.svg':'./images/mascot/pizza-overtaken.svg';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
+ const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-rank-up.png':'./images/mascot/pizza-overtaken.png';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
  const msg=document.createElement('div');msg.className='pg-private';msg.textContent='CURRENT WEEKLY RANK · #'+rank;box.append(msg,btn('LET’S GO!',close));
 }
 function monthly(){
@@ -261,7 +278,7 @@ function monthly(){
  if(d<4||!user||!users.length)return;
  const key='bt_spark_champion_'+user.uid+'_'+previous;if(localStorage.getItem(key))return;
  const top=users.filter(rankEligible).map(u=>{const outlets=Object.entries(u.outletMonthlyPoints||{}).filter(([k])=>k.startsWith(previous+'__')).sort((a,b)=>b[1]-a[1]);return{name:u.name,outlet:outlets[0]?.[0].slice(previous.length+2)||u.outlet,score:Number(u.monthlyPoints?.[previous]||0)};}).sort((a,b)=>b.score-a.score);
- if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/mascot/pizza-monthly.svg';image.alt='Pizza mascot celebrating';image.className='pg-celebration';box.prepend(image);box.append(btn('Continue',close));}
+ if(top[0]?.score>0){localStorage.setItem(key,'1');const champions=top.filter(p=>p.score===top[0].score);const box=open(champions.length>1?'🏆 Joint monthly champions':'🏆 Monthly champion','Congratulations to '+champions.map(p=>p.name+' of '+p.outlet).join(' & ')+' · '+top[0].score+' points');const image=document.createElement('img');image.src='./images/mascot/pizza-monthly.png';image.alt='Pizza mascot celebrating';image.className='pg-celebration';box.prepend(image);box.append(btn('Continue',close));}
 }
 function listen(){
  if(unsubscribe)return;
@@ -278,8 +295,13 @@ async function profilePanel(){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
  const totals=statTotals();
- const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.svg':'./images/mascot/pizza-private.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent='MY EXAM PROGRESS';const b=document.createElement('strong');b.textContent=totals.points.toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=totals.correct+' correct · '+totals.answered+' answered';info.append(a,b,c);hero.append(pic,info);box.append(hero);
- if(totals.syncCount||syncIssue){const status=document.createElement('div');status.className='pg-sync-detail';status.textContent=(totals.syncCount?totals.syncCount+' local result(s) awaiting sync. ':'')+syncIssue;box.append(status);}
+ const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.png':'./images/mascot/pizza-private.png';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent='MY EXAM PROGRESS';const b=document.createElement('strong');b.textContent=totals.points.toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=totals.correct+' correct · '+totals.answered+' answered';info.append(a,b,c);hero.append(pic,info);box.append(hero);
+ if(totals.syncCount||syncIssue){
+  const status=document.createElement('div');status.className='pg-sync-detail';
+  let count=totals.syncCount?totals.syncCount+' '+(totals.syncCount===1?'answer':'answers')+' saved on this device. ':'';
+  status.textContent=count+syncIssue;
+  box.append(status);
+ }
  const rewards=window.BTRewards;
  if(rewards){
   const lvl=rewards.level(Number(profile.totalPoints||0));
@@ -314,11 +336,22 @@ async function profilePanel(){
   box.append(block);
  }
  const msg=document.createElement('p');msg.className='err';box.append(msg);
- const image=field(box,'Profile picture','file');image.accept='image/jpeg,image/png,image/webp';image.onchange=async()=>{
-  try{const file=image.files[0],src=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
+ const image=field(box,'Profile picture (PNG)','file');image.accept='image/png';image.onchange=async()=>{
+  try{
+   const file=image.files?.[0];if(!file)return;
+   if(file.type!=='image/png')throw Error('Please choose a PNG image.');
+   const src=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
    const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
-   const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),scale=Math.max(96/img.width,96/img.height);x.fillStyle='white';x.fillRect(0,0,96,96);x.drawImage(img,(96-img.width*scale)/2,(96-img.height*scale)/2,img.width*scale,img.height*scale);
-   const avatar=c.toDataURL('image/jpeg',.65);if(avatar.length>24000)throw Error('Image too large');
+   let avatar='';
+   for(const size of [160,144,128,112,96,80]){
+    const c=document.createElement('canvas');c.width=c.height=size;
+    const x=c.getContext('2d');x.clearRect(0,0,size,size);
+    const scale=Math.max(size/img.width,size/img.height);
+    x.drawImage(img,(size-img.width*scale)/2,(size-img.height*scale)/2,img.width*scale,img.height*scale);
+    avatar=c.toDataURL('image/png');
+    if(avatar.length<=24000)break;
+   }
+   if(avatar.length>24000)throw Error('Image too large');
    await F.updateDoc(F.doc(db,'users',user.uid),{avatar,updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar,updatedAt:F.serverTimestamp()});}note('Picture updated.');
   }catch(e){msg.textContent=errorMessage(e)}
  };
@@ -336,7 +369,7 @@ async function profilePanel(){
   if(outlet.value===profile.outlet)return;
   const target=outlet.value;
   const confirmation=open('CHANGE OUTLET?','Send an approval request to move from '+profile.outlet+' to '+target+'?');
-  const graphic=document.createElement('img');graphic.src='./images/mascot/pizza-update.svg';graphic.className='pg-celebration';graphic.alt='';confirmation.prepend(graphic);
+  const graphic=document.createElement('img');graphic.src='./images/mascot/pizza-update.png';graphic.className='pg-celebration';graphic.alt='';confirmation.prepend(graphic);
   confirmation.append(btn('SEND REQUEST',async()=>{
    try{
     await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:target,status:'pending',createdAt:F.serverTimestamp()});
@@ -344,18 +377,20 @@ async function profilePanel(){
    }catch(e){note(errorMessage(e));profilePanel();}
   }),btn('CANCEL',()=>profilePanel()));
  });
- if(admins)box.append(btn('Approve outlet requests',adminPanel));
+ if(admins)box.append(btn('Manage',adminPanel));
  box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{await A.signOut(auth);}),btn('Close',close));
 }
 function adminPanel(){
- const box=open('Outlet approvals','Both administrators can review pending requests.');
+ const box=open('Manage','Review outlet changes and manage accounts.');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
- box.append(btn('Manage users',manageUsers,true),btn('Seed answer keys',seedKeys,true),btn('Review activity flags',reviewActivityFlags,true),btn('Close',close,true));
+ box.append(btn('Manage users',manageUsers,true));
+ if(admins&&norm(profile?.username)==='udaya')box.append(btn('Seed answer keys',seedKeys,true));
+ box.append(btn('Review activity flags',reviewActivityFlags,true),btn('Close',close,true));
 }
 async function manageUsers(){
  if(!admins)return;
- const box=open('MANAGE USER ACCOUNTS','Remove a user from the app using two confirmations. Firebase Authentication deletion requires one later manual Console action.');
+ const box=open('MANAGE USERS','Remove an account with two confirmations. Final account deletion must also be done in Firebase.');
  const status=document.createElement('p');status.className='pg-muted';status.textContent='Fetching user accounts…';box.append(status);
  const search=field(box,'Search username or outlet');search.required=false;
  const list=document.createElement('div');box.append(list);
@@ -379,7 +414,7 @@ async function manageUsers(){
   const records=snap.docs.map(doc=>({...doc.data(),uid:doc.id}));
   const roleDocs=await Promise.all(records.map(p=>F.getDoc(F.doc(db,'admins',p.uid)).catch(()=>null)));
   const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()===true}));
-  status.textContent='Showing up to 250 accounts. Protected administrator accounts cannot be removed here.';
+  status.textContent='Showing up to 250 accounts. Administrator accounts are protected.';
   const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));};
   search.addEventListener('input',render);render();
  }catch(err){status.textContent='Could not load users: '+errorMessage(err);}
@@ -430,7 +465,7 @@ async function confirmUserRemoval(person){
 }
 async function reviewActivityFlags(){
  if(!admins)return;
- const box=open('ACTIVITY REVIEW','These flags are non-punitive learning integrity indicators, not proof of cheating.');
+ const box=open('REVIEW ACTIVITY','These results may need a closer look. Scores will not change.');
  const loading=document.createElement('p');loading.textContent='Loading accounts suggested for review…';box.append(loading);
  try{
   const results=await F.getDocs(F.query(F.collection(db,'users'),F.where('reviewSuggested','==',true),F.limit(30)));
@@ -454,7 +489,7 @@ async function decide(req,yes){
  catch(e){note(errorMessage(e));}
 }
 async function seedKeys(){
- if(!admins){note('Only administrators may initialise answer keys.');return;}
+ if(!admins||norm(profile?.username)!=='udaya'){note('Only Udaya can set up answer keys.');return;}
  try{
   const bank=window.BTExamBridge.getPapers(),items=[];
   for(const [paper,p] of Object.entries(bank)){
@@ -507,7 +542,7 @@ async function checkForUpdates(){
 function promptUpdate(){
  if(!latestUpdate||!root.hidden||$('#quiz')?.classList.contains('active'))return;
  const v=latestUpdate;const box=open('Update available','BT Exam Prep version '+v+' is available. Updating will reload the application.');
- const picture=document.createElement('img');picture.className='pg-celebration';picture.src='./images/mascot/pizza-update.svg';picture.alt='Pizza mascot with refresh symbol';box.prepend(picture);
+ const picture=document.createElement('img');picture.className='pg-celebration';picture.src='./images/mascot/pizza-update.png';picture.alt='Pizza mascot with refresh symbol';box.prepend(picture);
  box.append(btn('Update now',async()=>{
   try{const reg=await navigator.serviceWorker?.getRegistration();if(reg){await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});}}
   catch(e){console.warn('Update:',e);}

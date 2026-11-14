@@ -196,7 +196,8 @@ service cloud.firestore {
   }
   match /answerKeys/{id} {
     allow read: if false;
-    allow write: if admin() && request.resource.data.keys().hasOnly(['answer','paper','index'])
+    allow write: if admin() && get(userPath(request.auth.uid)).data.usernameLower == 'udaya'
+      && request.resource.data.keys().hasOnly(['answer','paper','index'])
       && request.resource.data.answer is int && request.resource.data.answer >= 0 && request.resource.data.answer <= 5;
   }
   match /rankedClaims/{id} {
