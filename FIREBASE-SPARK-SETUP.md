@@ -204,3 +204,30 @@ This release preserves every question and answer. It replaces the on-screen masc
 The app still requires a live Firebase/Firestore test with seeded answer keys. GitHub Actions syntax and rules compilation alone do not prove that writes pass a real security-rules evaluation. The Spark free plan has document-read and write quotas. Time-based bonus points cannot be made cheat-proof in a fully offline browser; do not use this leaderboard as a certification audit record. If a user's results are older than the 72-hour acceptance window, this version keeps them locally for administrator-assisted review rather than silently deleting them.
 
 For future improvements, consider secure export/backup of unsynchronised scores, additional topic-based learning materials, clearer error diagnostics, and a separate administrator audit process. These should be approved and designed before modifying existing exam data.
+
+
+## Version 3.5 — Clear language, transparent PNGs, and harder achievements
+
+The app now uses **transparent PNG images only in its visible interface**, including mascot reactions and the default avatar. The previous low-resolution WebP sticker sprite is no longer requested. The mascot PNGs are rendered sharply from the consistent original character masters at 640px width. The source vector files remain solely for future editing; the app loads only PNGs.
+
+**Fixed challenge-grid overlap:** The home screen scrolls on smaller phones and the question cards have natural row heights, preventing text and cards from covering each other. The heading no longer contains the gamepad emoji.
+
+**Shorter sync message:** If two answers cannot sync, the card now displays, "2 answers saved on this device. Can’t sync yet. Please contact Udaya." The results are not silently discarded. Other error messages are simplified.
+
+**Who can seed answer keys?** Only the administrator account currently named **udaya** can see the `Seed answer keys` button. This is also enforced in the **updated Firebase security rules**, not just in the interface. Other administrators can use **Manage** for outlet requests, accounts and activity reviews.
+
+**Profile pictures:** PNG upload only. A small transparent PNG is generated locally and automatically resized to fit Firebase's profile-size limit. Previously uploaded JPEG pictures are preserved in Firestore but are no longer displayed as JPEGs; the default PNG appears until the user uploads a new PNG.
+
+### Updated achievement milestones
+- Rising Star — **1,500 total points**.
+- Pizza Legend — **6,000 total points**.
+- Sharp Mind — **50 verified correct answers**.
+- Super Student — **150 verified correct answers**.
+- Weekly Warrior — **200 verified answers during the week**.
+- Outlet Challenger — **25 verified answers attributed to the user's outlet during the week**.
+
+Other achievements and the scoring formula are unchanged.
+
+### Mandatory Firebase step
+
+After the GitHub update, publish the latest `firestore.rules` again in Firebase Console → Firestore Database → Rules. Without republishing, the old rules may still let another administrator change answer keys. New users need to follow the existing Firebase Authentication/administrator setup process. This release does not reset points, modify question content, or delete saved local results.
