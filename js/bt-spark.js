@@ -63,6 +63,7 @@ function errorMessage(e){
  if(/OUTLET_CHANGED/.test(message))return 'Your outlet has changed. Ask an administrator for help.';
  if(/Username already taken/i.test(message))return 'That username is taken. Please choose another.';
  if(/Image too large/i.test(message))return 'This picture is too large. Try a smaller PNG.';
+ if(/Please choose a PNG image/i.test(message))return 'Please choose a PNG image.';
  if(/invalid-argument/i.test(message))return 'Some information is invalid. Please try again.';
  return 'Something went wrong. Please try again or ask an administrator for help.';
 }
@@ -335,11 +336,22 @@ async function profilePanel(){
   box.append(block);
  }
  const msg=document.createElement('p');msg.className='err';box.append(msg);
- const image=field(box,'Profile picture','file');image.accept='image/jpeg,image/png,image/webp';image.onchange=async()=>{
-  try{const file=image.files[0],src=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
+ const image=field(box,'Profile picture (PNG)','file');image.accept='image/png';image.onchange=async()=>{
+  try{
+   const file=image.files?.[0];if(!file)return;
+   if(file.type!=='image/png')throw Error('Please choose a PNG image.');
+   const src=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
    const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
-   const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),scale=Math.max(96/img.width,96/img.height);x.fillStyle='white';x.fillRect(0,0,96,96);x.drawImage(img,(96-img.width*scale)/2,(96-img.height*scale)/2,img.width*scale,img.height*scale);
-   const avatar=c.toDataURL('image/jpeg',.65);if(avatar.length>24000)throw Error('Image too large');
+   let avatar='';
+   for(const size of [160,144,128,112,96,80]){
+    const c=document.createElement('canvas');c.width=c.height=size;
+    const x=c.getContext('2d');x.clearRect(0,0,size,size);
+    const scale=Math.max(size/img.width,size/img.height);
+    x.drawImage(img,(size-img.width*scale)/2,(size-img.height*scale)/2,img.width*scale,img.height*scale);
+    avatar=c.toDataURL('image/png');
+    if(avatar.length<=24000)break;
+   }
+   if(avatar.length>24000)throw Error('Image too large');
    await F.updateDoc(F.doc(db,'users',user.uid),{avatar,updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar,updatedAt:F.serverTimestamp()});}note('Picture updated.');
   }catch(e){msg.textContent=errorMessage(e)}
  };
