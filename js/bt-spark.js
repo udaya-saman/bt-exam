@@ -33,10 +33,12 @@ function statTotals(){
  syncCount:pending.length};
 }
 function syncDetail(err){
- const msg=errorMessage(err);
- if(/permission-denied|insufficient permissions/i.test(msg))return 'Firebase rejected the result. Check that answer keys were seeded and the latest Firestore rules were published.';
- if(/unavailable|network/i.test(msg))return 'Connection unavailable. The result is saved on this device for retry.';
- return msg;
+ const code=String(err?.code||''),detail=String(err?.message||'');
+ if(/permission-denied|insufficient permissions/i.test(code+' '+detail))
+   return 'Sync failed. Ask Udaya to check the answer keys and Firebase settings.';
+ if(/unavailable|network|deadline-exceeded/i.test(code+' '+detail))
+   return 'No internet. Your answers are saved here. Try again later.';
+ return 'Could not sync. Your answers are saved here. Try again or ask for help.';
 }
 function open(title,sub){root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
 function close(){root.hidden=true;root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
@@ -49,7 +51,21 @@ function btn(label,handler,alt=false){const b=document.createElement('button');b
 function label(parent,text,input){const l=document.createElement('label');l.textContent=text;parent.append(l,input);return input;}
 function field(parent,text,type='text'){const input=document.createElement('input');input.type=type;input.required=true;return label(parent,text,input);}
 function sel(parent,text){const s=document.createElement('select');OUTLETS.forEach(n=>{const o=document.createElement('option');o.textContent=n;o.value=n;s.append(o)});return label(parent,text,s);}
-function errorMessage(e){return String(e?.message||e||'Unknown error').replace('Firebase: ','').slice(0,240);}
+function errorMessage(e){
+ const code=String(e?.code||'').toLowerCase(),message=String(e?.message||e||'');
+ if(/auth\/wrong-password|auth\/invalid-credential|auth\/invalid-email|auth\/user-not-found/.test(code))return 'Username or password is incorrect.';
+ if(/auth\/email-already-in-use/.test(code))return 'This username is already registered.';
+ if(/auth\/weak-password/.test(code))return 'Please choose a stronger password.';
+ if(/auth\/too-many-requests/.test(code))return 'Too many attempts. Please try again later.';
+ if(/auth\/network-request-failed|unavailable|network/i.test(code+' '+message))return 'No connection. Check your internet and try again.';
+ if(/permission-denied|insufficient permissions/i.test(code+' '+message))return 'Access denied. Please ask an administrator for help.';
+ if(/PRACTICE_ONLY/.test(message))return 'You have already completed today’s ranked attempt.';
+ if(/OUTLET_CHANGED/.test(message))return 'Your outlet has changed. Ask an administrator for help.';
+ if(/Username already taken/i.test(message))return 'That username is taken. Please choose another.';
+ if(/Image too large/i.test(message))return 'This picture is too large. Try a smaller PNG.';
+ if(/invalid-argument/i.test(message))return 'Some information is invalid. Please try again.';
+ return 'Something went wrong. Please try again or ask an administrator for help.';
+}
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open(mode==='register'?'Create your account':mode==='setup'?'Firebase setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
@@ -151,8 +167,8 @@ async function sync(){
  try{
   const list=getQueue(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
   for(const e of list){
-   if(Date.now()-e.earnedAt>72*3600000){syncIssue='An old result is beyond the 72-hour sync window. It has been retained on this device for review.';continue;}
-   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='A stored question does not match the installed paper. Result retained for review.';continue;}
+   if(Date.now()-e.earnedAt>72*3600000){syncIssue='Some older answers need help from an administrator.';continue;}
+   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='An answer could not be matched. Please ask an administrator for help.';continue;}
    const er=F.doc(db,'scoreEvents',e.id),cr=F.doc(db,'rankedClaims',e.claimId),ur=F.doc(db,'users',user.uid);
    try{
     await F.runTransaction(db,async tx=>{
@@ -187,7 +203,7 @@ async function sync(){
     });done.push(e.id);
    }catch(err){
     const message=errorMessage(err);
-    if(/PRACTICE_ONLY/.test(message)){console.warn('Ranked claim conflict retained:',e.id);syncIssue='This attempt conflicts with an earlier ranked attempt. The local record is retained for review.';break;}
+    if(/PRACTICE_ONLY/.test(message)){console.warn('Ranked claim conflict retained:',e.id);syncIssue='You already have a ranked attempt for this paper today.';break;}
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
@@ -279,7 +295,12 @@ async function profilePanel(){
  const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
  const totals=statTotals();
  const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.svg':'./images/mascot/pizza-private.svg';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent='MY EXAM PROGRESS';const b=document.createElement('strong');b.textContent=totals.points.toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=totals.correct+' correct · '+totals.answered+' answered';info.append(a,b,c);hero.append(pic,info);box.append(hero);
- if(totals.syncCount||syncIssue){const status=document.createElement('div');status.className='pg-sync-detail';status.textContent=(totals.syncCount?totals.syncCount+' local result(s) awaiting sync. ':'')+syncIssue;box.append(status);}
+ if(totals.syncCount||syncIssue){
+  const status=document.createElement('div');status.className='pg-sync-detail';
+  let count=totals.syncCount?totals.syncCount+' '+(totals.syncCount===1?'answer':'answers')+' saved on this device. ':'';
+  status.textContent=count+syncIssue;
+  box.append(status);
+ }
  const rewards=window.BTRewards;
  if(rewards){
   const lvl=rewards.level(Number(profile.totalPoints||0));
@@ -344,18 +365,20 @@ async function profilePanel(){
    }catch(e){note(errorMessage(e));profilePanel();}
   }),btn('CANCEL',()=>profilePanel()));
  });
- if(admins)box.append(btn('Approve outlet requests',adminPanel));
+ if(admins)box.append(btn('Manage',adminPanel));
  box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{await A.signOut(auth);}),btn('Close',close));
 }
 function adminPanel(){
- const box=open('Outlet approvals','Both administrators can review pending requests.');
+ const box=open('Manage','Review outlet changes and manage accounts.');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
- box.append(btn('Manage users',manageUsers,true),btn('Seed answer keys',seedKeys,true),btn('Review activity flags',reviewActivityFlags,true),btn('Close',close,true));
+ box.append(btn('Manage users',manageUsers,true));
+ if(admins&&norm(profile?.username)==='udaya')box.append(btn('Seed answer keys',seedKeys,true));
+ box.append(btn('Review activity flags',reviewActivityFlags,true),btn('Close',close,true));
 }
 async function manageUsers(){
  if(!admins)return;
- const box=open('MANAGE USER ACCOUNTS','Remove a user from the app using two confirmations. Firebase Authentication deletion requires one later manual Console action.');
+ const box=open('MANAGE USERS','Remove an account with two confirmations. Final account deletion must also be done in Firebase.');
  const status=document.createElement('p');status.className='pg-muted';status.textContent='Fetching user accounts…';box.append(status);
  const search=field(box,'Search username or outlet');search.required=false;
  const list=document.createElement('div');box.append(list);
@@ -379,7 +402,7 @@ async function manageUsers(){
   const records=snap.docs.map(doc=>({...doc.data(),uid:doc.id}));
   const roleDocs=await Promise.all(records.map(p=>F.getDoc(F.doc(db,'admins',p.uid)).catch(()=>null)));
   const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()===true}));
-  status.textContent='Showing up to 250 accounts. Protected administrator accounts cannot be removed here.';
+  status.textContent='Showing up to 250 accounts. Administrator accounts are protected.';
   const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));};
   search.addEventListener('input',render);render();
  }catch(err){status.textContent='Could not load users: '+errorMessage(err);}
@@ -430,7 +453,7 @@ async function confirmUserRemoval(person){
 }
 async function reviewActivityFlags(){
  if(!admins)return;
- const box=open('ACTIVITY REVIEW','These flags are non-punitive learning integrity indicators, not proof of cheating.');
+ const box=open('REVIEW ACTIVITY','These results may need a closer look. Scores will not change.');
  const loading=document.createElement('p');loading.textContent='Loading accounts suggested for review…';box.append(loading);
  try{
   const results=await F.getDocs(F.query(F.collection(db,'users'),F.where('reviewSuggested','==',true),F.limit(30)));
@@ -454,7 +477,7 @@ async function decide(req,yes){
  catch(e){note(errorMessage(e));}
 }
 async function seedKeys(){
- if(!admins){note('Only administrators may initialise answer keys.');return;}
+ if(!admins||norm(profile?.username)!=='udaya'){note('Only Udaya can set up answer keys.');return;}
  try{
   const bank=window.BTExamBridge.getPapers(),items=[];
   for(const [paper,p] of Object.entries(bank)){
