@@ -76,6 +76,24 @@ async function run(){
    const rank=await getDoc(doc(db,'publicRanks',uid));assert.equal(rank.exists(),publicRank);
    console.log('Score event accepted for '+username+' ('+outlet+')');
   }
+  // Only Udaya's administrator account may add or replace answer keys.
+  await env.withSecurityRulesDisabled(async ctx=>{
+   const db=ctx.firestore();
+   await Promise.all([
+    setDoc(doc(db,'admins','test-udaya-private'),{enabled:true}),
+    setDoc(doc(db,'users','test-indika-admin'),initial('test-indika-admin','indika','Other')),
+    setDoc(doc(db,'admins','test-indika-admin'),{enabled:true})
+   ]);
+  });
+  const udayaDb=env.authenticatedContext('test-udaya-private',{email:'bt-udaya@users.bt-exam.example.com'}).firestore();
+  const indikaDb=env.authenticatedContext('test-indika-admin',{email:'bt-indika@users.bt-exam.example.com'}).firestore();
+  await setDoc(doc(udayaDb,'answerKeys','paper1_0'),{paper:'paper1',index:0,answer:0});
+  await assert.rejects(
+    ()=>setDoc(doc(indikaDb,'answerKeys','paper1_0'),{paper:'paper1',index:0,answer:0}),
+    /permission-denied|PERMISSION_DENIED/,
+    'Indika must not edit answer keys'
+  );
+  console.log('Answer-key seeding permitted only for Udaya.');
  }finally{await env.cleanup();}
 }
 run().catch(error=>{console.error('Emulator test failed:',error);process.exitCode=1;});
