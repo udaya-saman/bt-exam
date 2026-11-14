@@ -42,3 +42,108 @@
 .bt-sticker-art{object-fit:contain;filter:drop-shadow(0 5px 6px #0003);background-color:transparent}
 #bt-spark-root .pg-mascot.bt-sticker-art{border-radius:10px}
 @media(prefers-reduced-motion:reduce){.pg-earned-toast{animation:none}}
+
+/* v3.5: Fix five overlapping challenge cards on small screens.
+   The original no-scroll five-row grid is incompatible with modern taller game cards. */
+#home{
+  height:100dvh!important;
+  min-height:100dvh!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#home .home-content{
+  height:auto!important;
+  min-height:100%!important;
+  overflow:visible!important;
+  padding-bottom:max(26px,env(safe-area-inset-bottom))!important;
+}
+#home .paper-grid{
+  flex:0 0 auto!important;
+  grid-template-rows:none!important;
+  grid-auto-rows:minmax(158px,auto)!important;
+  min-height:0!important;
+  align-content:start!important;
+  gap:14px!important;
+  margin:0 0 22px!important;
+}
+#home .paper-card{
+  height:auto!important;
+  min-height:158px!important;
+  align-self:stretch;
+  gap:5px;
+  padding:14px!important;
+}
+#home .paper-card .pc-meta{
+  overflow:visible!important;
+  min-height:0;
+  width:100%;
+}
+#home .paper-card .pc-bottom-row{
+  margin-top:9px;
+  align-items:center;
+}
+#home .paper-card .pc-title{
+  line-height:1.25!important;
+  overflow-wrap:anywhere;
+}
+#home .home-section-label{
+  min-height:38px;
+  margin-bottom:9px;
+  gap:8px;
+  flex-wrap:wrap;
+}
+#home .home-section-label > span:first-child{
+  line-height:1.25;
+}
+#home .home-footer{
+  position:static!important;
+  flex-shrink:0!important;
+  padding:12px 0 0;
+  margin-top:auto;
+  text-align:center;
+}
+#home .home-footer-text{white-space:normal!important;line-height:1.5}
+#home .pc-title-row{min-height:24px}
+#home .pg-home-hero-character img,
+#bt-spark-root img.pg-mascot,
+#bt-spark-root img.pg-celebration,
+#bt-spark-root img.pg-avatar,
+#bt-spark-root img.pg-podium-item,
+.bt-timer-warning img,
+.bt-answer-mascot,
+.pg-earned-toast img{
+  background-image:none!important;
+  image-rendering:auto!important;
+  object-fit:contain;
+}
+#bt-spark-root .pg-mascot,
+#bt-spark-root .pg-celebration{
+  background:transparent!important;
+}
+#home .pg-home-hero-character{min-width:0;max-width:100%}
+#home .pg-home-hero-character img{
+  object-fit:contain;
+  object-position:center bottom;
+  width:100%;height:100%;
+  filter:drop-shadow(0 6px 9px #1b070743);
+}
+#home .pc-icon-wrap{background-color:var(--opt-bg)}
+#home .pc-icon-big{font-size:21px}
+@media(max-width:460px){
+ #home .home-content{padding-left:12px!important;padding-right:12px!important}
+ #home .paper-grid{gap:10px!important}
+ #home .paper-card{padding:10px!important;min-height:166px!important}
+ #home .pc-title{font-size:13px!important}
+ #home .pc-desc{font-size:10px!important}
+ #home .pc-tag{font-size:9px!important}
+ #home .pg-home-hero{padding:18px 13px;min-height:180px}
+ #home .pg-home-hero-character{height:145px}
+}
+@media(max-width:350px){
+ #home .paper-grid{grid-template-columns:1fr!important;grid-auto-rows:minmax(120px,auto)!important}
+ #home .paper-card{min-height:125px!important}
+ #home .pg-home-hero{grid-template-columns:minmax(0,1fr) 30%}
+ #home .pg-home-hero-character{height:125px}
+}
