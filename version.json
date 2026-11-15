@@ -1,5 +1,5 @@
 {
-  "version": "3.6.1-arena-polish",
+  "version": "3.8.0-reference-fix",
   "releaseDate": "2026-11-15",
-  "notes": "Gaming-style hero and Player Card styling refresh, preserving existing layout, actions and transparent PNG artwork."
+  "notes": "Corrected PNG atlas icon cropping, reference-matched hero and Player Card theme; preserved the My Player Card structure, saved data and scoring."
 }
