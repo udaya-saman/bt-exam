@@ -69,7 +69,7 @@ function errorMessage(e){
 }
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
- const box=open(mode==='register'?'Create your account':mode==='setup'?'Firebase setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
+ const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
  const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.png':'./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
@@ -77,7 +77,7 @@ function gate(mode='login',message){
  const err=document.createElement('p');err.className='err';const submit=document.createElement('button');submit.type='submit';submit.textContent=mode==='register'?'REGISTER':'SIGN IN';form.append(err,submit);box.append(form);
  form.onsubmit=async e=>{e.preventDefault();err.textContent='';submit.disabled=true;try{if(mode==='register')await register(name.value,password.value,outlet.value);else await login(name.value,password.value);}catch(ex){err.textContent=errorMessage(ex)}finally{submit.disabled=false}};
  box.append(btn(mode==='register'?'Already registered? Sign in':'Create account',()=>gate(mode==='register'?'login':'register'),true));
- const info=document.createElement('p');info.textContent='Spark limitation: Without an email or phone number, automatic password recovery is unavailable. Please keep your password safe.';box.append(info);
+ const info=document.createElement('p');info.textContent='Keep your password safe. Password recovery is not available yet.';box.append(info);
 }
 async function register(name,password,outlet){
  if(!valid(name)||password.length<8)throw Error('Username must have 3–24 letters, numbers, dots, dashes or underscores; password 8+ characters.');
@@ -292,50 +292,126 @@ function listen(){
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
+ if(!user||!profile){gate();return;}
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
- const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
- const totals=statTotals();
- const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.png':'./images/mascot/pizza-private.png';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent='MY EXAM PROGRESS';const b=document.createElement('strong');b.textContent=totals.points.toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=totals.correct+' correct · '+totals.answered+' answered';info.append(a,b,c);hero.append(pic,info);box.append(hero);
- if(totals.syncCount||syncIssue){
-  const status=document.createElement('div');status.className='pg-sync-detail';
-  let count=totals.syncCount?totals.syncCount+' '+(totals.syncCount===1?'answer':'answers')+' saved on this device. ':'';
-  status.textContent=count+syncIssue;
-  box.append(status);
- }
+ const box=open('MY PLAYER CARD','');
+ root.classList.add('arena-profile-mode');
+ const bar=document.createElement('div');bar.className='arena-page-top';
+ const title=document.createElement('span');title.textContent='PIZZA ARENA · MY PLAYER CARD';
+ const closeButton=btn('Close',close);closeButton.setAttribute('aria-label','Close player card');
+ bar.append(title,closeButton);root.querySelector('.panel').prepend(bar);
+ const totals=statTotals(),pending=totals.syncCount;
+ const status=document.createElement('div');status.className='arena-status-card';status.setAttribute('role','status');
+ const symbol=document.createElement('span');symbol.className='arena-status-icon';
+ symbol.textContent=pending?'!':'✓';
+ const statusCopy=document.createElement('div');statusCopy.className='arena-status-copy';
+ const heading=document.createElement('strong');heading.textContent=pending?'Answers waiting':'All caught up';
+ const explanation=document.createElement('small');
+ explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. Try Sync again later.':totals.answered?'Your latest answers are saved.':'Your player card is ready.';
+ statusCopy.append(heading,explanation);
+ const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-timer.png':'./images/mascot/pizza-correct.png';statusMascot.alt='';
+ status.append(symbol,statusCopy,statusMascot);box.append(status);
+ const card=document.createElement('section');card.className='arena-card';
+ const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
+ const body=document.createElement('div');body.className='arena-card-body';
+ const profileRow=document.createElement('div');profileRow.className='arena-profile-top';
+ const avatar=document.createElement('img');avatar.className='arena-avatar';
+ avatar.src=(typeof profile.avatar==='string'&&profile.avatar.startsWith('data:image/png'))?profile.avatar:'./images/default-avatar.png';
+ avatar.alt='Player picture';avatar.onerror=()=>{avatar.onerror=null;avatar.src='./images/default-avatar.png';};
+ const person=document.createElement('div');person.className='arena-person-info';
+ const personName=document.createElement('h3');personName.textContent=profile.username;
+ const outletLabel=document.createElement('span');outletLabel.className='arena-outlet-pill';outletLabel.textContent=profile.outlet;
+ person.append(personName,outletLabel);
+ const levels=document.createElement('div');levels.className='arena-level-wrap';
+ const lvl=window.BTRewards?.level(Number(profile.totalPoints||0))||{number:1,percent:0,next:500,points:0};
+ const levelBadge=document.createElement('span');levelBadge.className='arena-level-badge';levelBadge.textContent='Lv. '+lvl.number;
+ const progress=document.createElement('div');progress.className='arena-level-track';
+ const progressFill=document.createElement('span');progressFill.className='arena-level-fill';progressFill.style.width=lvl.percent+'%';progress.append(progressFill);
+ const nextGoal=document.createElement('small');nextGoal.textContent=lvl.points.toLocaleString()+' / '+lvl.next.toLocaleString()+' pts';
+ levels.append(levelBadge,progress,nextGoal);profileRow.append(avatar,person,levels);body.append(profileRow);
+ const stats=document.createElement('div');stats.className='arena-stats-grid';
+ for(const [glyph,count,word] of [['🏆',totals.points,'Points'],['🎯',totals.correct,'Correct'],['📘',totals.answered,'Answered']]){
+   const item=document.createElement('div');item.className='arena-stat';
+   const icon=document.createElement('span');icon.className='arena-stat-icon';icon.textContent=glyph;
+   const detail=document.createElement('div');const number=document.createElement('strong');number.textContent=Number(count).toLocaleString();
+   const label=document.createElement('span');label.textContent=word;detail.append(number,label);item.append(icon,detail);stats.append(item);
+ }body.append(stats);
+ const actions=document.createElement('div');actions.className='arena-actions';
+ const boardButton=btn('🏆 Leaderboard',board);boardButton.classList.add('pg-btn-green');
+ const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green');
+ const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.add('pg-btn-red');
+ const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
+ actions.append(boardButton,syncButton,signoutButton,closeAction);body.append(actions);
+ const outletRow=document.createElement('button');outletRow.type='button';outletRow.className='arena-outlet-row';
+ const pencil=document.createElement('span');pencil.className='arena-outlet-symbol';pencil.textContent='✎';
+ const copy=document.createElement('span');const strong=document.createElement('strong');strong.textContent='Change your outlet?';
+ const detail=document.createElement('small');detail.textContent='You can request a change here.';copy.append(strong,detail);
+ const arrow=document.createElement('span');arrow.textContent='›';arrow.style.fontSize='28px';
+ outletRow.append(pencil,copy,arrow);outletRow.onclick=changeOutlet;body.append(outletRow);
+ card.append(body);box.append(card);
  const rewards=window.BTRewards;
  if(rewards){
-  const lvl=rewards.level(Number(profile.totalPoints||0));
-  const block=document.createElement('section');block.className='pg-rewards-section';
-  const levelHeader=document.createElement('div');levelHeader.className='pg-section';levelHeader.textContent='⭐ LEVEL '+lvl.number+' · YOUR PROGRESSION';block.append(levelHeader);
-  const stat=document.createElement('div');stat.className='pg-reward-stat';
-  const left=document.createElement('strong');left.textContent=String(lvl.points).replace(/\B(?=(\d{3})+(?!\d))/g,',')+' PTS';
-  const right=document.createElement('small');right.textContent=(lvl.next-lvl.points)+' to level '+(lvl.number+1);
-  stat.append(left,right);block.append(stat);
-  const track=document.createElement('div');track.className='pg-level-track';
-  const fill=document.createElement('span');fill.style.width=lvl.percent+'%';track.append(fill);block.append(track);
-  const leader=users.length?ranked('weekly',true).find(x=>x.people>=3):null;
-  const onLeadingTeam=Boolean(rankEligible({...profile,isAdmin:admins})&&leader&&leader.name===profile.outlet);
-  const all=rewards.achievements(profile,day(),week(),onLeadingTeam);
-  const unlocked=all.filter(item=>item.unlocked).length;
-  const heading=document.createElement('div');heading.className='pg-section';heading.textContent='🎖️ YOUR REWARDS · '+unlocked+'/'+all.length+' UNLOCKED';block.append(heading);
-  const badges=document.createElement('div');badges.className='pg-reward-grid';
-  all.forEach(item=>{
-   const badge=document.createElement('div');badge.className='pg-reward-badge'+(item.unlocked?' is-earned':' is-locked');
-   const icon=document.createElement('span');icon.className='pg-reward-icon';icon.textContent=item.icon;
-   const title=document.createElement('strong');title.textContent=item.label;
-   const status=document.createElement('small');status.textContent=item.unlocked?'UNLOCKED · '+Math.min(item.current,item.target)+'/'+item.target:item.current+'/'+item.target;
-   badge.append(icon,title,status);badges.append(badge);
-  });block.append(badges);
-  const season=rewards.season(day());if(season){
-   const seasonPanel=document.createElement('div');seasonPanel.className='pg-private';
-   seasonPanel.textContent='🎯 Weekly Season · '+season.start+'–'+season.end+' · '+season.daysRemaining+' day(s) including today remaining';block.append(seasonPanel);
-  }
-  if(profile.reviewSuggested&&admins){
-   const flag=document.createElement('div');flag.className='pg-private';flag.textContent='ℹ️ Unusual rapid-answer pattern flagged for manual review; this is not proof of cheating.';block.append(flag);
-  }
-  box.append(block);
+   const eligible=rankEligible({...profile,isAdmin:admins});
+   const leader=users.length?ranked('weekly',true).find(x=>x.people>=3):null;
+   const crown=!!(eligible&&leader&&leader.name===profile.outlet);
+   const entries=rewards.achievements(profile,day(),week(),crown);
+   const priority=['rising-star','legend','sharp-mind','super-student','weekly-50','outlet-drive'];
+   const sorted=[...entries].sort((a,b)=>priority.indexOf(a.id)===-1?(priority.indexOf(b.id)===-1?0:1):(priority.indexOf(b.id)===-1?-1:priority.indexOf(a.id)-priority.indexOf(b.id)));
+   const achievements=document.createElement('section');achievements.className='arena-achievements-card';
+   const awardHead=document.createElement('div');awardHead.className='arena-achievements-heading';
+   const awardTitle=document.createElement('strong');awardTitle.textContent='🏅 Achievements';
+   const viewAll=btn('View All ›',()=>renderRewards(!showAll));
+   awardHead.append(awardTitle,viewAll);achievements.append(awardHead);
+   const grid=document.createElement('div');grid.className='arena-rewards-grid';achievements.append(grid);box.append(achievements);
+   let showAll=false;
+   function renderRewards(expand){
+     showAll=expand;grid.replaceChildren();viewAll.textContent=showAll?'Show Less':'View All ›';
+     const display=showAll?sorted:sorted.slice(0,6);
+     for(const item of display){
+       const tile=document.createElement('div');tile.className='arena-reward-item'+(item.unlocked?'':' is-locked');
+       const icon=document.createElement('span');icon.className='arena-reward-icon';icon.textContent=item.icon;
+       const name=document.createElement('strong');name.textContent=item.label;
+       const requirement=document.createElement('small');
+       const suffix=['rising-star','legend','first-slice'].includes(item.id)?' pts':['sharp-mind','super-student','centurion'].includes(item.id)?' correct':['weekly-50','outlet-drive'].includes(item.id)?' answers':'';
+       requirement.textContent=item.target.toLocaleString()+suffix+(item.unlocked?' · Earned':'');
+       const track=document.createElement('div');track.className='arena-reward-track';
+       const progress=document.createElement('span');progress.style.width=item.percent+'%';track.append(progress);
+       tile.append(icon,name,requirement,track);grid.append(tile);
+     }
+   }
+   renderRewards(false);
  }
- const msg=document.createElement('p');msg.className='err';box.append(msg);
+ const utilities=document.createElement('div');utilities.className='arena-actions';
+ utilities.append(btn('Account Settings',accountSettings),btn('Save My Progress',backupPanel));
+ if(admins)utilities.append(btn('Manage',adminPanel),btn('Check Saved Answers',viewSyncHealth));
+ utilities.querySelectorAll('button').forEach(b=>b.classList.add('pg-btn-green'));
+ box.append(utilities);
+ const last=lastSyncTime();
+ const footer=document.createElement('p');footer.style.cssText='text-align:center;color:#826964;font-size:11px;margin:13px 0 8px';
+ footer.textContent=last?'Last updated: '+new Date(last).toLocaleString():'Your answers are stored safely on this device until they can be saved.';
+ box.append(footer);
+}
+function changeOutlet(){
+ if(!profile)return;
+ const box=open('CHANGE OUTLET','Choose your new outlet.');
+ const fieldSelect=sel(box,'Outlet');fieldSelect.value=profile.outlet;
+ const controls=document.createElement('div');controls.className='arena-actions';
+ const back=btn('Close',profilePanel);
+ const request=btn('Request Change',async()=>{
+  if(fieldSelect.value===profile.outlet){profilePanel();return;}
+  const target=fieldSelect.value;
+  if(!confirm('Ask to change your outlet to '+target+'?'))return;
+  request.disabled=true;
+  try{await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:target,status:'pending',createdAt:F.serverTimestamp()});
+    note('Your request was sent.');profilePanel();
+  }catch(e){note(errorMessage(e));request.disabled=false;}
+ });
+ request.className='pg-btn-green';controls.append(request,back);box.append(controls);
+}
+async function accountSettings(){
+ if(!user||!profile)return;
+ const box=open('ACCOUNT SETTINGS','Update your personal details.');
+const msg=document.createElement('p');msg.className='err';box.append(msg);
  const image=field(box,'Profile picture (PNG)','file');image.accept='image/png';image.onchange=async()=>{
   try{
    const file=image.files?.[0];if(!file)return;
@@ -364,22 +440,10 @@ async function profilePanel(){
  },true));
  const oldpass=field(box,'Current password','password'),newpass=field(box,'New password','password');
  box.append(btn('Change password',async()=>{try{if(newpass.value.length<8)throw Error('Password too short.');await A.reauthenticateWithCredential(user,A.EmailAuthProvider.credential(user.email,oldpass.value));await A.updatePassword(user,newpass.value);note('Password changed.');}catch(e){msg.textContent=errorMessage(e)}},true));
- const outlet=sel(box,'Outlet');outlet.value=profile.outlet;
- outlet.addEventListener('change',()=>{
-  if(outlet.value===profile.outlet)return;
-  const target=outlet.value;
-  const confirmation=open('CHANGE OUTLET?','Send an approval request to move from '+profile.outlet+' to '+target+'?');
-  const graphic=document.createElement('img');graphic.src='./images/mascot/pizza-update.png';graphic.className='pg-celebration';graphic.alt='';confirmation.prepend(graphic);
-  confirmation.append(btn('SEND REQUEST',async()=>{
-   try{
-    await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:target,status:'pending',createdAt:F.serverTimestamp()});
-    note('Outlet request submitted for approval.');profilePanel();
-   }catch(e){note(errorMessage(e));profilePanel();}
-  }),btn('CANCEL',()=>profilePanel()));
- });
- if(admins)box.append(btn('Manage',adminPanel));
- box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{await A.signOut(auth);}),btn('Close',close));
+
+ box.append(btn('My Player Card',profilePanel),btn('Close',close));
 }
+
 function adminPanel(){
  const box=open('Manage','Review outlet changes and manage accounts.');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
