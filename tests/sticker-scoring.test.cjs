@@ -5,7 +5,7 @@ const png=fs.readFileSync('images/mascot/pizza-welcome.png');
 assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
 assert.ok(png.includes(Buffer.from('tRNS')));
 assert.doesNotMatch(html,/bt-mascot-sprite\.js/);
-assert.match(html,/class="pg-home-hero"/);
+assert.match(html,/class="arena-hero"/);
 assert.match(html,/css\/pizza-v34\.css/);
 assert.doesNotMatch(html,/id="prev-btn"/);
 assert.match(js,/function statTotals\(/);

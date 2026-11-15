@@ -273,20 +273,36 @@ button { outline: none; border: none; font-family: inherit; }
 </style>
 <link rel="stylesheet" href="./css/pizza-game.css">
 <link rel="stylesheet" href="./css/pizza-v34.css">
+<link rel="stylesheet" href="./css/pizza-v36.css">
 </head>
 <body>
 
 <!-- HOME SCREEN -->
 <div id="home" class="screen active">
   <div class="home-content animate-in">
-    <header class="pg-home-hero">
-      <div class="pg-home-hero-copy">
-        <span class="pg-home-kicker">🍕 PIZZA ARENA · BT TRAINING</span>
-        <h1>Play. Learn.<span>Level up.</span></h1>
-        <p>Choose your challenge, sharpen your knowledge and celebrate every achievement.</p>
-        <div class="pg-home-actions"><button type="button" onclick="document.getElementById('bt-spark-dock')?.click()">🏆 LEADERBOARD</button><span>NEW SEASON · NEW CHALLENGES</span></div>
+    <header class="arena-hero">
+      <div class="arena-header">
+        <div class="arena-brand-lockup">
+          <span class="arena-pizza-wordmark" aria-label="Pizza Hut">Pizza Hut</span>
+          <span class="arena-brand-divider" aria-hidden="true"></span>
+          <span class="arena-brand-name"><strong>PIZZA <em>ARENA</em></strong><small>BT TRAINING</small></span>
+        </div>
+        <div class="arena-header-actions">
+          <button type="button" class="arena-header-icon" aria-label="Notifications" title="Notifications" onclick="window.BTExamUI?.openNotifications?.()"><span class="arena-bell" aria-hidden="true">♟</span></button>
+          <button type="button" class="arena-header-icon" aria-label="My Player Card" title="My Player Card" onclick="window.BTExamUI?.openProfile?.()"><span class="arena-person-icon" aria-hidden="true"></span></button>
+        </div>
       </div>
-      <div class="pg-home-hero-character" aria-hidden="true"><img src="./images/mascot/pizza-welcome.png" alt="" loading="eager"></div>
+      <div class="arena-hero-body">
+        <div class="arena-hero-copy">
+          <h1>Play. Learn.<span>Level Up.</span></h1>
+          <p>Choose your challenge, sharpen your knowledge and earn rewards.</p>
+          <div class="arena-hero-bottom">
+            <button class="arena-hero-cta" type="button" onclick="window.BTExamUI?.openBoard?.()"><span aria-hidden="true">🏆</span> LEADERBOARD</button>
+            <span class="arena-season-label">NEW SEASON · NEW CHALLENGES</span>
+          </div>
+        </div>
+        <div class="arena-hero-mascot" aria-hidden="true"><img src="./images/mascot/pizza-rank-up.png" width="640" height="800" alt="" decoding="async" fetchpriority="high"></div>
+      </div>
     </header>
     <div id="resume-banner" onclick="resumeSavedSession()">
       <div class="rb-info">

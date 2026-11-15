@@ -1,7 +1,7 @@
 name: Spark Firestore rules check
 on:
   push:
-    branches: [feature/firebase-spark-leaderboard]
+    branches: [feature/firebase-spark-leaderboard, feature/pizza-arena-two-screen-v36, main]
   pull_request:
     branches: [main]
 jobs:

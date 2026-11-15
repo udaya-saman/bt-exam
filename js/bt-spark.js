@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.5.0-sharp-png';let latestUpdate=null;
+const APP_VERSION='3.6.0-two-screen';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -40,8 +40,8 @@ function syncDetail(err){
    return 'No internet. Your answers are safe. Try again later.';
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub){root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
+function open(title,sub){root.classList.remove('arena-profile-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){root.hidden=true;root.classList.remove('arena-profile-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -69,7 +69,7 @@ function errorMessage(e){
 }
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
- const box=open(mode==='register'?'Create your account':mode==='setup'?'Firebase setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
+ const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Sign in to keep track of your progress.');
  const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.png':'./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
@@ -77,7 +77,7 @@ function gate(mode='login',message){
  const err=document.createElement('p');err.className='err';const submit=document.createElement('button');submit.type='submit';submit.textContent=mode==='register'?'REGISTER':'SIGN IN';form.append(err,submit);box.append(form);
  form.onsubmit=async e=>{e.preventDefault();err.textContent='';submit.disabled=true;try{if(mode==='register')await register(name.value,password.value,outlet.value);else await login(name.value,password.value);}catch(ex){err.textContent=errorMessage(ex)}finally{submit.disabled=false}};
  box.append(btn(mode==='register'?'Already registered? Sign in':'Create account',()=>gate(mode==='register'?'login':'register'),true));
- const info=document.createElement('p');info.textContent='Spark limitation: Without an email or phone number, automatic password recovery is unavailable. Please keep your password safe.';box.append(info);
+ const info=document.createElement('p');info.textContent='Keep your password safe. Password recovery is not available yet.';box.append(info);
 }
 async function register(name,password,outlet){
  if(!valid(name)||password.length<8)throw Error('Username must have 3–24 letters, numbers, dots, dashes or underscores; password 8+ characters.');
@@ -104,6 +104,12 @@ const akey=()=>user?'bt_spark_attempt_'+user.uid:'';
 const storageKey=()=>user?'bt_exam_state:'+user.uid:null;
 function getQueue(){try{return JSON.parse(localStorage.getItem(qkey())||'[]')}catch(_){return []}}
 function saveQueue(q){localStorage.setItem(qkey(),JSON.stringify(q))}
+function lastSyncTime(){try{return Number(localStorage.getItem('bt_spark_last_sync_'+user?.uid)||0)}catch(_){return 0}}
+function recordLastSync(){try{localStorage.setItem('bt_spark_last_sync_'+user.uid,String(Date.now()))}catch(_){}}
+function pendingDescription(){
+ const count=getQueue().filter(e=>e.uid===user?.uid).length;
+ return count?count+' '+(count===1?'answer is':'answers are')+' waiting to be saved.':'All answers are saved.';
+}
 function rankedKey(paper,dayKey){return 'bt_spark_daily_ranked_'+user.uid+'_'+dayKey+'_'+paper;}
 function modeBadge(){
  let label=document.getElementById('bt-exam-mode');
@@ -208,7 +214,15 @@ async function sync(){
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
-  if(done.length){const removed=new Set(done);saveQueue(getQueue().filter(e=>!removed.has(e.id)));}
+  if(done.length){
+    const removed=new Set(done);
+    saveQueue(getQueue().filter(e=>!removed.has(e.id)));
+    recordLastSync();
+    try{
+      const refreshed=await F.getDoc(F.doc(db,'users',user.uid));
+      if(refreshed.exists())profile=refreshed.data();
+    }catch(e){console.info('Updated player totals will appear after reconnecting.');}
+  }
   if(!getQueue().length)syncIssue='';
  }finally{syncing=false;}
 }
@@ -292,50 +306,128 @@ function listen(){
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
+ if(!user||!profile){gate();return;}
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
- const box=open('MY PLAYER CARD',profile.username+' · '+profile.outlet);
- const totals=statTotals();
- const hero=document.createElement('div');hero.className='pg-hero';const pic=document.createElement('img');pic.className='pg-mascot';pic.src=rankEligible({...profile,isAdmin:admins})?'./images/mascot/pizza-welcome.png':'./images/mascot/pizza-private.png';pic.alt='Pizza mascot';const info=document.createElement('div');info.className='pg-hero-copy';const a=document.createElement('small');a.textContent='MY EXAM PROGRESS';const b=document.createElement('strong');b.textContent=totals.points.toLocaleString()+' PTS';const c=document.createElement('small');c.textContent=totals.correct+' correct · '+totals.answered+' answered';info.append(a,b,c);hero.append(pic,info);box.append(hero);
- if(totals.syncCount||syncIssue){
-  const status=document.createElement('div');status.className='pg-sync-detail';
-  let count=totals.syncCount?totals.syncCount+' '+(totals.syncCount===1?'answer':'answers')+' saved on this device. ':'';
-  status.textContent=count+syncIssue;
-  box.append(status);
- }
+ const box=open('MY PLAYER CARD','');
+ root.classList.add('arena-profile-mode');
+ const bar=document.createElement('div');bar.className='arena-page-top';
+ const title=document.createElement('span');title.textContent='PIZZA ARENA · MY PLAYER CARD';
+ const closeButton=btn('Close',close);closeButton.setAttribute('aria-label','Close player card');
+ bar.append(title,closeButton);root.querySelector('.panel').prepend(bar);
+ const totals=statTotals(),pending=totals.syncCount;
+ const status=document.createElement('div');status.className='arena-status-card';status.setAttribute('role','status');
+ const symbol=document.createElement('span');symbol.className='arena-status-icon';
+ symbol.textContent=pending?'!':'✓';
+ const statusCopy=document.createElement('div');statusCopy.className='arena-status-copy';
+ const heading=document.createElement('strong');heading.textContent=pending?'Answers waiting':'All caught up';
+ const explanation=document.createElement('small');
+ explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. Try Sync again later.':totals.answered?'Your latest answers are saved.':'Your player card is ready.';
+ statusCopy.append(heading,explanation);
+ const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-timer.png':'./images/mascot/pizza-correct.png';statusMascot.alt='';
+ status.append(symbol,statusCopy,statusMascot);box.append(status);
+ const card=document.createElement('section');card.className='arena-card';
+ const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
+ const body=document.createElement('div');body.className='arena-card-body';
+ const profileRow=document.createElement('div');profileRow.className='arena-profile-top';
+ const avatar=document.createElement('img');avatar.className='arena-avatar';
+ avatar.src=(typeof profile.avatar==='string'&&profile.avatar.startsWith('data:image/png'))?profile.avatar:'./images/default-avatar.png';
+ avatar.alt='Player picture';avatar.onerror=()=>{avatar.onerror=null;avatar.src='./images/default-avatar.png';};
+ const person=document.createElement('div');person.className='arena-person-info';
+ const personName=document.createElement('h3');personName.textContent=profile.username;
+ const outletLabel=document.createElement('span');outletLabel.className='arena-outlet-pill';outletLabel.textContent=profile.outlet;
+ person.append(personName,outletLabel);
+ const levels=document.createElement('div');levels.className='arena-level-wrap';
+ const lvl=window.BTRewards?.level(Number(profile.totalPoints||0))||{number:1,percent:0,next:500,points:0};
+ const levelBadge=document.createElement('span');levelBadge.className='arena-level-badge';levelBadge.textContent='Lv. '+lvl.number;
+ const progress=document.createElement('div');progress.className='arena-level-track';
+ const progressFill=document.createElement('span');progressFill.className='arena-level-fill';progressFill.style.width=lvl.percent+'%';progress.append(progressFill);
+ const nextGoal=document.createElement('small');nextGoal.textContent=lvl.points.toLocaleString()+' / '+lvl.next.toLocaleString()+' pts';
+ levels.append(levelBadge,progress,nextGoal);profileRow.append(avatar,person,levels);body.append(profileRow);
+ const stats=document.createElement('div');stats.className='arena-stats-grid';
+ for(const [glyph,count,word] of [['🏆',totals.points,'Points'],['🎯',totals.correct,'Correct'],['📘',totals.answered,'Answered']]){
+   const item=document.createElement('div');item.className='arena-stat';
+   const icon=document.createElement('span');icon.className='arena-stat-icon';icon.textContent=glyph;
+   const detail=document.createElement('div');const number=document.createElement('strong');number.textContent=Number(count).toLocaleString();
+   const label=document.createElement('span');label.textContent=word;detail.append(number,label);item.append(icon,detail);stats.append(item);
+ }body.append(stats);
+ const actions=document.createElement('div');actions.className='arena-actions';
+ const boardButton=btn('🏆 Leaderboard',board);boardButton.classList.add('pg-btn-green');
+ const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green');
+ const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.add('pg-btn-red');
+ const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
+ actions.append(boardButton,syncButton,signoutButton,closeAction);body.append(actions);
+ const outletRow=document.createElement('button');outletRow.type='button';outletRow.className='arena-outlet-row';
+ const pencil=document.createElement('span');pencil.className='arena-outlet-symbol';pencil.textContent='✎';
+ const copy=document.createElement('span');const strong=document.createElement('strong');strong.textContent='Change your outlet?';
+ const detail=document.createElement('small');detail.textContent='You can request a change here.';copy.append(strong,detail);
+ const arrow=document.createElement('span');arrow.textContent='›';arrow.style.fontSize='28px';
+ outletRow.append(pencil,copy,arrow);outletRow.onclick=changeOutlet;body.append(outletRow);
+ card.append(body);box.append(card);
  const rewards=window.BTRewards;
  if(rewards){
-  const lvl=rewards.level(Number(profile.totalPoints||0));
-  const block=document.createElement('section');block.className='pg-rewards-section';
-  const levelHeader=document.createElement('div');levelHeader.className='pg-section';levelHeader.textContent='⭐ LEVEL '+lvl.number+' · YOUR PROGRESSION';block.append(levelHeader);
-  const stat=document.createElement('div');stat.className='pg-reward-stat';
-  const left=document.createElement('strong');left.textContent=String(lvl.points).replace(/\B(?=(\d{3})+(?!\d))/g,',')+' PTS';
-  const right=document.createElement('small');right.textContent=(lvl.next-lvl.points)+' to level '+(lvl.number+1);
-  stat.append(left,right);block.append(stat);
-  const track=document.createElement('div');track.className='pg-level-track';
-  const fill=document.createElement('span');fill.style.width=lvl.percent+'%';track.append(fill);block.append(track);
-  const leader=users.length?ranked('weekly',true).find(x=>x.people>=3):null;
-  const onLeadingTeam=Boolean(rankEligible({...profile,isAdmin:admins})&&leader&&leader.name===profile.outlet);
-  const all=rewards.achievements(profile,day(),week(),onLeadingTeam);
-  const unlocked=all.filter(item=>item.unlocked).length;
-  const heading=document.createElement('div');heading.className='pg-section';heading.textContent='🎖️ YOUR REWARDS · '+unlocked+'/'+all.length+' UNLOCKED';block.append(heading);
-  const badges=document.createElement('div');badges.className='pg-reward-grid';
-  all.forEach(item=>{
-   const badge=document.createElement('div');badge.className='pg-reward-badge'+(item.unlocked?' is-earned':' is-locked');
-   const icon=document.createElement('span');icon.className='pg-reward-icon';icon.textContent=item.icon;
-   const title=document.createElement('strong');title.textContent=item.label;
-   const status=document.createElement('small');status.textContent=item.unlocked?'UNLOCKED · '+Math.min(item.current,item.target)+'/'+item.target:item.current+'/'+item.target;
-   badge.append(icon,title,status);badges.append(badge);
-  });block.append(badges);
-  const season=rewards.season(day());if(season){
-   const seasonPanel=document.createElement('div');seasonPanel.className='pg-private';
-   seasonPanel.textContent='🎯 Weekly Season · '+season.start+'–'+season.end+' · '+season.daysRemaining+' day(s) including today remaining';block.append(seasonPanel);
-  }
-  if(profile.reviewSuggested&&admins){
-   const flag=document.createElement('div');flag.className='pg-private';flag.textContent='ℹ️ Unusual rapid-answer pattern flagged for manual review; this is not proof of cheating.';block.append(flag);
-  }
-  box.append(block);
+   const eligible=rankEligible({...profile,isAdmin:admins});
+   const leader=users.length?ranked('weekly',true).find(x=>x.people>=3):null;
+   const crown=!!(eligible&&leader&&leader.name===profile.outlet);
+   const entries=rewards.achievements(profile,day(),week(),crown);
+   const priority=['rising-star','legend','sharp-mind','super-student','weekly-50','outlet-drive'];
+   const sorted=[...entries].sort((a,b)=>priority.indexOf(a.id)===-1?(priority.indexOf(b.id)===-1?0:1):(priority.indexOf(b.id)===-1?-1:priority.indexOf(a.id)-priority.indexOf(b.id)));
+   const achievements=document.createElement('section');achievements.className='arena-achievements-card';
+   const awardHead=document.createElement('div');awardHead.className='arena-achievements-heading';
+   const awardTitle=document.createElement('strong');awardTitle.textContent='🏅 Achievements';
+   const viewAll=btn('View All ›',()=>renderRewards(!showAll));
+   awardHead.append(awardTitle,viewAll);achievements.append(awardHead);
+   const grid=document.createElement('div');grid.className='arena-rewards-grid';achievements.append(grid);box.append(achievements);
+   let showAll=false;
+   function renderRewards(expand){
+     showAll=expand;grid.replaceChildren();viewAll.textContent=showAll?'Show Less':'View All ›';
+     const display=showAll?sorted:sorted.slice(0,6);
+     for(const item of display){
+       const tile=document.createElement('div');tile.className='arena-reward-item'+(item.unlocked?'':' is-locked');
+       const icon=document.createElement('span');icon.className='arena-reward-icon';icon.textContent=item.icon;
+       const name=document.createElement('strong');name.textContent=item.label;
+       const requirement=document.createElement('small');
+       const suffix=['rising-star','legend','first-slice'].includes(item.id)?' pts':['sharp-mind','super-student','centurion'].includes(item.id)?' correct':['weekly-50','outlet-drive'].includes(item.id)?' answers':'';
+       requirement.textContent=item.target.toLocaleString()+suffix+(item.unlocked?' · Earned':'');
+       const track=document.createElement('div');track.className='arena-reward-track';
+       const progress=document.createElement('span');progress.style.width=item.percent+'%';track.append(progress);
+       tile.append(icon,name,requirement,track);grid.append(tile);
+     }
+   }
+   renderRewards(false);
  }
- const msg=document.createElement('p');msg.className='err';box.append(msg);
+ const utilities=document.createElement('div');utilities.className='arena-actions';
+ utilities.append(btn('Account Settings',accountSettings),btn('Save My Progress',backupPanel));
+ if(admins)utilities.append(btn('Manage',adminPanel),btn('Check Saved Answers',viewSyncHealth));
+ utilities.querySelectorAll('button').forEach(b=>b.classList.add('pg-btn-green'));
+ box.append(utilities);
+ const last=lastSyncTime();
+ const footer=document.createElement('p');footer.style.cssText='text-align:center;color:#826964;font-size:11px;margin:13px 0 8px';
+ footer.textContent=last?'Last updated: '+new Date(last).toLocaleString():'Your answers are stored safely on this device until they can be saved.';
+ box.append(footer);
+}
+function changeOutlet(){
+ if(!profile)return;
+ const box=open('CHANGE OUTLET','Choose your new outlet.');
+ const fieldSelect=sel(box,'Outlet');fieldSelect.value=profile.outlet;
+ const controls=document.createElement('div');controls.className='arena-actions';
+ const back=btn('Close',profilePanel);
+ const request=btn('Request Change',async()=>{
+  if(fieldSelect.value===profile.outlet){profilePanel();return;}
+  const target=fieldSelect.value;
+  if(!confirm('Ask to change your outlet to '+target+'?'))return;
+  request.disabled=true;
+  try{await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:target,status:'pending',createdAt:F.serverTimestamp()});
+    note('Your request was sent.');profilePanel();
+  }catch(e){note(errorMessage(e));request.disabled=false;}
+ });
+ request.className='pg-btn-green';request.disabled=true;
+ fieldSelect.addEventListener('change',()=>{request.disabled=fieldSelect.value===profile.outlet;});
+ controls.append(request,back);box.append(controls);
+}
+async function accountSettings(){
+ if(!user||!profile)return;
+ const box=open('ACCOUNT SETTINGS','Update your personal details.');
+const msg=document.createElement('p');msg.className='err';box.append(msg);
  const image=field(box,'Profile picture (PNG)','file');image.accept='image/png';image.onchange=async()=>{
   try{
    const file=image.files?.[0];if(!file)return;
@@ -364,22 +456,116 @@ async function profilePanel(){
  },true));
  const oldpass=field(box,'Current password','password'),newpass=field(box,'New password','password');
  box.append(btn('Change password',async()=>{try{if(newpass.value.length<8)throw Error('Password too short.');await A.reauthenticateWithCredential(user,A.EmailAuthProvider.credential(user.email,oldpass.value));await A.updatePassword(user,newpass.value);note('Password changed.');}catch(e){msg.textContent=errorMessage(e)}},true));
- const outlet=sel(box,'Outlet');outlet.value=profile.outlet;
- outlet.addEventListener('change',()=>{
-  if(outlet.value===profile.outlet)return;
-  const target=outlet.value;
-  const confirmation=open('CHANGE OUTLET?','Send an approval request to move from '+profile.outlet+' to '+target+'?');
-  const graphic=document.createElement('img');graphic.src='./images/mascot/pizza-update.png';graphic.className='pg-celebration';graphic.alt='';confirmation.prepend(graphic);
-  confirmation.append(btn('SEND REQUEST',async()=>{
-   try{
-    await F.addDoc(F.collection(db,'outletRequests'),{uid:user.uid,from:profile.outlet,to:target,status:'pending',createdAt:F.serverTimestamp()});
-    note('Outlet request submitted for approval.');profilePanel();
-   }catch(e){note(errorMessage(e));profilePanel();}
-  }),btn('CANCEL',()=>profilePanel()));
- });
- if(admins)box.append(btn('Manage',adminPanel));
- box.append(btn('Leaderboard',board),btn('Sync',async()=>{await sync();profilePanel();}),btn('Sign out',async()=>{await A.signOut(auth);}),btn('Close',close));
+
+ box.append(btn('My Player Card',profilePanel),btn('Close',close));
 }
+
+function backupPanel(){
+ if(!user)return;
+ const box=open('SAVE MY PROGRESS','Keep a copy of your unfinished answers before changing devices.');
+ const pending=getQueue().filter(item=>item.uid===user.uid);
+ const summary=document.createElement('div');summary.className='pg-private';
+ summary.textContent=pending.length+' '+(pending.length===1?'answer':'answers')+' ready to back up.';
+ box.append(summary);
+ const controls=document.createElement('div');controls.className='arena-actions';
+ const exportBtn=btn('Save a Copy',()=>{
+  const pack={type:'pizza-arena-personal-backup',version:1,uid:user.uid,createdAt:new Date().toISOString(),
+    pending:getQueue().filter(e=>e.uid===user.uid),
+    attempt:localStorage.getItem(akey())||null,
+    savedPaper:localStorage.getItem(storageKey())||null};
+  const blob=new Blob([JSON.stringify(pack,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='pizza-arena-'+day()+'-backup.json';document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  note('Your copy was saved. Keep it private.');
+ });
+ exportBtn.classList.add('pg-btn-green');
+ controls.append(exportBtn,btn('My Player Card',profilePanel));box.append(controls);
+ const section=document.createElement('section');section.className='arena-settings';
+ const details=document.createElement('summary');details.textContent='Restore a saved copy';section.append(details);
+ const content=document.createElement('div');content.className='arena-settings-body';
+ const info=document.createElement('p');info.textContent='Choose a copy from this same account. Existing answers will not be deleted.';
+ const picker=document.createElement('input');picker.type='file';picker.accept='.json,application/json';picker.setAttribute('aria-label','Choose saved copy');
+ const restore=btn('Restore Answers',async()=>{
+  const file=picker.files?.[0];if(!file){note('Choose your saved copy first.');return;}
+  if(file.size>3000000){note('This file is too large.');return;}
+  restore.disabled=true;
+  try{
+   const data=JSON.parse(await file.text());
+   if(data?.type!=='pizza-arena-personal-backup'||data.version!==1||data.uid!==user.uid||!Array.isArray(data.pending))
+     throw Error('wrong-account');
+   if(data.pending.length>1500)throw Error('too-many-answers');
+   const allowed=['past2024','questions','paper1','paper2','paper3'];
+   const validResult=e=>e&&e.uid===user.uid&&allowed.includes(e.paper)&&
+     typeof e.id==='string'&&e.id.startsWith(user.uid+'_')&&e.id.length<300&&
+     typeof e.attemptId==='string'&&e.attemptId.length>=12&&
+     Number.isInteger(e.index)&&e.index>=0&&e.index<=50&&
+     Number.isInteger(e.selected)&&e.selected>=-1&&e.selected<=5&&
+     Number.isInteger(e.points)&&e.points>=0&&e.points<=70&&
+     Number.isFinite(e.earnedAt)&&typeof e.dayKey==='string'&&
+     typeof e.claimId==='string'&&e.claimId.startsWith(user.uid+'_');
+   if(!data.pending.every(validResult))throw Error('bad-data');
+   const existing=getQueue(),unique=new Map(existing.map(e=>[e.id,e]));
+   for(const e of data.pending){if(!unique.has(e.id))unique.set(e.id,e);}
+   if(!confirm('Add '+data.pending.length+' saved answers to this account?'))return;
+   saveQueue([...unique.values()]);
+   if(typeof data.savedPaper==='string'&&!localStorage.getItem(storageKey())){
+    try{const saved=JSON.parse(data.savedPaper);
+       if(saved&&allowed.includes(saved.currentPaper)&&Array.isArray(saved.questions)&&Array.isArray(saved.sessionAnswers))
+         localStorage.setItem(storageKey(),data.savedPaper);
+    }catch(_){}
+   }
+   if(typeof data.attempt==='string'&&!localStorage.getItem(akey())){
+    try{const attempt=JSON.parse(data.attempt);
+       if(attempt&&allowed.includes(attempt.paper)&&typeof attempt.id==='string')
+         localStorage.setItem(akey(),data.attempt);
+    }catch(_){}
+   }
+   note('Your saved answers were restored.');await sync();profilePanel();
+  }catch(e){note('This copy could not be opened. Choose a copy from this account.');}
+  finally{restore.disabled=false;}
+ });
+ content.append(info,picker,restore);section.append(content);box.append(section);
+ box.append(btn('Close',close));
+}
+function viewSyncHealth(){
+ if(!admins){profilePanel();return;}
+ const box=open('CHECK SAVED ANSWERS','Check answers saved on this phone.');
+ const pending=getQueue().filter(e=>e.uid===user?.uid);
+ const rows=[
+  ['Answers waiting',String(pending.length)],
+  ['Internet',navigator.onLine?'Connected':'Not connected'],
+  ['Last updated',lastSyncTime()?new Date(lastSyncTime()).toLocaleString():'Not yet'],
+  ['Next step',syncIssue||'Try saving your answers again.']
+ ];
+ for(const [name,value] of rows){
+  const row=document.createElement('div');row.className='pg-leader-card';
+  const key=document.createElement('strong');key.textContent=name;
+  const val=document.createElement('small');val.textContent=value;
+  row.append(key,val);box.append(row);
+ }
+ box.append(btn('Try Sync',async()=>{await sync();viewSyncHealth();}),
+            btn('Save a Copy',backupPanel),
+            btn('Manage',adminPanel),
+            btn('Close',close));
+}
+function openNotifications(){
+ if(!user||!profile){gate();return;}
+ const box=open('NOTIFICATIONS','Your latest updates.');
+ const content=document.createElement('div');content.className='pg-private';
+ if(admins&&requests.length){content.textContent=requests.length+' outlet '+(requests.length===1?'request needs':'requests need')+' your attention.';}
+ else if(getQueue().length){content.textContent=pendingDescription();}
+ else {content.textContent='No new notifications.';}
+ box.append(content);
+ if(admins&&requests.length)box.append(btn('Manage',adminPanel));
+ if(getQueue().length)box.append(btn('Sync',async()=>{await sync();openNotifications();}));
+ box.append(btn('My Player Card',profilePanel),btn('Close',close));
+}
+window.BTExamUI={
+ openProfile:()=>show('profile'),
+ openBoard:()=>show('board'),
+ openNotifications
+};
 function adminPanel(){
  const box=open('Manage','Review outlet changes and manage accounts.');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
@@ -390,8 +576,8 @@ function adminPanel(){
 }
 async function manageUsers(){
  if(!admins)return;
- const box=open('MANAGE USERS','Remove an account with two confirmations. Final account deletion must also be done in Firebase.');
- const status=document.createElement('p');status.className='pg-muted';status.textContent='Fetching user accounts…';box.append(status);
+ const box=open('MANAGE USERS','Remove an account with two confirmations.');
+ const status=document.createElement('p');status.className='pg-muted';status.textContent='Loading users…';box.append(status);
  const search=field(box,'Search username or outlet');search.required=false;
  const list=document.createElement('div');box.append(list);
  const draw=(entries)=>{
@@ -400,7 +586,7 @@ async function manageUsers(){
    entries.forEach(item=>{
     const line=document.createElement('div');line.className='pg-review-item';
     const detail=document.createElement('div');const label=document.createElement('strong');label.textContent=item.username+' · '+item.outlet;
-    const sub=document.createElement('small');sub.textContent=(item.totalPoints||0)+' pts · UID '+item.uid.slice(0,8)+'…';
+    const sub=document.createElement('small');sub.textContent=(item.totalPoints||0)+' pts · User code '+item.uid.slice(0,8)+'…';
     detail.append(label,sub);line.append(detail);
     const reserved=RESERVED.has(norm(item.username));
     const blocked=item.uid===user.uid||reserved||item.isAdmin;
@@ -414,7 +600,7 @@ async function manageUsers(){
   const records=snap.docs.map(doc=>({...doc.data(),uid:doc.id}));
   const roleDocs=await Promise.all(records.map(p=>F.getDoc(F.doc(db,'admins',p.uid)).catch(()=>null)));
   const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()===true}));
-  status.textContent='Showing up to 250 accounts. Administrator accounts are protected.';
+  status.textContent='Showing up to 250 users. Administrator accounts are protected.';
   const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));};
   search.addEventListener('input',render);render();
  }catch(err){status.textContent='Could not load users: '+errorMessage(err);}
@@ -424,7 +610,7 @@ async function confirmUserRemoval(person){
  if(!admins||!user||person.uid===user.uid||RESERVED.has(norm(person.username))||person.isAdmin){
   note('Protected accounts cannot be deleted.');return;
  }
- const text='Delete '+person.username+' from the app?\n\nThis blocks their login, removes their profile and public ranking, and releases their username. Their score history and Firebase Authentication identity require separate administrator cleanup.';
+ const text='Remove '+person.username+' from the app?\n\nThey will no longer be able to use this account. Their player card and ranking will be removed. The owner must finish deleting their login separately.';
  if(!confirm(text))return; // First independent confirmation.
  const box=open('VERIFY USER DELETION','Second verification. This cannot be undone from this screen.');
  const warning=document.createElement('div');warning.className='pg-private';
@@ -455,9 +641,9 @@ async function confirmUserRemoval(person){
    });
    box.replaceChildren();
    const ok=document.createElement('div');ok.className='pg-private';
-   ok.textContent=person.username+' is now blocked from BT Exam Prep. Their profile and public ranking were removed. Final step: open Firebase Console > Authentication > Users, find UID '+person.uid+' and delete that Authentication user manually.';
+   ok.textContent=person.username+' can no longer access this app. Their player card and ranking were removed. The owner must finish deleting their login in the account dashboard. User code: '+person.uid;
    box.append(ok,btn('BACK TO USERS',manageUsers,true),btn('CLOSE',close,true));
-   note('User removed from app; Firebase Auth cleanup is still required.');
+   note('The user was removed from the app. The owner must finish deleting their login.');
   }catch(err){failure.textContent='Account was not removed: '+errorMessage(err);}
   finally{confirmButton.disabled=false;password.value='';}
  });
@@ -517,14 +703,14 @@ async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
  try{
   const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
-  if(blocked.exists()){await A.signOut(auth);note('This account has been removed. Contact the administrator if needed.');return;}
+  if(blocked.exists()){await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;}
   let snap=await F.getDoc(F.doc(db,'users',u.uid));
   // Firebase Auth can fire before the registration transaction creates the user profile.
   for(let retry=0;retry<6&&!snap.exists();retry++){
     await new Promise(resolve=>setTimeout(resolve,500));
     snap=await F.getDoc(F.doc(db,'users',u.uid));
   }
-  if(!snap.exists()){gate('setup','Your account profile could not be loaded. Refresh the app or contact an administrator.');return;}
+  if(!snap.exists()){gate('setup','We could not open your account. Please reopen the app or ask for help.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
@@ -551,7 +737,7 @@ function promptUpdate(){
 }
 window.addEventListener('online',()=>{sync();checkForUpdates();});
 setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
-if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','Configure the free Firebase project before using the leaderboard. The existing exam remains available.');dock.textContent='🏆 Leaderboard (setup)';return;}
+if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','The leaderboard is not ready yet. Please try again later.');dock.textContent='🏆 Leaderboard (setup)';return;}
 try{
  const [appModule,authModule,firestoreModule]=await Promise.all([
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-app.js'),
@@ -561,5 +747,5 @@ try{
  try{await A.setPersistence(auth,A.browserLocalPersistence);}catch(e){console.warn('Persistent login unavailable:',e);await A.setPersistence(auth,A.inMemoryPersistence);}
  try{db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})});}catch(storageError){console.warn('Persistent offline database unavailable:',storageError);db=F.getFirestore(app);note('Offline storage is limited on this browser.');}
  A.onAuthStateChanged(auth,session);
-}catch(e){gate('setup','Firebase SDK error: '+errorMessage(e));}
+}catch(e){gate('setup','The app could not start. Please check your internet and try again.');}
 })();

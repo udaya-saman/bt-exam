@@ -1,5 +1,5 @@
 {
-  "version": "3.5.0-sharp-png",
-  "releaseDate": "2026-11-14",
-  "notes": "Sharp transparent PNG mascots, fixed overlapping mobile challenge cards, simplified messages, harder achievements, Udaya-only answer-key setup."
+  "version": "3.6.0-two-screen",
+  "releaseDate": "2026-11-15",
+  "notes": "Polished Pizza Arena home and separate full-screen Player Card; working notifications, badges, score details, backup and restore, simplified error messages, and administrator saved-answer checks. PNG-only image assets."
 }

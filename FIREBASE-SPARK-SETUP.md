@@ -231,3 +231,24 @@ Other achievements and the scoring formula are unchanged.
 ### Mandatory Firebase step
 
 After the GitHub update, publish the latest `firestore.rules` again in Firebase Console → Firestore Database → Rules. Without republishing, the old rules may still let another administrator change answer keys. New users need to follow the existing Firebase Authentication/administrator setup process. This release does not reset points, modify question content, or delete saved local results.
+
+
+## Pizza Arena v3.6 — Two main screens and safe progress backups
+
+The redesign now provides two distinct mobile-friendly screens matching the approved reference:
+
+**Home / Arena:** Pizza Arena header, profile and notification controls, mascot-led hero, prominent green Leaderboard button, resume-session banner and five responsive exam cards. The exam question bank and scoring formula remain unchanged.
+
+**My Player Card / Achievements:** full-screen cream/red layout with player picture, name, outlet, level progress, points, correct and answered totals, green Leaderboard/Sync and red Sign Out/Close buttons, an outlet-change row, six featured achievement badges and View All. Account settings and administrator controls remain accessible.
+
+**Images:** All displayed images are PNG. Old unused SVG vector sources and the former WebP mascot sprite were removed from the GitHub repository. Transparent PNG mascots in `images/mascot/` are the supported image assets.
+
+**Backup and recovery:** My Player Card → **Save My Progress** lets someone download a private `.json` copy of the answers waiting on their device and their unfinished paper. **Restore a saved copy** accepts only files belonging to the same signed-in Firebase user and merges by answer ID without wiping existing results. This file can contain personal exam activity; keep it private. It is an emergency personal copy, not an official certificate or a guaranteed way to bypass the 72-hour ranked-score window.
+
+**Sync status:** The Player Card shows **Answers waiting** while local results have not yet been saved. Admins can open **Manage → Check Saved Answers** to inspect their own device's pending count, connection and last update. Admins cannot see another person's device-local unsynced data, because it has not reached Firebase.
+
+**Notifications:** The home header opens an in-app notification panel for waiting answers and pending administrator outlet requests. Background push is not supported on Spark; notifications appear while the app is in use.
+
+**No Firestore rule changes were introduced by this v3.6 visual and backup release.** If you already published the v3.5 rules and seeded the answer keys, the same rules can remain in place. You should still run a live test with `udaya` and a regular outlet account after the update.
+
+**Testing:** JavaScript syntax, Firestore score transaction emulator, PNG-only asset audits, responsive browser layouts at 320/375/430/768/1280px, and account-specific backup validation are included in CI. Real iPhones, Android phones and the live Firebase project need final acceptance checks before deploying broadly.
