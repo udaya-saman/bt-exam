@@ -420,7 +420,9 @@ function changeOutlet(){
     note('Your request was sent.');profilePanel();
   }catch(e){note(errorMessage(e));request.disabled=false;}
  });
- request.className='pg-btn-green';controls.append(request,back);box.append(controls);
+ request.className='pg-btn-green';request.disabled=true;
+ fieldSelect.addEventListener('change',()=>{request.disabled=fieldSelect.value===profile.outlet;});
+ controls.append(request,back);box.append(controls);
 }
 async function accountSettings(){
  if(!user||!profile)return;
