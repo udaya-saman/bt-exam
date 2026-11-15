@@ -40,8 +40,8 @@ function syncDetail(err){
    return 'No internet. Your answers are safe. Try again later.';
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub){root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
+function open(title,sub){root.classList.remove('arena-profile-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){root.hidden=true;root.classList.remove('arena-profile-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -104,6 +104,12 @@ const akey=()=>user?'bt_spark_attempt_'+user.uid:'';
 const storageKey=()=>user?'bt_exam_state:'+user.uid:null;
 function getQueue(){try{return JSON.parse(localStorage.getItem(qkey())||'[]')}catch(_){return []}}
 function saveQueue(q){localStorage.setItem(qkey(),JSON.stringify(q))}
+function lastSyncTime(){try{return Number(localStorage.getItem('bt_spark_last_sync_'+user?.uid)||0)}catch(_){return 0}}
+function recordLastSync(){try{localStorage.setItem('bt_spark_last_sync_'+user.uid,String(Date.now()))}catch(_){}}
+function pendingDescription(){
+ const count=getQueue().filter(e=>e.uid===user?.uid).length;
+ return count?count+' '+(count===1?'answer is':'answers are')+' waiting to be saved.':'All answers are saved.';
+}
 function rankedKey(paper,dayKey){return 'bt_spark_daily_ranked_'+user.uid+'_'+dayKey+'_'+paper;}
 function modeBadge(){
  let label=document.getElementById('bt-exam-mode');
@@ -208,7 +214,7 @@ async function sync(){
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
-  if(done.length){const removed=new Set(done);saveQueue(getQueue().filter(e=>!removed.has(e.id)));}
+  if(done.length){const removed=new Set(done);saveQueue(getQueue().filter(e=>!removed.has(e.id)));recordLastSync();}
   if(!getQueue().length)syncIssue='';
  }finally{syncing=false;}
 }
@@ -444,6 +450,112 @@ const msg=document.createElement('p');msg.className='err';box.append(msg);
  box.append(btn('My Player Card',profilePanel),btn('Close',close));
 }
 
+function backupPanel(){
+ if(!user)return;
+ const box=open('SAVE MY PROGRESS','Keep a copy of your unfinished answers before changing devices.');
+ const pending=getQueue().filter(item=>item.uid===user.uid);
+ const summary=document.createElement('div');summary.className='pg-private';
+ summary.textContent=pending.length+' '+(pending.length===1?'answer':'answers')+' ready to back up.';
+ box.append(summary);
+ const controls=document.createElement('div');controls.className='arena-actions';
+ const exportBtn=btn('Save a Copy',()=>{
+  const pack={type:'pizza-arena-personal-backup',version:1,uid:user.uid,createdAt:new Date().toISOString(),
+    pending:getQueue().filter(e=>e.uid===user.uid),
+    attempt:localStorage.getItem(akey())||null,
+    savedPaper:localStorage.getItem(storageKey())||null};
+  const blob=new Blob([JSON.stringify(pack,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='pizza-arena-'+day()+'-backup.json';document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  note('Your copy was saved. Keep it private.');
+ });
+ exportBtn.classList.add('pg-btn-green');
+ controls.append(exportBtn,btn('My Player Card',profilePanel));box.append(controls);
+ const section=document.createElement('section');section.className='arena-settings';
+ const details=document.createElement('summary');details.textContent='Restore a saved copy';section.append(details);
+ const content=document.createElement('div');content.className='arena-settings-body';
+ const info=document.createElement('p');info.textContent='Choose a copy from this same account. Existing answers will not be deleted.';
+ const picker=document.createElement('input');picker.type='file';picker.accept='.json,application/json';picker.setAttribute('aria-label','Choose saved copy');
+ const restore=btn('Restore Answers',async()=>{
+  const file=picker.files?.[0];if(!file){note('Choose your saved copy first.');return;}
+  if(file.size>3000000){note('This file is too large.');return;}
+  restore.disabled=true;
+  try{
+   const data=JSON.parse(await file.text());
+   if(data?.type!=='pizza-arena-personal-backup'||data.version!==1||data.uid!==user.uid||!Array.isArray(data.pending))
+     throw Error('wrong-account');
+   if(data.pending.length>1500)throw Error('too-many-answers');
+   const allowed=['past2024','questions','paper1','paper2','paper3'];
+   const validResult=e=>e&&e.uid===user.uid&&allowed.includes(e.paper)&&
+     typeof e.id==='string'&&e.id.startsWith(user.uid+'_')&&e.id.length<300&&
+     typeof e.attemptId==='string'&&e.attemptId.length>=12&&
+     Number.isInteger(e.index)&&e.index>=0&&e.index<=50&&
+     Number.isInteger(e.selected)&&e.selected>=-1&&e.selected<=5&&
+     Number.isInteger(e.points)&&e.points>=0&&e.points<=70&&
+     Number.isFinite(e.earnedAt)&&typeof e.dayKey==='string'&&
+     typeof e.claimId==='string'&&e.claimId.startsWith(user.uid+'_');
+   if(!data.pending.every(validResult))throw Error('bad-data');
+   const existing=getQueue(),unique=new Map(existing.map(e=>[e.id,e]));
+   for(const e of data.pending){if(!unique.has(e.id))unique.set(e.id,e);}
+   if(!confirm('Add '+data.pending.length+' saved answers to this account?'))return;
+   saveQueue([...unique.values()]);
+   if(typeof data.savedPaper==='string'&&!localStorage.getItem(storageKey())){
+    try{const saved=JSON.parse(data.savedPaper);
+       if(saved&&allowed.includes(saved.currentPaper)&&Array.isArray(saved.questions)&&Array.isArray(saved.sessionAnswers))
+         localStorage.setItem(storageKey(),data.savedPaper);
+    }catch(_){}
+   }
+   if(typeof data.attempt==='string'&&!localStorage.getItem(akey())){
+    try{const attempt=JSON.parse(data.attempt);
+       if(attempt&&allowed.includes(attempt.paper)&&typeof attempt.id==='string')
+         localStorage.setItem(akey(),data.attempt);
+    }catch(_){}
+   }
+   note('Your saved answers were restored.');await sync();profilePanel();
+  }catch(e){note('This copy could not be opened. Choose a copy from this account.');}
+  finally{restore.disabled=false;}
+ });
+ content.append(info,picker,restore);section.append(content);box.append(section);
+ box.append(btn('Close',close));
+}
+function viewSyncHealth(){
+ if(!admins){profilePanel();return;}
+ const box=open('CHECK SAVED ANSWERS','Check answers saved on this phone.');
+ const pending=getQueue().filter(e=>e.uid===user?.uid);
+ const rows=[
+  ['Answers waiting',String(pending.length)],
+  ['Internet',navigator.onLine?'Connected':'Not connected'],
+  ['Last updated',lastSyncTime()?new Date(lastSyncTime()).toLocaleString():'Not yet'],
+  ['Next step',syncIssue||'Try saving your answers again.']
+ ];
+ for(const [name,value] of rows){
+  const row=document.createElement('div');row.className='pg-leader-card';
+  const key=document.createElement('strong');key.textContent=name;
+  const val=document.createElement('small');val.textContent=value;
+  row.append(key,val);box.append(row);
+ }
+ box.append(btn('Try Sync',async()=>{await sync();viewSyncHealth();}),
+            btn('Save a Copy',backupPanel),
+            btn('Manage',adminPanel),
+            btn('Close',close));
+}
+function openNotifications(){
+ if(!user||!profile){gate();return;}
+ const box=open('NOTIFICATIONS','Your latest updates.');
+ const content=document.createElement('div');content.className='pg-private';
+ if(admins&&requests.length){content.textContent=requests.length+' outlet '+(requests.length===1?'request needs':'requests need')+' your attention.';}
+ else if(getQueue().length){content.textContent=pendingDescription();}
+ else {content.textContent='No new notifications.';}
+ box.append(content);
+ if(admins&&requests.length)box.append(btn('Manage',adminPanel));
+ if(getQueue().length)box.append(btn('Sync',async()=>{await sync();openNotifications();}));
+ box.append(btn('My Player Card',profilePanel),btn('Close',close));
+}
+window.BTExamUI={
+ openProfile:()=>show('profile'),
+ openBoard:()=>show('board'),
+ openNotifications
+};
 function adminPanel(){
  const box=open('Manage','Review outlet changes and manage accounts.');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
