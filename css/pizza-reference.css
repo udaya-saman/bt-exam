@@ -1,49 +1,110 @@
-/* Pizza Arena 3.7: reference-match gaming visual refresh, no changes to card structure/data. */
-:root{--ref-cream:#fff8f1;--ref-red:#c30b22}
-#home{background:linear-gradient(165deg,#fffbf7,#fff1e9)!important;color:#241619!important}
-#home .arena-hero{background:radial-gradient(ellipse at 78% 75%,#ff9c3299,transparent 36%),linear-gradient(135deg,#78000f,#b3091c 48%,#ee2734)!important;box-shadow:0 14px 30px #8a062450!important;isolation:isolate;border-radius:0 0 32px 32px!important}
-#home .arena-hero:before{inset:0!important;background:repeating-radial-gradient(ellipse at 20% 160%,transparent 0 80px,#ffffff13 82px 84px,transparent 85px 145px)!important}
-#home .arena-hero:after{opacity:.3}
-#home .arena-pizza-wordmark{display:flex!important;align-items:center!important;justify-content:center!important;width:clamp(95px,15vw,165px)!important;height:64px!important;font-size:0!important;transform:none!important;padding:0!important}
+/* Pizza Arena reference correction v4. Overrides legacy styles without changing player structure. */
+:root{--arena-gold:#ffce2e;--arena-cream:#fff9f4;--arena-red:#c70d24;--arena-green:#0e981e}
+#home{background:linear-gradient(160deg,#fffaf5 0%,#fff1e9 100%)!important;color:#24191b!important}
+#home .home-content{width:100%!important;max-width:1050px!important;padding:0 17px max(24px,env(safe-area-inset-bottom))!important}
+#home .arena-hero{margin:0 -17px 24px!important;padding:19px 27px 26px!important;border-radius:0 0 33px 33px!important;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 77% 69%,#ffb43d7d 0%,transparent 35%),linear-gradient(145deg,#72000e 0%,#a90019 39%,#db142b 78%,#ea292d 100%)!important;box-shadow:0 15px 32px #930f294d!important}
+#home .arena-hero:before{content:"";inset:0!important;background:repeating-radial-gradient(ellipse at 15% 155%,transparent 0 68px,#ffffff0e 70px 73px,transparent 75px 139px)!important;z-index:-1}
+#home .arena-hero:after{opacity:.22!important}
+#home .arena-header{position:relative;z-index:4;display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 14px!important}
+#home .arena-brand-lockup{gap:16px!important}
+#home .arena-pizza-wordmark.arena-wordmark-png{display:block!important;flex:none!important;width:170px!important;height:80px!important;padding:0!important;margin:0!important;transform:none!important;background-image:url("./../images/arena/atlas.png")!important;background-size:400% 300%!important;background-position:100% 100%!important;background-repeat:no-repeat!important;filter:drop-shadow(0 3px 3px #57000a64);font-size:0!important}
 #home .arena-pizza-wordmark:before{display:none!important}
-#home .arena-pizza-wordmark .arena-wordmark-atlas{width:72px!important;height:72px!important;max-width:none!important;object-fit:none;object-position:-216px -144px;image-rendering:auto}
-#home .arena-brand-divider{height:58px!important}
-#home .arena-brand-name strong{font-size:clamp(21px,3.5vw,36px)!important}
-#home .arena-brand-name em{color:#ffcb32!important}
-#home .arena-brand-name small{letter-spacing:.35em!important}
-#home .arena-header{position:relative;z-index:3}
-#home .arena-header-icon{border-radius:15px!important;background:#69001499!important;border:1px solid #ff969276!important;box-shadow:0 4px 11px #39010c45!important}
-#home .arena-hero-body{grid-template-columns:minmax(0,1fr) 46%!important;align-items:center!important;min-height:340px!important}
-#home .arena-hero-copy{z-index:2!important}
-#home .arena-hero h1{font-size:clamp(44px,6.8vw,78px)!important;line-height:.96!important;letter-spacing:-.055em!important;text-shadow:0 5px 0 #640015,0 10px 16px #27000984!important}
-#home .arena-hero h1 span{color:#ffd01d!important;text-shadow:0 4px 0 #975009,0 10px 14px #40001673!important}
-#home .arena-hero p{font-size:clamp(13px,1.75vw,20px)!important;line-height:1.35!important;max-width:450px!important}
-#home .arena-hero-cta{background:linear-gradient(#34d136,#159d27 55%,#006d17)!important;border:2px solid #b6ff7c!important;color:white!important;border-radius:20px!important;box-shadow:0 4px 0 #006916,0 10px 18px #36001970,inset 0 2px 2px #fff8!important;font-weight:1000!important}
-#home .arena-hero-mascot{position:relative!important;align-self:stretch!important;align-items:end!important;min-height:320px!important;z-index:1!important}
-#home .arena-hero-mascot:before{content:"";position:absolute;bottom:5px;left:3%;width:94%;height:55px;border-radius:50% / 35%;background:linear-gradient(#fc6244,#de2432 56%,#a00a1d);border:2px solid #ff9a77;box-shadow:0 14px 22px #3b020b72,0 0 36px #ffc44b72;z-index:-1}
-#home .arena-hero-mascot img{max-width:100%!important;max-height:390px!important;width:100%!important;height:auto!important;object-fit:contain!important;object-position:center bottom!important;filter:drop-shadow(0 8px 9px #34000670)!important}
-#home #resume-banner{background:linear-gradient(110deg,#ab0017,#e21b2c 62%,#a90019)!important;border:3px solid #fff7ef!important;border-radius:23px!important;box-shadow:0 10px 22px #9713263a!important}
-#home .home-section-label{color:#c20c25!important;font-weight:1000!important}
-#home .paper-card{background:linear-gradient(170deg,#fffefd,#fff9f5)!important;border:1px solid #eeafa1!important;border-top:3px solid #db0923!important;box-shadow:0 6px 16px #a5272519!important;border-radius:23px!important}
-#home .pc-icon-wrap{background:#ffeedf!important}
-.arena-png-icon{display:inline-block!important;width:72px!important;height:72px!important;flex:0 0 72px!important;background-repeat:no-repeat!important;transform-origin:top left}
-#home .pc-icon-big.arena-png-icon{transform:scale(.49);margin-right:-36px!important;margin-bottom:-36px!important}
-.arena-stat-icon.arena-png-icon{transform:scale(.43);margin-right:-40px!important;margin-bottom:-41px!important}
-.arena-reward-icon.arena-png-icon{transform:scale(.72);margin-right:-20px!important;margin-bottom:-20px!important}
-body #bt-spark-root.arena-profile-mode{background:#fff2e9!important}
-body #bt-spark-root.arena-profile-mode .panel{background:linear-gradient(160deg,#fff5ee,#fffbf7 65%,#fff2ed)!important}
-.arena-page-top{background:linear-gradient(100deg,#9d081d,#d91b2e)!important}
-.arena-status-card{background:linear-gradient(#fffcf8,#fff1e6)!important;border:2px solid #ebc6b1!important;box-shadow:0 6px 15px #920e241b!important}
-.arena-card,.arena-achievements-card{background:linear-gradient(#fffdfb,#fff6ef)!important;border:2px solid #e9bba5!important;border-radius:23px!important;box-shadow:0 9px 22px #9a1b2419!important}
-.arena-card-heading,.arena-achievements-heading{background:linear-gradient(105deg,#b30920,#e41a30)!important;color:white!important;font-weight:1000!important}
-.arena-avatar{border:4px solid #f3cb4c!important;box-shadow:0 4px 10px #70071931!important}
-.arena-level-badge{background:linear-gradient(#ffe499,#ffcf55)!important;color:#4a2d09!important;font-weight:950!important}
-.arena-level-fill{background:linear-gradient(90deg,#32c73e,#089c24)!important}
-.arena-stat{background:linear-gradient(#fffaf4,#fff0e3)!important;border:1px solid #f0dfd0!important}
-body #bt-spark-root .arena-actions button.pg-btn-green{background:linear-gradient(#2fc944,#128f23,#006d18)!important;border:1px solid #9dff95!important}
-body #bt-spark-root .arena-actions button.pg-btn-red{background:linear-gradient(#ff454f,#dc112b,#aa061d)!important;border:1px solid #ff999d!important}
-.arena-outlet-row{background:linear-gradient(#fff6e3,#ffebcf)!important;border:1px solid #f1d4a6!important}
-.arena-reward-item{background:linear-gradient(#fff9ef,#fff0e5)!important;border:1px solid #f0dbcb!important;box-shadow:0 3px 8px #9e332011!important}
-@media(max-width:650px){#home .arena-hero-body{grid-template-columns:minmax(0,1fr) 41%!important;min-height:220px!important}#home .arena-hero h1{font-size:clamp(30px,7.5vw,46px)!important}#home .arena-hero-mascot{min-height:200px!important}#home .arena-hero-mascot img{max-height:240px!important}#home .arena-pizza-wordmark{width:75px!important;height:52px!important}#home .arena-brand-divider{height:42px!important}#home .arena-brand-name strong{font-size:clamp(15px,3.6vw,25px)!important}#home .arena-brand-name small{font-size:8px!important;letter-spacing:.15em!important}#home .arena-header-icon{width:37px!important;height:37px!important}}
-@media(max-width:390px){#home .arena-hero-mascot{min-height:175px!important}#home .arena-hero-mascot img{max-height:200px!important}#home .arena-hero{padding:14px 12px 21px!important}.arena-reward-icon.arena-png-icon{transform:scale(.56);margin-right:-30px!important;margin-bottom:-30px!important}}
+#home .arena-brand-divider{height:62px!important;background:#ffe9e4b8!important}
+#home .arena-brand-name strong{font-size:clamp(20px,3.5vw,38px)!important;font-weight:1000!important;font-style:italic!important;white-space:nowrap;letter-spacing:.012em;text-shadow:0 4px 1px #4a001c5f}
+#home .arena-brand-name em{color:#ffd02f!important}
+#home .arena-brand-name small{font-size:clamp(9px,1.25vw,14px)!important;font-weight:950!important;letter-spacing:.35em!important;margin-top:7px!important}
+#home .arena-header-actions{gap:11px!important}
+#home .arena-header-icon{width:50px!important;height:50px!important;border-radius:15px!important;background:#730015a8!important;border:1px solid #ffb8aa75!important;box-shadow:0 4px 12px #37000c70!important}
+#home .arena-hero-body{display:grid!important;grid-template-columns:minmax(0,1fr) 46%!important;gap:0!important;align-items:center!important;min-height:365px!important}
+#home .arena-hero-copy{position:relative;z-index:3!important;padding:12px 0 18px!important}
+#home .arena-hero h1{font-size:clamp(44px,6.75vw,79px)!important;line-height:.99!important;font-weight:1000!important;letter-spacing:-.057em!important;margin:0 0 19px!important;text-shadow:0 5px 0 #600012,0 9px 13px #33000b82!important}
+#home .arena-hero h1 span{display:block!important;color:#ffcc19!important;text-shadow:0 4px 0 #93500a,0 10px 15px #33000b88!important}
+#home .arena-hero p{max-width:440px!important;font-size:clamp(13px,1.8vw,21px)!important;line-height:1.35!important;color:#fff8f1!important;font-weight:550!important;margin:0 0 29px!important}
+#home .arena-hero-bottom{display:flex!important;align-items:center!important;gap:19px!important;flex-wrap:wrap!important}
+#home .arena-hero-cta{background:linear-gradient(#35d938 0%,#109b24 62%,#006918 100%)!important;border:2px solid #9eff76!important;color:#fff!important;min-height:59px!important;padding:12px 23px!important;border-radius:21px!important;font-size:clamp(14px,2.08vw,24px)!important;font-weight:1000!important;white-space:nowrap;box-shadow:0 4px 0 #006414,0 11px 17px #2d000d6e,inset 0 2px 2px #fff8!important}
+#home .arena-season-label{max-width:260px!important;font-size:clamp(9px,1.2vw,14px)!important;font-weight:1000!important;letter-spacing:.024em!important;white-space:normal!important}
+#home .arena-hero-mascot{position:relative!important;z-index:2!important;align-items:end!important;align-self:stretch!important;justify-content:center!important;min-height:380px!important;padding-bottom:17px!important}
+#home .arena-hero-mascot:before{content:"";display:block;position:absolute;z-index:0;bottom:4px;left:4%;width:92%;height:67px;border-radius:50% / 36%;background:linear-gradient(#ff6a46,#e22234 50%,#9f0620)!important;border:2px solid #ff8d70;box-shadow:0 13px 15px #33000762,0 0 40px #ffb03875}
+#home .arena-hero-mascot:after{bottom:-15px!important;width:100%!important;height:38%!important;filter:blur(20px)!important;z-index:-1!important;background:radial-gradient(ellipse,#ffae4961,transparent 67%)!important}
+#home .arena-hero-mascot img{position:relative!important;z-index:1!important;width:100%!important;max-width:390px!important;height:auto!important;max-height:410px!important;object-fit:contain!important;object-position:center bottom!important;filter:drop-shadow(0 9px 8px #34000b70)!important;border-radius:0!important}
+#home #resume-banner{min-height:90px!important;margin:0 0 23px!important;border:3px solid white!important;border-radius:24px!important;padding:13px 22px!important;background:linear-gradient(115deg,#ad001b,#e71d30 55%,#ab001a)!important;box-shadow:0 8px 19px #9e153036!important}
+#home #resume-banner .rb-title{font-size:clamp(17px,2vw,26px)!important;font-weight:1000!important}
+#home #resume-banner .rb-sub{font-size:clamp(12px,1.25vw,17px)!important;color:#fff1ee!important}
+#home #resume-banner .rb-icon{background:#94000f7d!important;border-radius:15px!important;padding:10px 15px!important;color:white!important}
+#home .home-section-label{color:#c20922!important;font-size:clamp(18px,2vw,25px)!important;font-weight:1000!important;letter-spacing:.01em!important;margin:12px 0 15px!important}
+#home #sound-toggle{background:#fff9f4!important;border:1px solid #eec1ae!important;border-radius:99px!important;color:#25191a!important;font-weight:850!important;padding:9px 15px!important}
+#home .paper-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:minmax(180px,auto)!important;gap:15px!important}
+#home .paper-card{padding:17px!important;min-height:183px!important;background:linear-gradient(#fffdfb,#fff8f3)!important;border:1px solid #eaa69b!important;border-top:4px solid #de0d25!important;border-radius:24px!important;box-shadow:0 6px 15px #b223211c!important}
+#home .pc-strip{display:none!important}
+#home .pc-icon-wrap{height:52px!important;width:52px!important;background:#fcebdc!important;border-radius:16px!important;overflow:hidden;flex:none}
+.arena-png-icon{display:block!important;flex:none!important;width:58px!important;height:58px!important;background-repeat:no-repeat!important;background-size:400% 300%!important;background-position:var(--arena-icon-x) var(--arena-icon-y)!important;line-height:0!important;font-size:0!important;color:transparent!important}
+#home .pc-icon-big.arena-png-icon{width:48px!important;height:48px!important}
+.arena-stat-icon.arena-png-icon{width:33px!important;height:33px!important}
+.arena-reward-icon.arena-png-icon{width:66px!important;height:66px!important}
+#home .pc-title{font-size:clamp(15px,1.8vw,21px)!important;font-weight:1000!important;color:#261719!important}
+#home .pc-desc{font-size:12px!important;color:#5c4445!important}
+#home .pc-tag{border-radius:30px!important;font-weight:850!important}
+#home .pc-bottom-row{margin-top:auto!important}
+#home .home-footer{text-align:left!important}
+body #bt-spark-root.arena-profile-mode{background:#fff0e8!important;overflow-y:auto!important}
+body #bt-spark-root.arena-profile-mode .panel{background:linear-gradient(#fff7f1,#fffbf7 64%,#fff2ec)!important;max-width:870px!important}
+body #bt-spark-root.arena-profile-mode #bt-spark-content{padding:12px 14px 21px!important}
+.arena-page-top{background:linear-gradient(110deg,#8f061a,#d6162a)!important;color:#fff!important;font-weight:1000!important}
+.arena-status-card{background:linear-gradient(#fffaf6,#fff0e8)!important;border:2px solid #e9bda9!important;border-radius:22px!important;box-shadow:0 6px 12px #8e101b20!important;align-items:center!important}
+.arena-status-copy strong{color:#a4091b!important;font-weight:1000!important}
+.arena-card,.arena-achievements-card{border:2px solid #e9b79f!important;background:linear-gradient(#fffefd,#fff5ef)!important;border-radius:24px!important;box-shadow:0 10px 20px #a71c201e!important}
+.arena-card-heading,.arena-achievements-heading{background:linear-gradient(100deg,#a7061a,#de162b)!important;color:#fff!important;font-size:17px!important;font-weight:1000!important;padding:13px 18px!important}
+.arena-card-body{padding:18px 18px 19px!important}
+.arena-avatar{border:4px solid #ffce52!important;box-shadow:0 5px 11px #8b161d2d!important}
+.arena-person-info h3{font-size:clamp(20px,3vw,29px)!important;color:#241719!important;font-weight:1000!important}
+.arena-outlet-pill{background:#f0e8ef!important;color:#3e2b36!important;font-weight:800!important;border-radius:99px!important}
+.arena-level-badge{background:linear-gradient(#ffe59b,#f6c54e)!important;color:#4d340a!important;font-weight:1000!important;border-radius:99px!important}
+.arena-level-track{background:#e7e0e3!important}
+.arena-level-fill{background:linear-gradient(90deg,#35c642,#0a9b29)!important}
+.arena-stats-grid{gap:10px!important}
+.arena-stat{background:linear-gradient(#fff8f2,#fff0e5)!important;border:1px solid #f0e0d4!important;border-radius:15px!important}
+.arena-stat strong{color:#1e1516!important}
+body #bt-spark-root .arena-actions button.pg-btn-green{background:linear-gradient(#2ed044,#0f9823,#05681a)!important;border:1px solid #a4f79a!important;box-shadow:0 3px 0 #08711d!important}
+body #bt-spark-root .arena-actions button.pg-btn-red{background:linear-gradient(#ff434b,#e4152a,#b2071d)!important;border:1px solid #ff9c9d!important;box-shadow:0 3px 0 #9f071b!important}
+.arena-outlet-row{background:linear-gradient(#fff6e3,#fceaca)!important;border:1px solid #efcda8!important;border-radius:17px!important}
+.arena-rewards-grid{gap:9px!important}
+.arena-reward-item{background:linear-gradient(#fff8f0,#fff0e5)!important;border:1px solid #efddcc!important;border-radius:17px!important;box-shadow:0 4px 8px #9f252012!important}
+.arena-reward-icon{margin-bottom:0!important}
+@media(max-width:660px){
+ #home .arena-hero{padding:16px 15px 24px!important;border-radius:0 0 25px 25px!important}
+ #home .arena-header{gap:6px!important;margin-bottom:9px!important}
+ #home .arena-brand-lockup{gap:8px!important}
+ #home .arena-pizza-wordmark.arena-wordmark-png{width:88px!important;height:51px!important}
+ #home .arena-brand-divider{height:42px!important}
+ #home .arena-brand-name strong{font-size:clamp(15px,3.4vw,22px)!important}
+ #home .arena-brand-name small{font-size:8px!important;letter-spacing:.16em!important}
+ #home .arena-header-actions{gap:5px!important}
+ #home .arena-header-icon{width:36px!important;height:36px!important;border-radius:12px!important}
+ #home .arena-hero-body{grid-template-columns:minmax(0,1fr) 40%!important;min-height:215px!important}
+ #home .arena-hero-copy{padding:5px 0 12px!important}
+ #home .arena-hero h1{font-size:clamp(31px,7.3vw,45px)!important;margin:3px 0 12px!important}
+ #home .arena-hero p{font-size:11px!important;line-height:1.4!important;margin-bottom:14px!important}
+ #home .arena-hero-bottom{gap:9px!important}
+ #home .arena-hero-cta{min-height:42px!important;border-radius:13px!important;padding:9px 10px!important;font-size:clamp(11px,2.8vw,14px)!important}
+ #home .arena-season-label{font-size:9px!important}
+ #home .arena-hero-mascot{min-height:210px!important;padding-bottom:9px!important}
+ #home .arena-hero-mascot:before{height:32px!important}
+ #home .arena-hero-mascot img{max-height:220px!important}
+ #home .paper-grid{gap:10px!important}
+ #home .paper-card{min-height:168px!important;padding:12px!important}
+ .arena-card-body{padding:13px!important}
+ .arena-stat-icon.arena-png-icon{width:29px!important;height:29px!important}
+ .arena-reward-icon.arena-png-icon{width:45px!important;height:45px!important}
+}
+@media(max-width:390px){
+ #home .arena-pizza-wordmark.arena-wordmark-png{width:67px!important;height:42px!important}
+ #home .arena-brand-name strong{font-size:14px!important}
+ #home .arena-hero h1{font-size:30px!important}
+ #home .arena-hero-mascot{min-height:174px!important}
+ #home .arena-hero-mascot img{max-height:190px!important}
+ #home .arena-season-label{font-size:8px!important}
+ #home .paper-card{padding:10px!important}
+ .arena-rewards-grid{gap:6px!important}
+}
+@media(max-width:335px){#home .paper-grid{grid-template-columns:1fr!important}}
 @media(prefers-reduced-motion:reduce){#home .arena-hero-cta{transition:none!important}}
