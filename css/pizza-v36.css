@@ -130,3 +130,60 @@ body #bt-spark-root.arena-profile-mode .panel{scrollbar-gutter:stable}
 #home .arena-hero-cta:focus-visible,
 #home .arena-header-icon:focus-visible,
 #bt-spark-root .arena-outlet-row:focus-visible{outline:3px solid #ffde70!important;outline-offset:3px}
+
+
+/* v3.6.1 — punchier arcade look without changing the Player Card DOM or controls. */
+#home .arena-hero{
+ background:radial-gradient(circle at 79% 44%,#ff9e484d 0,transparent 38%),linear-gradient(128deg,#800515 0%,#c90921 48%,#ef392b 100%)!important;
+ border-bottom:3px solid #ffb747;
+ box-shadow:0 12px 0 #89091a,0 20px 36px #89091a3d!important;
+}
+#home .arena-hero:before{
+ background:radial-gradient(circle at 72% 35%,#ffd1635e,transparent 30%),repeating-radial-gradient(circle at 82% 57%,transparent 0 42px,#ffffff13 43px 45px,transparent 46px 82px)!important;
+ inset:0!important;
+}
+#home .arena-hero:after{opacity:.45}
+#home .arena-hero h1{font-style:italic;transform:skew(-2deg);text-shadow:0 3px 0 #570918,0 7px 15px #40000c8c!important}
+#home .arena-hero h1 span{text-shadow:0 3px 0 #955209,0 8px 17px #40000c8c!important}
+#home .arena-hero-mascot{filter:drop-shadow(0 6px 0 #65091b33)}
+#home .arena-hero-mascot img{width:100%;max-height:min(340px,39dvh);object-fit:contain;object-position:center bottom}
+#home .arena-brand-name strong{filter:drop-shadow(0 3px 0 #760617)}
+#home .arena-hero-cta{transition:transform .16s,filter .16s}
+#home .arena-hero-cta:active{transform:translateY(3px);box-shadow:inset 0 1px 2px #ffffff65,0 1px 0 #005b15!important}
+body #bt-spark-root.arena-profile-mode{
+ background:radial-gradient(circle at top right,#ffce694b,transparent 40%),linear-gradient(155deg,#9c1022,#db2331)!important;
+}
+body #bt-spark-root.arena-profile-mode .panel{
+ background:radial-gradient(circle at 100% 5%,#fff1ce 0,transparent 35%),linear-gradient(160deg,#fff5eb,#fff9f4 65%,#ffefeb)!important;
+}
+.arena-page-top{background:linear-gradient(90deg,#790b1e,#bf1027 70%,#df2933)!important;box-shadow:inset 0 -3px 0 #ffb958}
+.arena-card,.arena-achievements-card{
+ border:2px solid #e7aa7a!important;
+ box-shadow:0 5px 0 #bd765b,0 12px 22px #7f17202b!important;
+}
+.arena-card-heading,.arena-achievements-heading{
+ background:linear-gradient(100deg,#91061a 0%,#c81028 60%,#f13a31 100%)!important;
+ border-bottom:3px solid #ffbe56;
+ font-style:italic;
+ letter-spacing:.035em;
+ text-shadow:0 2px 0 #630b16;
+}
+.arena-avatar{border-color:#ffcb45!important;box-shadow:0 0 0 3px #a9182b,0 7px 17px #7b092742!important}
+.arena-level-badge{background:linear-gradient(180deg,#ffe79b,#f6ab26)!important;border:1px solid #bc741c;box-shadow:0 3px 0 #a76a24;font-style:italic}
+.arena-level-track{border:1px solid #ddaca0}
+.arena-level-fill{background:linear-gradient(90deg,#0b8f32,#2fdb53,#b1ff54)!important}
+.arena-stat{background:linear-gradient(160deg,#fff9ee,#ffead6)!important;border:1px solid #e9b98c!important;box-shadow:0 3px 0 #e9c7a8}
+.arena-stat strong{color:#a20823!important;font-variant-numeric:tabular-nums}
+.arena-reward-item{
+ background:radial-gradient(circle at 50% 15%,#fff8d4,#fff0db 64%,#ffe3d1)!important;
+ border:1px solid #e8b987!important;
+ box-shadow:0 3px 0 #e7b496,0 7px 12px #b05a2515!important;
+}
+.arena-reward-icon{filter:drop-shadow(0 3px 1px #8e461b25)}
+body #bt-spark-root.arena-profile-mode button:focus-visible{outline:3px solid #e8a720;outline-offset:3px}
+@media(max-width:390px){
+ #home .arena-hero{box-shadow:0 7px 0 #89091a,0 12px 21px #89091a3d!important}
+ #home .arena-hero-mascot img{max-height:190px}
+ .arena-card-heading,.arena-achievements-heading{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){#home .arena-hero-cta{transition:none}}
