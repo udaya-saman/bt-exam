@@ -1,7 +1,7 @@
 name: Spark integration checks
 on:
   push:
-    branches: [feature/firebase-spark-leaderboard, main]
+    branches: [feature/firebase-spark-leaderboard, feature/pizza-arena-two-screen-v36, main]
   pull_request:
     branches: [main]
 jobs:
