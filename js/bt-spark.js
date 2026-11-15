@@ -69,7 +69,7 @@ function errorMessage(e){
 }
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
- const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Enter your username and password. No personal email is required.');
+ const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Sign in to keep track of your progress.');
  const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.png':'./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
@@ -214,7 +214,15 @@ async function sync(){
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
-  if(done.length){const removed=new Set(done);saveQueue(getQueue().filter(e=>!removed.has(e.id)));recordLastSync();}
+  if(done.length){
+    const removed=new Set(done);
+    saveQueue(getQueue().filter(e=>!removed.has(e.id)));
+    recordLastSync();
+    try{
+      const refreshed=await F.getDoc(F.doc(db,'users',user.uid));
+      if(refreshed.exists())profile=refreshed.data();
+    }catch(e){console.info('Updated player totals will appear after reconnecting.');}
+  }
   if(!getQueue().length)syncIssue='';
  }finally{syncing=false;}
 }
@@ -566,8 +574,8 @@ function adminPanel(){
 }
 async function manageUsers(){
  if(!admins)return;
- const box=open('MANAGE USERS','Remove an account with two confirmations. Final account deletion must also be done in Firebase.');
- const status=document.createElement('p');status.className='pg-muted';status.textContent='Fetching user accounts…';box.append(status);
+ const box=open('MANAGE USERS','Remove an account with two confirmations.');
+ const status=document.createElement('p');status.className='pg-muted';status.textContent='Loading users…';box.append(status);
  const search=field(box,'Search username or outlet');search.required=false;
  const list=document.createElement('div');box.append(list);
  const draw=(entries)=>{
@@ -576,7 +584,7 @@ async function manageUsers(){
    entries.forEach(item=>{
     const line=document.createElement('div');line.className='pg-review-item';
     const detail=document.createElement('div');const label=document.createElement('strong');label.textContent=item.username+' · '+item.outlet;
-    const sub=document.createElement('small');sub.textContent=(item.totalPoints||0)+' pts · UID '+item.uid.slice(0,8)+'…';
+    const sub=document.createElement('small');sub.textContent=(item.totalPoints||0)+' pts · User code '+item.uid.slice(0,8)+'…';
     detail.append(label,sub);line.append(detail);
     const reserved=RESERVED.has(norm(item.username));
     const blocked=item.uid===user.uid||reserved||item.isAdmin;
@@ -590,7 +598,7 @@ async function manageUsers(){
   const records=snap.docs.map(doc=>({...doc.data(),uid:doc.id}));
   const roleDocs=await Promise.all(records.map(p=>F.getDoc(F.doc(db,'admins',p.uid)).catch(()=>null)));
   const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()===true}));
-  status.textContent='Showing up to 250 accounts. Administrator accounts are protected.';
+  status.textContent='Showing up to 250 users. Administrator accounts are protected.';
   const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));};
   search.addEventListener('input',render);render();
  }catch(err){status.textContent='Could not load users: '+errorMessage(err);}
@@ -600,7 +608,7 @@ async function confirmUserRemoval(person){
  if(!admins||!user||person.uid===user.uid||RESERVED.has(norm(person.username))||person.isAdmin){
   note('Protected accounts cannot be deleted.');return;
  }
- const text='Delete '+person.username+' from the app?\n\nThis blocks their login, removes their profile and public ranking, and releases their username. Their score history and Firebase Authentication identity require separate administrator cleanup.';
+ const text='Remove '+person.username+' from the app?\n\nThey will no longer be able to use this account. Their player card and ranking will be removed. The owner must finish deleting their login separately.';
  if(!confirm(text))return; // First independent confirmation.
  const box=open('VERIFY USER DELETION','Second verification. This cannot be undone from this screen.');
  const warning=document.createElement('div');warning.className='pg-private';
@@ -631,9 +639,9 @@ async function confirmUserRemoval(person){
    });
    box.replaceChildren();
    const ok=document.createElement('div');ok.className='pg-private';
-   ok.textContent=person.username+' is now blocked from BT Exam Prep. Their profile and public ranking were removed. Final step: open Firebase Console > Authentication > Users, find UID '+person.uid+' and delete that Authentication user manually.';
+   ok.textContent=person.username+' can no longer access this app. Their player card and ranking were removed. The owner must finish deleting their login in the account dashboard. User code: '+person.uid;
    box.append(ok,btn('BACK TO USERS',manageUsers,true),btn('CLOSE',close,true));
-   note('User removed from app; Firebase Auth cleanup is still required.');
+   note('The user was removed from the app. The owner must finish deleting their login.');
   }catch(err){failure.textContent='Account was not removed: '+errorMessage(err);}
   finally{confirmButton.disabled=false;password.value='';}
  });
@@ -693,14 +701,14 @@ async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
  try{
   const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
-  if(blocked.exists()){await A.signOut(auth);note('This account has been removed. Contact the administrator if needed.');return;}
+  if(blocked.exists()){await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;}
   let snap=await F.getDoc(F.doc(db,'users',u.uid));
   // Firebase Auth can fire before the registration transaction creates the user profile.
   for(let retry=0;retry<6&&!snap.exists();retry++){
     await new Promise(resolve=>setTimeout(resolve,500));
     snap=await F.getDoc(F.doc(db,'users',u.uid));
   }
-  if(!snap.exists()){gate('setup','Your account profile could not be loaded. Refresh the app or contact an administrator.');return;}
+  if(!snap.exists()){gate('setup','We could not open your account. Please reopen the app or ask for help.');return;}
   profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
@@ -727,7 +735,7 @@ function promptUpdate(){
 }
 window.addEventListener('online',()=>{sync();checkForUpdates();});
 setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
-if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','Configure the free Firebase project before using the leaderboard. The existing exam remains available.');dock.textContent='🏆 Leaderboard (setup)';return;}
+if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','The leaderboard is not ready yet. Please try again later.');dock.textContent='🏆 Leaderboard (setup)';return;}
 try{
  const [appModule,authModule,firestoreModule]=await Promise.all([
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-app.js'),
@@ -737,5 +745,5 @@ try{
  try{await A.setPersistence(auth,A.browserLocalPersistence);}catch(e){console.warn('Persistent login unavailable:',e);await A.setPersistence(auth,A.inMemoryPersistence);}
  try{db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})});}catch(storageError){console.warn('Persistent offline database unavailable:',storageError);db=F.getFirestore(app);note('Offline storage is limited on this browser.');}
  A.onAuthStateChanged(auth,session);
-}catch(e){gate('setup','Firebase SDK error: '+errorMessage(e));}
+}catch(e){gate('setup','The app could not start. Please check your internet and try again.');}
 })();
