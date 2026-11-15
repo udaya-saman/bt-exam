@@ -38,3 +38,6 @@ jobs:
         run: node tests/admin-user-removal.test.cjs
       - name: Test sticker mascot and scoring fixes
         run: node tests/sticker-scoring.test.cjs
+
+      - name: Check polished two-screen Arena UI and backup safeguards
+        run: node tests/two-screen.test.cjs
