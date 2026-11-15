@@ -1,15 +1,63 @@
-/* Reference matched PNG artwork; player card structure remains untouched. */
-(()=>{'use strict';const base='./images/arena/';const atlas=base+'atlas.png';
-const map={'Rising Star':0,'Pizza Legend':1,'Sharp Mind':2,'Super Student':3,'Weekly Warrior':4,'Outlet Challenger':5,'Weekly 50':4,'Outlet Drive':5,'Legend':1,'Points':6,'Correct':7,'Answered':8};
-function atlasIcon(el,index){if(!el||el.dataset.pngIcon===String(index))return;el.dataset.pngIcon=String(index);el.textContent='';el.classList.add('arena-png-icon');el.style.backgroundImage='url("'+atlas+'")';el.style.backgroundSize='288px 216px';el.style.backgroundPosition='-'+(index%4*72)+'px -'+(Math.floor(index/4)*72)+'px';}
-function update(){const hero=document.querySelector('#home .arena-hero-mascot img');if(hero&&!hero.src.includes('/images/arena/')){hero.src=base+'mascot-champion.png';hero.removeAttribute('width');hero.removeAttribute('height');}
-const wordmark=document.querySelector('#home .arena-pizza-wordmark');if(wordmark&&!wordmark.dataset.arenaWordmark){wordmark.dataset.arenaWordmark='yes';wordmark.textContent='';const im=new Image();im.src=atlas;im.alt='Pizza Hut';im.className='arena-wordmark-atlas';wordmark.append(im);}
-document.querySelectorAll('#home .paper-card').forEach(card=>{const el=card.querySelector('.pc-icon-big');const label=card.querySelector('.pc-title')?.textContent||'';atlasIcon(el,/paper 2|operations|model 2/i.test(label)?9:10);});
-document.querySelectorAll('.arena-status-card img').forEach(im=>{if(!im.src.includes('/images/arena/'))im.src=base+'mascot-avatar.png'});
-document.querySelectorAll('img.arena-avatar').forEach(im=>{if(/\/images\/default-avatar\.png(?:\?|$)/.test(im.src))im.src=base+'mascot-avatar.png'});
-document.querySelectorAll('.arena-stat').forEach(item=>{const label=item.querySelector('span:last-child')?.textContent?.trim();if(label in map)atlasIcon(item.querySelector('.arena-stat-icon'),map[label]);});
-document.querySelectorAll('.arena-reward-item').forEach(item=>{const label=item.querySelector('strong')?.textContent?.trim();if(label in map)atlasIcon(item.querySelector('.arena-reward-icon'),map[label]);});}
-let queued=false;const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;update()});};
-function start(){update();new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+/* Pizza Arena artwork placement v3.8. Presentation-only; never modifies scores, profile layout, or stored data. */
+(()=>{'use strict';
+const root='./images/arena/';
+const atlas=root+'atlas.png';
+const labels={'Rising Star':0,'Pizza Legend':1,'Sharp Mind':2,'Super Student':3,'Weekly Warrior':4,'Outlet Challenger':5,'Weekly 50':4,'Outlet Drive':5,'Legend':1,'Points':6,'Correct':7,'Answered':8};
+function icon(node,index){
+  if(!node||node.dataset.arenaPng===String(index))return;
+  node.dataset.arenaPng=String(index);
+  node.classList.add('arena-png-icon');
+  node.textContent='';
+  node.style.setProperty('--arena-icon-x',(index%4)*(100/3)+'%');
+  node.style.setProperty('--arena-icon-y',Math.floor(index/4)*50+'%');
+  node.setAttribute('aria-hidden','true');
+}
+function run(){
+  const hero=document.querySelector('#home .arena-hero-mascot img');
+  if(hero&&hero.getAttribute('src')!==root+'mascot-champion.png'){
+    hero.src=root+'mascot-champion.png';
+    hero.removeAttribute('width');
+    hero.removeAttribute('height');
+    hero.decoding='async';
+  }
+  // The PNG wordmark is cropped from the local transparent PNG atlas via CSS.
+  const wordmark=document.querySelector('#home .arena-pizza-wordmark');
+  if(wordmark){
+    wordmark.setAttribute('role','img');
+    wordmark.setAttribute('aria-label','Pizza Hut');
+    wordmark.textContent='';
+  }
+  document.querySelectorAll('#home .paper-card').forEach(card=>{
+    const title=card.querySelector('.pc-title')?.textContent||'';
+    const key=/paper 2|operations|model 2/i.test(title)?9:10;
+    icon(card.querySelector('.pc-icon-big'),key);
+  });
+  document.querySelectorAll('.arena-status-card img').forEach(img=>{
+    if(img.getAttribute('src')!==root+'mascot-avatar.png')img.src=root+'mascot-avatar.png';
+  });
+  document.querySelectorAll('img.arena-avatar').forEach(img=>{
+    const src=img.getAttribute('src')||'';
+    if(src.includes('/images/default-avatar.png'))img.src=root+'mascot-avatar.png';
+  });
+  document.querySelectorAll('.arena-stat').forEach(card=>{
+    const label=card.querySelector('span:last-child')?.textContent?.trim();
+    if(Object.prototype.hasOwnProperty.call(labels,label))icon(card.querySelector('.arena-stat-icon'),labels[label]);
+  });
+  document.querySelectorAll('.arena-reward-item').forEach(card=>{
+    const label=card.querySelector('strong')?.textContent?.trim();
+    if(Object.prototype.hasOwnProperty.call(labels,label))icon(card.querySelector('.arena-reward-icon'),labels[label]);
+  });
+}
+let scheduled=false;
+function queue(){
+  if(scheduled)return;
+  scheduled=true;
+  requestAnimationFrame(()=>{scheduled=false;run()});
+}
+function start(){
+  run();
+  new MutationObserver(queue).observe(document.body,{subtree:true,childList:true});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+else start();
 })();
