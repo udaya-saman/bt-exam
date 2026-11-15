@@ -121,3 +121,12 @@ body #bt-spark-root.arena-profile-mode .arena-page-top button.pg-btn-green{backg
 @media(max-width:530px){.arena-profile-top{grid-template-columns:74px minmax(0,1fr);gap:10px}.arena-avatar{width:70px;height:70px}.arena-level-wrap{grid-column:1 / -1;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:9px;text-align:left}.arena-level-track{margin:0}.arena-level-wrap small{white-space:nowrap}.arena-card-body{padding:14px}.arena-stats-grid{gap:7px}.arena-stat{padding:11px 4px;gap:4px;flex-direction:column;text-align:center}.arena-stat-icon{font-size:21px}.arena-rewards-grid{gap:7px;padding:10px}.arena-reward-item{min-height:118px;padding:7px 4px}.arena-reward-icon{font-size:27px}.arena-reward-item strong{font-size:11px}.arena-reward-item small{font-size:10px}.arena-page-top{padding:12px 13px}}
 @media(max-width:340px){.arena-actions{gap:7px}.arena-rewards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.arena-stat strong{font-size:16px}.arena-stat span:last-child{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.arena-header-icon,.arena-hero-cta,.arena-level-fill{transition:none!important;animation:none!important}}
+
+/* The dedicated home Leaderboard button replaces the old floating duplicate. */
+body:has(#home.active) #bt-spark-dock,
+body:has(#quiz.active) #bt-spark-dock,
+body #bt-spark-root.arena-profile-mode ~ #bt-spark-dock{display:none!important}
+body #bt-spark-root.arena-profile-mode .panel{scrollbar-gutter:stable}
+#home .arena-hero-cta:focus-visible,
+#home .arena-header-icon:focus-visible,
+#bt-spark-root .arena-outlet-row:focus-visible{outline:3px solid #ffde70!important;outline-offset:3px}
