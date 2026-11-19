@@ -1,5 +1,5 @@
 {
-  "version": "3.8.0-reference-fix",
-  "releaseDate": "2026-11-15",
-  "notes": "Corrected PNG atlas icon cropping, reference-matched hero and Player Card theme; preserved the My Player Card structure, saved data and scoring."
+  "version": "3.9.0-performance",
+  "releaseDate": "2026-11-20",
+  "notes": "Faster image loading, scoped artwork rendering and improved offline caching; no scoring or data changes."
 }
