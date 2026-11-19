@@ -3,7 +3,7 @@ const CACHE = 'bt-exam-performance-v39-20261120';
 const CORE = ["./","./index.html","./manifest.json","./firebase-config.js","./js/bt-spark.js","./js/bt-rewards.js","./js/pizza-reference.js?v=3.9","./css/pizza-reference.css?v=3.9","./css/pizza-game.css","./css/pizza-v34.css","./css/pizza-v36.css","./version.json","./images/arena/mascot-champion.png","./images/arena/atlas.png","./images/arena/mascot-avatar.png","./images/default-avatar.png","./images/mascot/pizza-correct.png","./images/mascot/pizza-wrong.png","./images/mascot/pizza-timer.png","./icons/icon-192.png"];
 const EXTRA = ["./images/mascot/pizza-champ.png","./images/mascot/pizza-challenge.png","./images/mascot/pizza-crown.png","./images/mascot/pizza-monthly.png","./images/mascot/pizza-overtaken.png","./images/mascot/pizza-private.png","./images/mascot/pizza-rank-up.png","./images/mascot/pizza-update.png","./images/mascot/pizza-welcome.png","./icons/icon-512.png"];
 async function fill(cache,urls,previous){
-  // Limit parallel requests, reuse identical PNG blobs from the preceding cache where safe.
+  // Prioritize essential files and limit concurrent downloads.
   let next=0;
   await Promise.all(Array.from({length:3},async()=>{while(next<urls.length){
     const path=urls[next++];
@@ -23,6 +23,17 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
  const names=(await caches.keys()).filter(n=>n.startsWith('bt-exam-')&&n!==CACHE);
  const previous=await Promise.all(names.map(n=>caches.open(n)));
  await fill(cache,CORE,previous);
+ // Carry forward immutable Firebase SDK responses so an upgrade does not
+ // discard a previously working offline login/runtime cache.
+ for(const old of previous){
+   for(const request of await old.keys()){
+     const url=new URL(request.url);
+     if(url.origin==='https://www.gstatic.com'&&url.pathname.startsWith('/firebasejs/13.2.0/')&&!(await cache.match(request))){
+       const response=await old.match(request);
+       if(response){try{await cache.put(request,response)}catch(e){/* Storage quota may be limited. */}}
+     }
+   }
+ }
  // Secondary artwork loads after the shell, with a bounded connection count.
  await fill(cache,EXTRA,previous);
 })()));
