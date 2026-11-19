@@ -1,9 +1,30 @@
-/* BT Exam Prep – Spark-plan offline cache. No Cloud Functions, Storage or push SDK required. */
-const CACHE = 'bt-exam-arena-reference-v38-20261115';
-const SHELL = ["./images/arena/mascot-avatar.png","./images/arena/mascot-champion.png","./images/arena/atlas.png","./js/pizza-reference.js?v=3.8","./css/pizza-reference.css?v=3.8","./","./index.html","./manifest.json","./firebase-config.js","./js/bt-spark.js","./js/bt-rewards.js","./version.json","./images/default-avatar.png","./css/pizza-game.css","./css/pizza-v34.css","./css/pizza-v36.css","./images/mascot/pizza-champ.png","./images/mascot/pizza-challenge.png","./images/mascot/pizza-correct.png","./images/mascot/pizza-crown.png","./images/mascot/pizza-monthly.png","./images/mascot/pizza-overtaken.png","./images/mascot/pizza-private.png","./images/mascot/pizza-rank-up.png","./images/mascot/pizza-timer.png","./images/mascot/pizza-update.png","./images/mascot/pizza-welcome.png","./images/mascot/pizza-wrong.png","./icons/icon-192.png","./icons/icon-512.png"];
+/* BT Exam Prep — versioned offline shell; PNGs cached without altering image pixels. */
+const CACHE = 'bt-exam-performance-v39-20261120';
+const CORE = ["./","./index.html","./manifest.json","./firebase-config.js","./js/bt-spark.js","./js/bt-rewards.js","./js/pizza-reference.js?v=3.9","./css/pizza-reference.css?v=3.9","./css/pizza-game.css","./css/pizza-v34.css","./css/pizza-v36.css","./version.json","./images/arena/mascot-champion.png","./images/arena/atlas.png","./images/arena/mascot-avatar.png","./images/default-avatar.png","./images/mascot/pizza-correct.png","./images/mascot/pizza-wrong.png","./images/mascot/pizza-timer.png","./icons/icon-192.png"];
+const EXTRA = ["./images/mascot/pizza-champ.png","./images/mascot/pizza-challenge.png","./images/mascot/pizza-crown.png","./images/mascot/pizza-monthly.png","./images/mascot/pizza-overtaken.png","./images/mascot/pizza-private.png","./images/mascot/pizza-rank-up.png","./images/mascot/pizza-update.png","./images/mascot/pizza-welcome.png","./icons/icon-512.png"];
+async function fill(cache,urls,previous){
+  // Limit parallel requests, reuse identical PNG blobs from the preceding cache where safe.
+  let next=0;
+  await Promise.all(Array.from({length:3},async()=>{while(next<urls.length){
+    const path=urls[next++];
+    try{
+      const req=new Request(new URL(path,self.registration.scope),{cache:'reload'});
+      const res=await fetch(req);
+      if(res.ok)await cache.put(req,res);
+      else throw Error('HTTP '+res.status);
+    }catch(e){
+      // Only recover the exact URL from a prior offline cache on network failure.
+      for(const old of previous){const copy=await old.match(new URL(path,self.registration.scope));if(copy){await cache.put(new URL(path,self.registration.scope),copy);break}}
+    }
+  }}));
+}
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
- await Promise.all(SHELL.map(async url=>{try{await cache.add(url)}catch(e){console.warn('Cache skip',url,e)} }));
+ const names=(await caches.keys()).filter(n=>n.startsWith('bt-exam-')&&n!==CACHE);
+ const previous=await Promise.all(names.map(n=>caches.open(n)));
+ await fill(cache,CORE,previous);
+ // Secondary artwork loads after the shell, with a bounded connection count.
+ await fill(cache,EXTRA,previous);
 })()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
  const names=await caches.keys();await Promise.all(names.filter(n=>n.startsWith('bt-exam-')&&n!==CACHE).map(n=>caches.delete(n)));
@@ -13,13 +34,21 @@ self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')sel
 self.addEventListener('fetch',event=>{
  const req=event.request;if(req.method!=='GET')return;
  const url=new URL(req.url);
+ const same=url.origin===self.location.origin;
  const isSDK=url.origin==='https://www.gstatic.com'&&url.pathname.startsWith('/firebasejs/13.2.0/');
- if(url.origin!==self.location.origin&&!isSDK)return;
- const networkFirst=!isSDK&&(req.mode==='navigate'||/(index\.html|firebase-config\.js|bt-spark\.js|version\.json)$/.test(url.pathname));
+ if(!same&&!isSDK)return;
+ // Do not intercept other apps hosted on this GitHub Pages origin.
+ if(same&&!url.pathname.startsWith(new URL(self.registration.scope).pathname))return;
+ const isVersion=same&&url.pathname.endsWith('/version.json');
+ const networkFirst=same&&(req.mode==='navigate'||/(index\.html|firebase-config\.js|bt-spark\.js|version\.json)$/.test(url.pathname));
+ const key=isVersion?new Request(new URL('./version.json',self.registration.scope)):req;
  event.respondWith((async()=>{
   const cache=await caches.open(CACHE);
-  if(!networkFirst){const copy=await cache.match(req);if(copy)return copy;}
-  try{const res=await fetch(req,networkFirst?{cache:'no-store'}:undefined);if(res.ok)cache.put(req,res.clone());return res;}
-  catch(_){return await cache.match(req)||(req.mode==='navigate'?await cache.match('./index.html'):Response.error());}
+  if(!networkFirst){const copy=await cache.match(key);if(copy)return copy}
+  try{
+    const res=await fetch(req,networkFirst?{cache:'no-store'}:undefined);
+    if(res.ok){try{await cache.put(key,res.clone())}catch(e){/* Storage limits must not block an online response. */}}
+    return res;
+  }catch(e){return await cache.match(key)||(req.mode==='navigate'?await cache.match(new URL('./index.html',self.registration.scope)):null)||Response.error()}
  })());
 });
