@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.6.0-two-screen';let latestUpdate=null;
+const APP_VERSION='3.9.0-performance';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -323,15 +323,15 @@ async function profilePanel(){
  const explanation=document.createElement('small');
  explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. Try Sync again later.':totals.answered?'Your latest answers are saved.':'Your player card is ready.';
  statusCopy.append(heading,explanation);
- const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-timer.png':'./images/mascot/pizza-correct.png';statusMascot.alt='';
+ const statusMascot=document.createElement('img');statusMascot.src='./images/arena/mascot-avatar.png';statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);box.append(status);
  const card=document.createElement('section');card.className='arena-card';
  const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
  const body=document.createElement('div');body.className='arena-card-body';
  const profileRow=document.createElement('div');profileRow.className='arena-profile-top';
  const avatar=document.createElement('img');avatar.className='arena-avatar';
- avatar.src=(typeof profile.avatar==='string'&&profile.avatar.startsWith('data:image/png'))?profile.avatar:'./images/default-avatar.png';
- avatar.alt='Player picture';avatar.onerror=()=>{avatar.onerror=null;avatar.src='./images/default-avatar.png';};
+ avatar.src=(typeof profile.avatar==='string'&&profile.avatar.startsWith('data:image/png'))?profile.avatar:'./images/arena/mascot-avatar.png';
+ avatar.alt='Player picture';avatar.onerror=()=>{avatar.onerror=null;avatar.src='./images/arena/mascot-avatar.png';};
  const person=document.createElement('div');person.className='arena-person-info';
  const personName=document.createElement('h3');personName.textContent=profile.username;
  const outletLabel=document.createElement('span');outletLabel.className='arena-outlet-pill';outletLabel.textContent=profile.outlet;
@@ -722,7 +722,7 @@ async function session(u){
 async function checkForUpdates(){
  if(!navigator.onLine)return;
  try{const r=await fetch('./version.json?check='+Date.now(),{cache:'no-store'});if(!r.ok)return;
- const v=(await r.json()).version;if(v&&v!==APP_VERSION)latestUpdate=v;promptUpdate();
+ const v=(await r.json()).version;latestUpdate=v&&v!==APP_VERSION?v:null;promptUpdate();
  }catch(e){console.info('Update check unavailable:',e.message);}
 }
 function promptUpdate(){
