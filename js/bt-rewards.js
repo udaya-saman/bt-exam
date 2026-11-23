@@ -20,7 +20,7 @@
   function achievements(profile,today,weekKey,outletCrown=false){
     const p=profile||{},points=Math.max(0,Number(p.totalPoints||0)),correct=Math.max(0,Number(p.correctAnswers||0));
     const currentStreak=streak(p.dailyActivity||{},today);
-    const weeklyAnswers=Object.entries(p.outletWeeklyAnswers||{}).filter(([key])=>key.startsWith(weekKey+'__')).reduce((t,[,v])=>t+Math.max(0,Number(v)||0),0);
+    const weeklyPoints=Math.max(0,Number(p.weeklyPoints?.[weekKey]||0));
     const outletAnswers=(p.outlet && p.outlet!=='Other') ? Math.max(0,Number(p.outletWeeklyAnswers?.[weekKey+'__'+p.outlet]||0)) : 0;
     const a=[
       ['first-slice','🍕','First Slice',100,points],
@@ -32,7 +32,7 @@
       ['streak-3','🔥','3-Day Streak',3,currentStreak],
       ['streak-7','⚡','7-Day Streak',7,currentStreak],
       ['streak-14','👑','14-Day Streak',14,currentStreak],
-      ['weekly-50','🚀','Weekly Warrior',200,weeklyAnswers],
+      ['weekly-50','🚀','Weekly Warrior',200,weeklyPoints],
       ['outlet-drive','🍕','Outlet Challenger',25,outletAnswers],
       ['outlet-crown','👑','Crown Squad',1,outletCrown?1:0]
     ];
