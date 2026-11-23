@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "contentStatus": "awaiting_verified_pdf_import",
+  "sources": [
+    {
+      "id": "adobe-01",
+      "title": "Source document 1",
+      "url": "https://acrobat.adobe.com/id/urn:aaid:sc:AP:917691b2-62c2-4b13-bb0e-b176132af5a5?viewer%21megaVerb=group-discover",
+      "verified": false
+    },
+    {
+      "id": "adobe-02",
+      "title": "Source document 2",
+      "url": "https://acrobat.adobe.com/id/urn:aaid:sc:AP:c705fb62-081e-4194-818d-7e79a992718b?viewer%21megaVerb=group-discover",
+      "verified": false
+    },
+    {
+      "id": "adobe-03",
+      "title": "Source document 3",
+      "url": "https://acrobat.adobe.com/id/urn:aaid:sc:AP:f5fb4251-4524-406c-ac36-8dacec8f4917?viewer%21megaVerb=group-discover",
+      "verified": false
+    }
+  ],
+  "lessons": []
+}
