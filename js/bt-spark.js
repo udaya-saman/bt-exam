@@ -399,7 +399,7 @@ async function profilePanel(){
        const icon=document.createElement('span');icon.className='arena-reward-icon';icon.textContent=item.icon;
        const name=document.createElement('strong');name.textContent=item.label;
        const requirement=document.createElement('small');
-       const suffix=['rising-star','legend','first-slice'].includes(item.id)?' pts':['sharp-mind','super-student','centurion'].includes(item.id)?' correct':['weekly-50','outlet-drive'].includes(item.id)?' answers':'';
+       const suffix=['rising-star','legend','first-slice'].includes(item.id)?' pts':['sharp-mind','super-student','centurion'].includes(item.id)?' correct':item.id==='weekly-50'?' weekly pts':item.id==='outlet-drive'?' answers':'';
        requirement.textContent=Math.max(0,Number(item.current)||0).toLocaleString()+' / '+item.target.toLocaleString()+suffix+(item.unlocked?' · Earned':'');
        const track=document.createElement('div');track.className='arena-reward-track';
        const progress=document.createElement('span');progress.style.width=item.percent+'%';track.append(progress);
