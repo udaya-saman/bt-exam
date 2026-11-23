@@ -1,5 +1,5 @@
 {
-  "version": "4.1.0-study",
+  "version": "4.2.0-profile",
   "releaseDate": "2026-11-23",
-  "notes": "Source-based Study Academy: 57 lessons from three uploaded PDFs with animated visual recall, search, completion progress and offline lessons. Quiz and rankings unchanged."
+  "notes": "Single Save button updates account username, profile picture and optional Firebase password; redesigned gaming Player Card; sync status and button moved below achievements and account actions."
 }
