@@ -63,6 +63,8 @@ function errorMessage(e){
  if(/OUTLET_CHANGED/.test(message))return 'Your outlet has changed. Ask an administrator for help.';
  if(/Username already taken/i.test(message))return 'That username is taken. Please choose another.';
  if(/Image too large/i.test(message))return 'This picture is too large. Try a smaller PNG.';
+ if(/Username registry mismatch/i.test(message))return 'Your username information needs refreshing. Reopen the app and try again.';
+ if(/Please enter both passwords/i.test(message))return 'Enter your current password and a new password with at least 8 characters.';
  if(/Please choose a PNG image/i.test(message))return 'Please choose a PNG image.';
  if(/invalid-argument/i.test(message))return 'Some information is invalid. Please try again.';
  return 'Something went wrong. Please try again or ask an administrator for help.';
@@ -430,40 +432,88 @@ function changeOutlet(){
 }
 async function accountSettings(){
  if(!user||!profile)return;
- const box=open('ACCOUNT SETTINGS','Update your personal details.');
-const msg=document.createElement('p');msg.className='err';box.append(msg);
- const image=field(box,'Profile picture (PNG)','file');image.accept='image/png';image.onchange=async()=>{
+ const box=open('ACCOUNT SETTINGS','Update your player picture, username or password.');
+ box.classList.add('arena-settings-dialog');
+ const msg=document.createElement('p');msg.className='err';msg.setAttribute('role','alert');box.append(msg);
+ const photoSection=document.createElement('div');photoSection.className='arena-account-photo';
+ const preview=document.createElement('img');preview.className='arena-photo-preview';
+ const fallback='./images/arena/mascot-avatar.png';
+ preview.src=typeof profile.avatar==='string'&&profile.avatar.startsWith('data:image/png')?profile.avatar:fallback;
+ preview.alt='Current player picture';preview.width=120;preview.height=120;
+ const photoControls=document.createElement('div');photoControls.className='arena-photo-controls';
+ const image=field(photoControls,'Profile picture (PNG)','file');image.accept='image/png';image.required=false;
+ const removeImage=btn('Remove picture',()=>{pendingAvatar='';preview.src=fallback;image.value='';msg.textContent='Press Save to confirm this change.';},true);
+ photoControls.append(removeImage);photoSection.append(preview,photoControls);box.append(photoSection);
+ const newname=field(box,'Change username');newname.value=profile.username;newname.maxLength=24;newname.autocomplete='username';
+ let pendingAvatar=typeof profile.avatar==='string'?profile.avatar:'';
+ // Preview a selected PNG immediately. Saving the image and username is one transaction.
+ image.onchange=async()=>{
+  const file=image.files?.[0];if(!file)return;
+  msg.textContent='';
+  if(file.type!=='image/png'){msg.textContent='Please choose a PNG image.';image.value='';return;}
   try{
-   const file=image.files?.[0];if(!file)return;
-   if(file.type!=='image/png')throw Error('Please choose a PNG image.');
-   const src=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
-   const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
+   const src=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
+   const img=await new Promise((resolve,reject)=>{const picture=new Image();picture.onload=()=>resolve(picture);picture.onerror=reject;picture.src=src;});
    let avatar='';
    for(const size of [160,144,128,112,96,80]){
-    const c=document.createElement('canvas');c.width=c.height=size;
-    const x=c.getContext('2d');x.clearRect(0,0,size,size);
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=size;
+    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,size,size);
     const scale=Math.max(size/img.width,size/img.height);
-    x.drawImage(img,(size-img.width*scale)/2,(size-img.height*scale)/2,img.width*scale,img.height*scale);
-    avatar=c.toDataURL('image/png');
+    ctx.drawImage(img,(size-img.width*scale)/2,(size-img.height*scale)/2,img.width*scale,img.height*scale);
+    avatar=canvas.toDataURL('image/png');
     if(avatar.length<=24000)break;
    }
    if(avatar.length>24000)throw Error('Image too large');
-   await F.updateDoc(F.doc(db,'users',user.uid),{avatar,updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar,updatedAt:F.serverTimestamp()});}note('Picture updated.');
-  }catch(e){msg.textContent=errorMessage(e)}
+   pendingAvatar=avatar;preview.src=src;preview.alt='Selected player picture';
+  }catch(e){msg.textContent=errorMessage(e);image.value='';}
  };
- box.append(btn('Remove picture',async()=>{await F.updateDoc(F.doc(db,'users',user.uid),{avatar:'',updatedAt:F.serverTimestamp()});if(rankEligible({...profile,isAdmin:admins})){const pr=F.doc(db,'publicRanks',user.uid);if((await F.getDoc(pr)).exists())await F.updateDoc(pr,{avatar:'',updatedAt:F.serverTimestamp()});}note('Picture removed.');},true));
- const newname=field(box,'Change username');newname.value=profile.username;
- box.append(btn('Save username',async()=>{
-  try{const n=newname.value.trim();if(!valid(n))throw Error('Invalid username.');
-   await F.runTransaction(db,async tx=>{const old=F.doc(db,'usernames',profile.usernameLower),next=F.doc(db,'usernames',norm(n)),u=F.doc(db,'users',user.uid);const pub=F.doc(db,'publicRanks',user.uid);const pubSnapshot=await tx.get(pub);if(norm(n)!==profile.usernameLower){if((await tx.get(next)).exists())throw Error('Username taken.');tx.set(next,{uid:user.uid,authEmail:user.email});tx.delete(old);}tx.update(u,{username:n,usernameLower:norm(n),updatedAt:F.serverTimestamp()});if(pubSnapshot.exists()){if(RESERVED.has(norm(n)))tx.delete(pub);else tx.update(pub,{name:n,updatedAt:F.serverTimestamp()});}});note('Username updated.');
-  }catch(e){msg.textContent=errorMessage(e)}
- },true));
- const oldpass=field(box,'Current password','password'),newpass=field(box,'New password','password');
- box.append(btn('Change password',async()=>{try{if(newpass.value.length<8)throw Error('Password too short.');await A.reauthenticateWithCredential(user,A.EmailAuthProvider.credential(user.email,oldpass.value));await A.updatePassword(user,newpass.value);note('Password changed.');}catch(e){msg.textContent=errorMessage(e)}},true));
-
- box.append(btn('My Player Card',profilePanel),btn('Close',close));
+ const save=btn('Save',async()=>{
+  const name=newname.value.trim();
+  if(!valid(name)){msg.textContent='Use 3–24 letters, numbers, dots, dashes or underscores.';return;}
+  if(pendingAvatar.length>24000){msg.textContent='Please choose a smaller PNG image.';return;}
+  save.disabled=true;msg.textContent='';
+  try{
+   await F.runTransaction(db,async tx=>{
+    const userRef=F.doc(db,'users',user.uid),publicRef=F.doc(db,'publicRanks',user.uid);
+    const previous=F.doc(db,'usernames',profile.usernameLower),next=F.doc(db,'usernames',norm(name));
+    // All document reads must happen before any write in a Firestore transaction.
+    const [oldRegistration,newRegistration,publicSnapshot]=await Promise.all([
+      tx.get(previous),norm(name)===profile.usernameLower?Promise.resolve(null):tx.get(next),tx.get(publicRef)
+    ]);
+    if(!oldRegistration.exists()||oldRegistration.data().uid!==user.uid)throw Error('Username registry mismatch.');
+    if(newRegistration?.exists())throw Error('Username already taken.');
+    if(norm(name)!==profile.usernameLower){
+      tx.set(next,{uid:user.uid,authEmail:user.email});tx.delete(previous);
+    }
+    tx.update(userRef,{username:name,usernameLower:norm(name),avatar:pendingAvatar,updatedAt:F.serverTimestamp()});
+    if(publicSnapshot.exists()){
+      if(profile.outlet==='Other'||RESERVED.has(norm(name))||admins)tx.delete(publicRef);
+      else tx.update(publicRef,{name,avatar:pendingAvatar,updatedAt:F.serverTimestamp()});
+    }
+   });
+   note('Player details saved.');accountSettings();
+  }catch(e){msg.textContent=errorMessage(e);save.disabled=false;}
+ });save.classList.add('pg-btn-green','arena-account-save');box.append(save);
+ const passwordToggle=btn('Change Password',()=>{passwordFields.hidden=!passwordFields.hidden;if(!passwordFields.hidden)oldpass.focus();});
+ passwordToggle.className='arena-password-toggle';box.append(passwordToggle);
+ const passwordFields=document.createElement('div');passwordFields.className='arena-password-fields';passwordFields.hidden=true;
+ const oldpass=field(passwordFields,'Current password','password');oldpass.autocomplete='current-password';oldpass.required=false;
+ const newpass=field(passwordFields,'New password (8 or more characters)','password');newpass.autocomplete='new-password';newpass.required=false;
+ const savePassword=btn('Save Password',async()=>{
+  savePassword.disabled=true;msg.textContent='';
+  try{
+   if(!oldpass.value||newpass.value.length<8)throw Error('Please enter both passwords.');
+   await A.reauthenticateWithCredential(user,A.EmailAuthProvider.credential(user.email,oldpass.value));
+   await A.updatePassword(user,newpass.value);
+   note('Password updated.');oldpass.value='';newpass.value='';passwordFields.hidden=true;savePassword.hidden=true;
+  }catch(e){msg.textContent=errorMessage(e);savePassword.disabled=false;}
+ });savePassword.classList.add('pg-btn-green');savePassword.hidden=true;
+ const showSave=()=>{savePassword.hidden=!(oldpass.value.length>0&&newpass.value.length>=8);};
+ oldpass.addEventListener('input',showSave);newpass.addEventListener('input',showSave);
+ passwordFields.append(savePassword);box.append(passwordFields);
+ const controls=document.createElement('div');controls.className='arena-dialog-footer';
+ controls.append(btn('My Player Card',profilePanel),btn('Close',close));box.append(controls);
 }
-
 function backupPanel(){
  if(!user)return;
  const box=open('SAVE MY PROGRESS','Keep a copy of your unfinished answers before changing devices.');
@@ -570,7 +620,7 @@ window.BTExamUI={
  openNotifications
 };
 function adminPanel(){
- const box=open('Manage','Review outlet changes and manage accounts.');
+ const box=open('Manage','Review outlet changes and manage accounts.');box.classList.add('arena-admin-panel');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
  box.append(btn('Manage users',manageUsers,true));
