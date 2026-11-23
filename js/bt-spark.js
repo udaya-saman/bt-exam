@@ -214,7 +214,14 @@ async function sync(){
     saveQueue(getQueue().filter(item=>item.id!==e.id));
    }catch(err){
     const message=errorMessage(err);
-    if(/PRACTICE_ONLY/.test(String(err?.message||err))){console.warn('Ranked claim conflict retained:',e.id);syncIssue='You already have a ranked attempt for this paper today.';break;}
+    if(/PRACTICE_ONLY/.test(String(err?.message||err))){
+      // The server has confirmed another ranked attempt owns this day/paper.
+      // These answers can only be practice; never keep them as misleading pending rank points.
+      syncIssue='This paper has already been played for points today. Your latest try is practice.';
+      saveQueue(getQueue().filter(item=>!(item.attemptId===e.attemptId&&item.paper===e.paper)));
+      if(active?.id===e.attemptId){active.ranked=false;localStorage.setItem(akey(),JSON.stringify(active));modeBadge();}
+      break;
+    }
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
@@ -278,7 +285,7 @@ function board(){
    const badges=window.BTRewards.achievements({totalPoints:r.lifetimePoints,correctAnswers:r.correctAnswers,dailyActivity:r.dailyActivity},day(),week());
    const priority=['centurion','streak-14','legend','streak-7','super-student','rising-star','sharp-mind'];
    const earned=priority.map(id=>badges.find(b=>b.id===id&&b.unlocked)).find(Boolean);
-   if(earned){const tiny=document.createElement('small');tiny.className='pg-mini-badge';tiny.textContent=earned.icon+' '+earned.label;detail.append(tiny);}
+   if(earned){const tiny=document.createElement('small');tiny.className='pg-mini-badge';tiny.textContent=earned.icon+' '+earned.label;who.append(tiny);}
   }
   const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
  }
@@ -323,9 +330,9 @@ async function profilePanel(){
  const symbol=document.createElement('span');symbol.className='arena-status-icon';
  symbol.textContent=pending?'!':'✓';
  const statusCopy=document.createElement('div');statusCopy.className='arena-status-copy';
- const heading=document.createElement('strong');heading.textContent=pending?'Answers waiting':'All caught up';
+ const heading=document.createElement('strong');heading.textContent=pending?(syncIssue?'Sync failed':'Answers waiting'):'All caught up';
  const explanation=document.createElement('small');
- explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. Try Sync again later.':totals.answered?'Your latest answers are saved.':'Your player card is ready.';
+ explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
  statusCopy.append(heading,explanation);
  const statusMascot=document.createElement('img');statusMascot.src='./images/arena/mascot-avatar.png';statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
@@ -491,7 +498,7 @@ async function accountSettings(){
       else tx.update(publicRef,{name,avatar:pendingAvatar,updatedAt:F.serverTimestamp()});
     }
    });
-   note('Player details saved.');accountSettings();
+   profile={...profile,username:name,usernameLower:norm(name),avatar:pendingAvatar};note('Player details saved.');accountSettings();
   }catch(e){msg.textContent=errorMessage(e);save.disabled=false;}
  });save.classList.add('pg-btn-green','arena-account-save');box.append(save);
  const passwordToggle=btn('Change Password',()=>{passwordFields.hidden=!passwordFields.hidden;if(!passwordFields.hidden)oldpass.focus();});
@@ -775,18 +782,25 @@ async function session(u){
 async function checkForUpdates(){
  if(!navigator.onLine)return;
  try{const r=await fetch('./version.json?check='+Date.now(),{cache:'no-store'});if(!r.ok)return;
- const v=(await r.json()).version;latestUpdate=v&&v!==APP_VERSION?v:null;promptUpdate();
+ const v=String((await r.json()).version||'');
+ const newer=(version,current)=>{
+   const a=version.match(/^(\d+)\.(\d+)\.(\d+)/),b=current.match(/^(\d+)\.(\d+)\.(\d+)/);
+   if(!a||!b)return Boolean(version&&version!==current);
+   for(let i=1;i<=3;i++){if(Number(a[i])!==Number(b[i]))return Number(a[i])>Number(b[i]);}
+   return false;
+ };
+ latestUpdate=newer(v,APP_VERSION)?v:null;promptUpdate();
  }catch(e){console.info('Update check unavailable:',e.message);}
 }
 function promptUpdate(){
  if(!latestUpdate||!root.hidden||$('#quiz')?.classList.contains('active'))return;
  const v=latestUpdate;const box=open('Update available','BT Exam Prep version '+v+' is available. Updating will reload the application.');
  const picture=document.createElement('img');picture.className='pg-celebration';picture.src='./images/mascot/pizza-update.png';picture.alt='Pizza mascot with refresh symbol';box.prepend(picture);
- box.append(btn('Update now',async()=>{
+ const updateNow=btn('Update Now',async()=>{
   try{const reg=await navigator.serviceWorker?.getRegistration();if(reg){await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});}}
   catch(e){console.warn('Update:',e);}
   location.reload();
- }),btn('Later',close,true));
+ });updateNow.classList.add('pg-btn-green','arena-update-now');box.append(updateNow,btn('Later',close,true));
 }
 window.addEventListener('online',()=>{sync();checkForUpdates();});
 setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
