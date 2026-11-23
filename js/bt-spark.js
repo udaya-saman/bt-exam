@@ -40,8 +40,8 @@ function syncDetail(err){
    return 'No internet. Your answers are safe. Try again later.';
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub){root.classList.remove('arena-profile-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.classList.remove('arena-profile-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
+function open(title,sub){root.classList.remove('arena-profile-mode','arena-account-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -452,6 +452,7 @@ async function accountSettings(){
  if(!user||!profile)return;
  const box=open('ACCOUNT SETTINGS','Update your player picture, username or password.');
  box.classList.add('arena-settings-dialog');
+ root.classList.add('arena-account-mode');
  const intro=document.createElement('div');intro.className='arena-account-intro';
  intro.textContent='Changes are saved to your account only when you tap Save.';
  box.prepend(intro);
