@@ -1,0 +1,793 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "handbook",
+  "sourceTitle": "Employee Handbook Final.pdf",
+  "pageCount": 68,
+  "verified": true,
+  "lessons": [
+    {
+      "id": "h01",
+      "sourceId": "handbook",
+      "title": "Welcome to Gamma",
+      "pages": "1–2",
+      "summary": "The handbook’s introduction and purpose.",
+      "sections": [
+        {
+          "heading": "Our workplace",
+          "body": "The Employee Handbook welcomes staff of Gamma Pizzakraft Lanka, the Pizza Hut and Taco Bell master franchisee in Sri Lanka.",
+          "keyPoints": [
+            "The company emphasizes excellence, innovation and customer satisfaction.",
+            "Teamwork, integrity and innovation are central to its culture.",
+            "The handbook explains the company journey, values, goals and standards."
+          ],
+          "memoryTip": "Remember: People • Values • Service."
+        }
+      ],
+      "art": "history"
+    },
+    {
+      "id": "h02",
+      "sourceId": "handbook",
+      "title": "Gamma Journey & Community",
+      "pages": "5–6",
+      "summary": "Learn the company milestones described in the handbook.",
+      "sections": [
+        {
+          "heading": "The growth story",
+          "body": "The handbook says the first Sri Lankan Pizza Hut opened at Union Place in November 1993 and highlights expansion to the 100th Pizza Hut in October 2022.",
+          "keyPoints": [
+            "The 100th Pizza Hut was at Getuwana, Kurunegala.",
+            "The handbook describes continuing restaurant growth and employment.",
+            "It highlights an inclusive workplace and support for local communities."
+          ],
+          "memoryTip": "Timeline: 1993 first outlet → 2022 hundredth outlet."
+        },
+        {
+          "heading": "Culture and service",
+          "body": "The handbook highlights standards of service, inclusion, safety and employee development.",
+          "keyPoints": [
+            "Care for customers.",
+            "Respect employees.",
+            "Support communities."
+          ],
+          "memoryTip": "The figures and leadership details in this edition are historical, not live counts."
+        }
+      ],
+      "art": "history"
+    },
+    {
+      "id": "h03",
+      "sourceId": "handbook",
+      "title": "Gamma Strategy House",
+      "pages": "7",
+      "summary": "Understand purpose, vision, mission and enablers.",
+      "sections": [
+        {
+          "heading": "The strategic house",
+          "body": "The Strategy House illustration has a purpose roof, vision, mission, long-term goals and operational enablers.",
+          "keyPoints": [
+            "Purpose: deliver delightful experiences to stakeholders in the QSR space.",
+            "Vision: continue to be the biggest QSR operator in Sri Lanka while expanding into multiple brands and territories.",
+            "Mission: growth through strategic investment, best-in-class products and experiences, while fostering happy people and social responsibility."
+          ],
+          "memoryTip": "House: Purpose → Vision → Mission → Goals → Enablers."
+        },
+        {
+          "heading": "Enablers",
+          "body": "The diagram lists six strategic enablers.",
+          "keyPoints": [
+            "Values",
+            "Leadership",
+            "People",
+            "Technology",
+            "Sustainability",
+            "Processes"
+          ],
+          "memoryTip": "Six foundations support the whole house."
+        }
+      ],
+      "art": "values"
+    },
+    {
+      "id": "h04",
+      "sourceId": "handbook",
+      "title": "RIIT & Gamma Policies",
+      "pages": "8, 10–11",
+      "summary": "The four values and the purpose of policy.",
+      "sections": [
+        {
+          "heading": "Respect, Integrity, Innovation, Teamwork",
+          "body": "The handbook states the same four Gamma values as the separate Gamma Values and Policies material.",
+          "keyPoints": [
+            "Respect — mutual understanding.",
+            "Integrity — a moral compass.",
+            "Innovation — continuous improvement.",
+            "Teamwork — play as one."
+          ],
+          "memoryTip": "RIIT is the shared values mnemonic."
+        },
+        {
+          "heading": "Nine policy headings",
+          "body": "The handbook's policy table includes:",
+          "keyPoints": [
+            "Gamma Way of Working",
+            "Ethical Behavior",
+            "Conflict of Interest",
+            "Harassment, Bullying and Discrimination Prevention",
+            "Whistle Blower",
+            "IT User Acceptance",
+            "Social Media",
+            "Service Charge Distribution"
+          ],
+          "memoryTip": "The detailed values and policies are in the separate policy lessons."
+        }
+      ],
+      "art": "riit"
+    },
+    {
+      "id": "h05",
+      "sourceId": "handbook",
+      "title": "Salary, Overtime & Shifts",
+      "pages": "12–13",
+      "summary": "Learn the salary and overtime categories in this handbook edition.",
+      "sections": [
+        {
+          "heading": "Salary components",
+          "body": "The handbook says employees receive only basic salary in the first month, and lists other components from the second month onward.",
+          "keyPoints": [
+            "Basic salary",
+            "Overtime",
+            "Service charge",
+            "Shift and productivity incentives",
+            "Order value, other allowances"
+          ],
+          "memoryTip": "Payment conditions depend on role and company policy."
+        },
+        {
+          "heading": "Overtime types",
+          "body": "The handbook describes four kinds of OT.",
+          "keyPoints": [
+            "Normal OT: work beyond standard hours.",
+            "Poya OT: overtime on a Poya holiday.",
+            "Statutory OT: work on recognized statutory holidays.",
+            "Off Day OT: work on a scheduled day off."
+          ],
+          "memoryTip": "Normal • Poya • Statutory • Off Day."
+        },
+        {
+          "heading": "Service charge / shift incentive",
+          "body": "Page 13 says the service charge / shift incentive is tied to days worked and lists separate day and night shift incentives for the BIA outlet.",
+          "keyPoints": [
+            "Follow the current HR terms and payroll policy for actual entitlements."
+          ],
+          "memoryTip": "For payroll questions, check the latest People & Culture documents."
+        }
+      ],
+      "art": "handbook"
+    },
+    {
+      "id": "h06",
+      "sourceId": "handbook",
+      "title": "Productivity Incentive & Bonuses",
+      "pages": "14–16",
+      "summary": "Understand the handbook’s illustrative bonus structure.",
+      "sections": [
+        {
+          "heading": "Sales achievement tiers",
+          "body": "Page 14 presents percentages of service charge tied to monthly outlet sales achievements.",
+          "keyPoints": [
+            "Below 100%: none in the table",
+            "100%–109%: 10%",
+            "110%–119%: 20%",
+            "120% and above: 30%"
+          ],
+          "memoryTip": "These are figures from this handbook edition; verify current incentive rules with HR."
+        },
+        {
+          "heading": "Bonus types",
+          "body": "The source describes annual/bi-annual, quarterly and bold-goal bonus categories.",
+          "keyPoints": [
+            "Annual and bi-annual bonuses for eligible grades.",
+            "Quarterly bonuses for Grade 8 under stated eligibility conditions.",
+            "Bold Goal bonus based on quarterly sales achievements and management declaration."
+          ],
+          "memoryTip": "Eligibility, cutoff dates and attendance rules matter."
+        }
+      ],
+      "art": "handbook"
+    },
+    {
+      "id": "h07",
+      "sourceId": "handbook",
+      "title": "Working Hours & Leave",
+      "pages": "17",
+      "summary": "Read the working-hour and leave summary.",
+      "sections": [
+        {
+          "heading": "Working-hour table",
+          "body": "The handbook lists different conditions for regular crew members and Pizza Hut BIA crew.",
+          "keyPoints": [
+            "Regular crew: 9 hours; 8 off days.",
+            "BIA crew: 12 hours; 12 off days."
+          ],
+          "memoryTip": "These are handbook conditions, not a universal legal statement."
+        },
+        {
+          "heading": "Leave categories",
+          "body": "Page 17 describes casual, annual and medical leave.",
+          "keyPoints": [
+            "Casual leave",
+            "Annual leave",
+            "Medical leave"
+          ],
+          "memoryTip": "Check current People & Culture policies and Sri Lankan law for present entitlements."
+        }
+      ],
+      "art": "handbook"
+    },
+    {
+      "id": "h08",
+      "sourceId": "handbook",
+      "title": "Resignation, Gratuity, EPF & ETF",
+      "pages": "18–19",
+      "summary": "Employment exit and statutory-payment basics.",
+      "sections": [
+        {
+          "heading": "Resignation and clearance",
+          "body": "The handbook describes a one-month notice and a clearance procedure.",
+          "keyPoints": [
+            "Submit a resignation letter.",
+            "Hand over required clearance forms.",
+            "Complete the clearance process before final settlement, as described by the source."
+          ],
+          "memoryTip": "Follow updated HR instructions if procedures have changed."
+        },
+        {
+          "heading": "Gratuity formula",
+          "body": "The source presents this example formula: (last month's salary ÷ 2) × completed years of service.",
+          "keyPoints": [
+            "Example shown: LKR 100,000 monthly salary and 10 years = LKR 500,000."
+          ],
+          "memoryTip": "This is the handbook example, not an individualized legal calculation."
+        },
+        {
+          "heading": "EPF and ETF",
+          "body": "The handbook describes contributions as:",
+          "keyPoints": [
+            "EPF: employer 12% and employee 8% of EPF/ETF-liable salary.",
+            "ETF: employer 3%; employee 0%."
+          ],
+          "memoryTip": "EPF = 12 + 8; ETF = 3 from employer, as printed in the handbook."
+        }
+      ],
+      "art": "handbook"
+    },
+    {
+      "id": "h09",
+      "sourceId": "handbook",
+      "title": "Employee Welfare & Education",
+      "pages": "20–21",
+      "summary": "Understand the employee support categories.",
+      "sections": [
+        {
+          "heading": "Welfare support",
+          "body": "The handbook lists birthday gifts, wedding gifts and child-birth assistance.",
+          "keyPoints": [
+            "Birthday gift / voucher",
+            "Wedding gift",
+            "Child-birth assistance"
+          ],
+          "memoryTip": "Check eligibility and amounts with People & Culture."
+        },
+        {
+          "heading": "Scholarships and study",
+          "body": "Education support categories include:",
+          "keyPoints": [
+            "Grade 5 scholarship exam",
+            "GCE O/L and A/L exam achievements",
+            "University support",
+            "Foreign scholarship",
+            "Annual gift for children"
+          ],
+          "memoryTip": "Different schemes require supporting documents."
+        },
+        {
+          "heading": "Financial assistance",
+          "body": "The handbook discusses emergency loans, gratuity-based loans and a benevolent fund.",
+          "keyPoints": [
+            "Emergency loan types based on tenure.",
+            "Gratuity against loan.",
+            "Assistance for death, medical care and disaster recovery."
+          ],
+          "memoryTip": "Eligibility and documentation are scheme-dependent."
+        }
+      ],
+      "art": "handbook"
+    },
+    {
+      "id": "h10",
+      "sourceId": "handbook",
+      "title": "Medical & Accident Benefits",
+      "pages": "22",
+      "summary": "What employee coverage categories are listed.",
+      "sections": [
+        {
+          "heading": "Medical scheme",
+          "body": "The handbook lists surgical and hospitalization cover, critical illness cover, life cover and annuity.",
+          "keyPoints": [
+            "Six months of service are described for certain medical coverage.",
+            "Executive-level and other categories may differ.",
+            "Claims require supporting documentation."
+          ],
+          "memoryTip": "Details are an edition-specific summary; consult HR for live insurance coverage."
+        },
+        {
+          "heading": "Accident cover",
+          "body": "The source says accident cover applies from joining date, with defined reporting responsibilities.",
+          "keyPoints": [
+            "Report incidents to the manager.",
+            "Use the company’s incident reporting procedure.",
+            "Follow the current insurance instructions."
+          ],
+          "memoryTip": "Report early and keep records."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h11",
+      "sourceId": "handbook",
+      "title": "Health & Safety at Work",
+      "pages": "23",
+      "summary": "A safe, healthy workplace is everyone’s responsibility.",
+      "sections": [
+        {
+          "heading": "Workplace safety",
+          "body": "The handbook says employees should follow safety guidelines, use personal protective equipment when required, and report hazards.",
+          "keyPoints": [
+            "Follow safe procedures and workplace safety drills.",
+            "Use appropriate personal protective equipment.",
+            "Report unsafe conditions or accidents promptly.",
+            "Take part in safety training."
+          ],
+          "memoryTip": "Spot hazard → make safe → report through the approved channel."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h12",
+      "sourceId": "handbook",
+      "title": "Grievance Procedure",
+      "pages": "24",
+      "summary": "How concerns can be raised and reviewed.",
+      "sections": [
+        {
+          "heading": "Raising a grievance",
+          "body": "The handbook encourages employees to raise work-related or personal concerns and seek fair resolution.",
+          "keyPoints": [
+            "Talk to your supervisor or manager first.",
+            "The source describes a formal escalation process.",
+            "The escalation chart includes RGM/line manager, market/general management and People & Culture."
+          ],
+          "memoryTip": "Start with the appropriate manager and follow the formal process."
+        },
+        {
+          "heading": "Escalation timing",
+          "body": "The flowchart mentions follow-up periods as part of the escalation route.",
+          "keyPoints": [
+            "Refer to the actual grievance procedure for deadlines and forms."
+          ],
+          "memoryTip": "Respect privacy and document concerns appropriately."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "h13",
+      "sourceId": "handbook",
+      "title": "Disciplinary Procedure",
+      "pages": "25",
+      "summary": "The main procedural stages named in the handbook.",
+      "sections": [
+        {
+          "heading": "Six process steps",
+          "body": "The handbook outlines these stages:",
+          "keyPoints": [
+            "1. Preliminary investigation",
+            "2. Suspension from work where needed in serious misconduct cases",
+            "3. Show Cause Letter",
+            "4. Employee Letter of Explanation",
+            "5. Domestic Inquiry, if necessary",
+            "6. Warning / Punishment depending on findings"
+          ],
+          "memoryTip": "Investigate → Explain → Hear → Decide."
+        },
+        {
+          "heading": "Why the process exists",
+          "body": "The source links a formal process with fairness, respect and maintaining professional standards.",
+          "keyPoints": [
+            "Follow current company procedures and applicable law."
+          ],
+          "memoryTip": "Fair process is important for everyone."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "h14",
+      "sourceId": "handbook",
+      "title": "Social Responsibility & Inclusion",
+      "pages": "26–30",
+      "summary": "CSR, community and inclusion initiatives.",
+      "sections": [
+        {
+          "heading": "CSR aims",
+          "body": "The handbook describes efforts to support society and pursue sustainable development goals.",
+          "keyPoints": [
+            "Good health and wellbeing",
+            "Quality education",
+            "Clean water and sanitation",
+            "Decent work, reduced inequalities and partnerships"
+          ],
+          "memoryTip": "People • Community • Environment."
+        },
+        {
+          "heading": "Highlighted projects",
+          "body": "The handbook lists:",
+          "keyPoints": [
+            "Persons with Disabilities inclusion",
+            "An Equal Slice for Everyone",
+            "Adopt an Ambulance",
+            "Adopt a Beach",
+            "Pink Alert breast-cancer awareness",
+            "Clean Currents Campaign"
+          ],
+          "memoryTip": "These are examples of initiatives described in this edition."
+        }
+      ],
+      "art": "values"
+    },
+    {
+      "id": "h15",
+      "sourceId": "handbook",
+      "title": "Pizza Hut History, Mission & Outlet Types",
+      "pages": "32–40",
+      "summary": "The training section revisits the brands and outlet formats.",
+      "sections": [
+        {
+          "heading": "Brand overview",
+          "body": "Pages 32–38 explain the Gamma and Yum relationship and Pizza Hut history.",
+          "keyPoints": [
+            "Pizza Hut: Frank and Dan Carney, first outlet 1958.",
+            "Pizza Hut Sri Lanka started at Union Place in 1993.",
+            "Mission graphic: make it easier for everyone to get a better pizza."
+          ],
+          "memoryTip": "The source’s brand figures are historical."
+        },
+        {
+          "heading": "Outlet formats",
+          "body": "Page 40 covers four outlet formats.",
+          "keyPoints": [
+            "RBD — Restaurant Based Delivery",
+            "RR — Red Roof",
+            "DELCO — Delivery/Carryout",
+            "FCD — Fast Casual Delco"
+          ],
+          "memoryTip": "See the Operations Training lessons for each outlet’s specific service journey."
+        }
+      ],
+      "art": "history"
+    },
+    {
+      "id": "h16",
+      "sourceId": "handbook",
+      "title": "Guest Service: Moments of Truth",
+      "pages": "41–43",
+      "summary": "Service sequences also appear in the handbook.",
+      "sections": [
+        {
+          "heading": "Formats and sequences",
+          "body": "The handbook lists DELCO and RBD ten-step moments, FCD's six moments, takeaway’s five steps, plus Team of Two.",
+          "keyPoints": [
+            "DELCO: greet → guide → order → seat → drinks → starters → main course → additions → bill → thank.",
+            "FCD: greet → order → seat → serve → satisfaction → thank.",
+            "Takeaway: greet → counter → order → deliver → thank."
+          ],
+          "memoryTip": "Practice one sequence at a time."
+        },
+        {
+          "heading": "Safety at work",
+          "body": "Page 43 pairs Team of Two with four accident prevention rules.",
+          "keyPoints": [
+            "Clean up after yourself.",
+            "Respect equipment.",
+            "Use items as intended.",
+            "Lift heavy items correctly."
+          ],
+          "memoryTip": "Teamwork and safety belong together."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "h17",
+      "sourceId": "handbook",
+      "title": "Grooming & Training Standards",
+      "pages": "44–45",
+      "summary": "Professional presentation and daily service.",
+      "sections": [
+        {
+          "heading": "Grooming basics",
+          "body": "The handbook links neat, clean uniforms with guest confidence and the CHAMPS cleanliness standard.",
+          "keyPoints": [
+            "Maintain the approved uniform.",
+            "Observe current grooming and hygiene policy.",
+            "Keep hands and working areas clean."
+          ],
+          "memoryTip": "Grooming is a service standard, not just appearance."
+        },
+        {
+          "heading": "Training and development",
+          "body": "The final part of this booklet transitions to training and development with a summary of Pizza Hut and Taco Bell standards.",
+          "keyPoints": [
+            "Use current operational and training guides for updated requirements.",
+            "Refer to specific source modules for standard figures and procedures."
+          ],
+          "memoryTip": "Learn → practise → improve."
+        }
+      ],
+      "art": "handbook"
+    },
+    {
+      "id": "h18",
+      "sourceId": "handbook",
+      "title": "Making a Pizza: Five Stages",
+      "pages": "46",
+      "summary": "Visual sequence for pizza assembly.",
+      "sections": [
+        {
+          "heading": "Pizza-making sequence",
+          "body": "The handbook displays a five-step illustration for making a pizza.",
+          "keyPoints": [
+            "1. Base sauce",
+            "2. Cheese",
+            "3. Toppings",
+            "4. Into the oven",
+            "5. A perfect pizza"
+          ],
+          "memoryTip": "Remember: sauce → cheese → toppings → bake → serve. Actual recipes and safe cooking temperatures must follow the current SOP."
+        }
+      ],
+      "art": "food"
+    },
+    {
+      "id": "h19",
+      "sourceId": "handbook",
+      "title": "Making a Taco: Five Stages",
+      "pages": "47",
+      "summary": "Visual sequence for taco assembly.",
+      "sections": [
+        {
+          "heading": "Taco-making sequence",
+          "body": "The handbook illustrates five stages for assembling a taco.",
+          "keyPoints": [
+            "1. Taco shell",
+            "2. Protein",
+            "3. Sauce",
+            "4. Cold filling",
+            "5. A perfect taco"
+          ],
+          "memoryTip": "Remember shell → protein → sauce → cold filling → serve. Use the current approved recipes."
+        }
+      ],
+      "art": "food"
+    },
+    {
+      "id": "h20",
+      "sourceId": "handbook",
+      "title": "CHAMPS, H2OP & Customer WOW",
+      "pages": "48–50",
+      "summary": "Customer-service culture in pictures.",
+      "sections": [
+        {
+          "heading": "CHAMPS",
+          "body": "The handbook repeats six dimensions of customer expectations.",
+          "keyPoints": [
+            "Cleanliness",
+            "Hospitality",
+            "Accuracy",
+            "Maintenance",
+            "Product Quality",
+            "Speed of Service"
+          ],
+          "memoryTip": "One word per letter: C-H-A-M-P-S."
+        },
+        {
+          "heading": "H2OP",
+          "body": "The handbook's four illustrated H2OP behaviours are:",
+          "keyPoints": [
+            "Hustle: speed in every transaction and shift",
+            "Hospitality: friendly, fun experiences and customer satisfaction",
+            "Own the Zone: be the best in your area",
+            "Passion for Product: make food you would be proud to serve your family"
+          ],
+          "memoryTip": "Hustle • Hospitality • Own the Zone • Passion for Product."
+        },
+        {
+          "heading": "Five Golden Rules",
+          "body": "The Customer WOW illustration reinforces:",
+          "keyPoints": [
+            "Never let a customer leave unhappy.",
+            "Treat customers as you want to be treated.",
+            "Solve problems before they become complaints.",
+            "Never argue with customers.",
+            "Never blame team members."
+          ],
+          "memoryTip": "WOW = resolve concerns before the guest leaves."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "h21",
+      "sourceId": "handbook",
+      "title": "BLAST: Guest Complaint Recovery",
+      "pages": "51",
+      "summary": "Illustrated way to handle customer complaints.",
+      "sections": [
+        {
+          "heading": "The five letters",
+          "body": "The handbook uses the BLAST acronym in a customer-complaint infographic.",
+          "keyPoints": [
+            "B — Believe",
+            "L — Listen",
+            "A — Apologise",
+            "S — Satisfy",
+            "T — Thank"
+          ],
+          "memoryTip": "BLAST is for listening and resolving, not debating."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "h22",
+      "sourceId": "handbook",
+      "title": "Food Safety & Handwashing",
+      "pages": "52–56",
+      "summary": "Six-step illustrated handwashing and five food-safety rules.",
+      "sections": [
+        {
+          "heading": "Five rules",
+          "body": "Pages 52 and 54–56 explain core food-safety responsibilities.",
+          "keyPoints": [
+            "Wash hands often.",
+            "Sanitize food-contact areas.",
+            "Date, rotate and eliminate.",
+            "Keep food out of the temperature danger zone.",
+            "Stay home when sick and inform the manager."
+          ],
+          "memoryTip": "Hands → Surfaces → Rotation → Temperature → Health."
+        },
+        {
+          "heading": "Six handwashing steps",
+          "body": "The handbook's sequence includes:",
+          "keyPoints": [
+            "1. Wet hands thoroughly.",
+            "2. Apply antibacterial soap.",
+            "3. Lather hands and elbows for 20 seconds.",
+            "4. Wash soap away.",
+            "5. Dry with a disposable towel.",
+            "6. Apply approved hand sanitizer."
+          ],
+          "memoryTip": "20-second lather is the centerpiece of the illustrated procedure."
+        },
+        {
+          "heading": "Temperature and rotation diagram",
+          "body": "The diagram on page 55 shows the 5°C–65°C danger zone and reminds team members to use FIFO and discard expired food.",
+          "keyPoints": [
+            "Cold food below 5°C, according to this edition.",
+            "Hot food above 65°C, according to this edition.",
+            "Date all food, follow FIFO, and discard items out of shelf life."
+          ],
+          "memoryTip": "Temperature limits are transcribed from the source; use the current food-safety SOP in live operations."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h23",
+      "sourceId": "handbook",
+      "title": "Four Accident Prevention Rules",
+      "pages": "58–60",
+      "summary": "Safe equipment and lifting practices.",
+      "sections": [
+        {
+          "heading": "The four rules",
+          "body": "The handbook's illustrated safety wheel highlights:",
+          "keyPoints": [
+            "Clean up after yourself.",
+            "Use things as intended.",
+            "Respect the equipment.",
+            "Lift properly."
+          ],
+          "memoryTip": "C-U-R-L: Clean, Use, Respect, Lift."
+        },
+        {
+          "heading": "Examples",
+          "body": "Pages 59–60 show everyday examples of safe handling.",
+          "keyPoints": [
+            "Clean spills immediately and display caution signs.",
+            "Use the correct tools; do not improvise with sharp objects.",
+            "Follow operating procedures and servicing schedules.",
+            "Lift using bent knees, straight back, and help when needed."
+          ],
+          "memoryTip": "Spot, prevent, and report hazards."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h24",
+      "sourceId": "handbook",
+      "title": "Fire Safety: Triangle & PASS",
+      "pages": "61–66",
+      "summary": "The three fire elements and extinguisher sequence.",
+      "sections": [
+        {
+          "heading": "Three fire elements",
+          "body": "The fire triangle on page 63 labels:",
+          "keyPoints": [
+            "Heat",
+            "Fuel",
+            "Oxygen"
+          ],
+          "memoryTip": "Removing one element can stop the fire."
+        },
+        {
+          "heading": "PASS method",
+          "body": "Page 65 shows the four actions for an extinguisher.",
+          "keyPoints": [
+            "P — Pull the safety pin.",
+            "A — Aim at the base of the fire.",
+            "S — Squeeze the handle.",
+            "S — Sweep side to side."
+          ],
+          "memoryTip": "PASS → Pull • Aim • Squeeze • Sweep."
+        },
+        {
+          "heading": "When fire occurs",
+          "body": "The handbook illustrates staying calm, alerting the manager, attempting an extinguisher only if safe, and contacting emergency responders.",
+          "keyPoints": [
+            "Prioritize safe evacuation and follow your emergency action plan.",
+            "Do not fight a fire if untrained or if escape is unsafe."
+          ],
+          "memoryTip": "Safety of people comes first."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h25",
+      "sourceId": "handbook",
+      "title": "First Aid: The Three Ps",
+      "pages": "67",
+      "summary": "First-aid goals in the final training diagram.",
+      "sections": [
+        {
+          "heading": "The 3Ps",
+          "body": "The first-aid triangle lists three goals.",
+          "keyPoints": [
+            "Preserve life.",
+            "Prevent the condition getting worse.",
+            "Promote recovery."
+          ],
+          "memoryTip": "P-P-P. Call for qualified help and follow the outlet emergency plan."
+        }
+      ],
+      "art": "safety"
+    }
+  ],
+  "notes": "Scanned source; lessons cover verified handbook sections and cite printed PDF page numbers. Employment policies and numerical standards may change; refer to current workplace policies."
+}

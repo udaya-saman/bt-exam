@@ -1,5 +1,5 @@
 {
-  "version": "4.0.0-arena",
+  "version": "4.1.0-study",
   "releaseDate": "2026-11-23",
-  "notes": "Two-card home screen, study reader, visual player-card refresh, account editor, reward feedback, outlet qualification and scoring/sync fixes."
+  "notes": "Source-based Study Academy: 57 lessons from three uploaded PDFs with animated visual recall, search, completion progress and offline lessons. Quiz and rankings unchanged."
 }

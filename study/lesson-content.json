@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "contentStatus": "source_verified_lessons_imported",
+  "sources": [
+    {
+      "id": "training",
+      "title": "Pizza Hut Training Booklet-2.pdf",
+      "pageCount": 20,
+      "lessonCount": 20,
+      "verified": true,
+      "localFile": "./study/content/training.json"
+    },
+    {
+      "id": "values",
+      "title": "Gamma Values and Policies.pdf",
+      "pageCount": 14,
+      "lessonCount": 12,
+      "verified": true,
+      "localFile": "./study/content/values.json"
+    },
+    {
+      "id": "handbook",
+      "title": "Employee Handbook Final.pdf",
+      "pageCount": 68,
+      "lessonCount": 25,
+      "verified": true,
+      "localFile": "./study/content/handbook.json"
+    }
+  ],
+  "lessons": [
+    {
+      "sourceId": "training",
+      "lessonCount": 20
+    },
+    {
+      "sourceId": "values",
+      "lessonCount": 12
+    },
+    {
+      "sourceId": "handbook",
+      "lessonCount": 25
+    }
+  ]
+}

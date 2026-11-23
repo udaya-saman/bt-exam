@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "values",
+  "sourceTitle": "Gamma Values and Policies.pdf",
+  "pageCount": 14,
+  "verified": true,
+  "lessons": [
+    {
+      "id": "v01",
+      "sourceId": "values",
+      "title": "RIIT: Four Gamma Values",
+      "pages": "2",
+      "summary": "Respect, Integrity, Innovation, and Teamwork.",
+      "sections": [
+        {
+          "heading": "RIIT",
+          "body": "The four Gamma values are Respect, Integrity, Innovation and Teamwork.",
+          "keyPoints": [
+            "R — Respect: promote mutual respect and understanding.",
+            "I — Integrity: do business with a moral compass.",
+            "I — Innovation: continuously innovate and improve.",
+            "T — Teamwork: play as one to win together."
+          ],
+          "memoryTip": "Say RIIT in order: Respect → Integrity → Innovation → Teamwork."
+        }
+      ],
+      "art": "riit"
+    },
+    {
+      "id": "v02",
+      "sourceId": "values",
+      "title": "Respect",
+      "pages": "3",
+      "summary": "Treat everyone fairly and with dignity.",
+      "sections": [
+        {
+          "heading": "Core promise",
+          "body": "Gamma's Respect value is to promote a culture of mutual respect and understanding.",
+          "keyPoints": [
+            "Treat employees, customers and stakeholders with dignity and fairness, regardless of position.",
+            "Address colleagues professionally, including by first name.",
+            "Be humble and considerate."
+          ],
+          "memoryTip": "Respect = dignity + fairness."
+        },
+        {
+          "heading": "Behaviours to avoid",
+          "body": "The source asks employees to avoid conduct that harms mutual respect.",
+          "keyPoints": [
+            "Avoid discrimination.",
+            "Do not intimidate, victimize or harass.",
+            "Avoid gossip, rumours and misleading information."
+          ],
+          "memoryTip": "Think: respect people in words and actions."
+        }
+      ],
+      "art": "riit"
+    },
+    {
+      "id": "v03",
+      "sourceId": "values",
+      "title": "Integrity",
+      "pages": "4",
+      "summary": "Honesty and confidentiality at work.",
+      "sections": [
+        {
+          "heading": "Moral compass",
+          "body": "The Integrity value calls for transparency, honesty and high ethical standards.",
+          "keyPoints": [
+            "Be transparent in monetary and non-monetary transactions.",
+            "Keep company data and information confidential.",
+            "Do not accept personal gifts from suppliers, service providers or customers."
+          ],
+          "memoryTip": "Integrity = trustworthy actions even when no one is watching."
+        },
+        {
+          "heading": "Best practices",
+          "body": "The source also asks teams to avoid destructive shortcuts and conflicts of interest.",
+          "keyPoints": [
+            "Promote best practices.",
+            "Avoid destructive shortcuts.",
+            "Avoid conflicts of interest."
+          ],
+          "memoryTip": "Never trade trust for a shortcut."
+        }
+      ],
+      "art": "riit"
+    },
+    {
+      "id": "v04",
+      "sourceId": "values",
+      "title": "Innovation",
+      "pages": "5",
+      "summary": "Improve products, services and operations.",
+      "sections": [
+        {
+          "heading": "Create and improve",
+          "body": "Innovation means continually exploring more effective approaches.",
+          "keyPoints": [
+            "Challenge the status quo with calculated risks.",
+            "Think outside the box.",
+            "Proactively contribute ideas and participate in projects."
+          ],
+          "memoryTip": "New idea → test → learn → improve."
+        },
+        {
+          "heading": "Learning agility",
+          "body": "The source promotes open-minded problem solving, adaptable decisions and learning from mistakes as a team.",
+          "keyPoints": [
+            "Approach problems with an open mind.",
+            "Respond with business, people and learning agility."
+          ],
+          "memoryTip": "Improvement is a team habit."
+        }
+      ],
+      "art": "riit"
+    },
+    {
+      "id": "v05",
+      "sourceId": "values",
+      "title": "Teamwork",
+      "pages": "6",
+      "summary": "Play as one to win together.",
+      "sections": [
+        {
+          "heading": "Shared goals",
+          "body": "Gamma's Teamwork value focuses on collaborating and recognizing contributions.",
+          "keyPoints": [
+            "Take responsibility for mistakes together and learn from them.",
+            "Support diverse and inclusive teams.",
+            "Support colleagues' development and seek help when needed."
+          ],
+          "memoryTip": "Together, everyone achieves more."
+        },
+        {
+          "heading": "Trust and ownership",
+          "body": "The source stresses faith in the team, open discussions and shared ownership of decisions.",
+          "keyPoints": [
+            "Trust teammates.",
+            "Encourage discussion and constructive challenges.",
+            "Aim for decisions supported across the team."
+          ],
+          "memoryTip": "Discuss → align → act together."
+        }
+      ],
+      "art": "riit"
+    },
+    {
+      "id": "v06",
+      "sourceId": "values",
+      "title": "What Is a Policy?",
+      "pages": "8",
+      "summary": "Why workplace policies matter.",
+      "sections": [
+        {
+          "heading": "Meaning and purpose",
+          "body": "A policy is a collection of principles and guidelines that steers decisions and actions across an organization.",
+          "keyPoints": [
+            "Maintain consistency.",
+            "Support legal and regulatory compliance.",
+            "Clarify expected behaviour and responsibilities."
+          ],
+          "memoryTip": "Policies answer: what should we do and why?"
+        },
+        {
+          "heading": "Key benefits",
+          "body": "The source lists risk management, efficiency and accountability as additional reasons for policies.",
+          "keyPoints": [
+            "Reduce risks and misconduct.",
+            "Streamline operations.",
+            "Establish accountability."
+          ],
+          "memoryTip": "Consistency • Compliance • Guidance • Risk • Efficiency • Accountability."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "v07",
+      "sourceId": "values",
+      "title": "Gamma Way of Working",
+      "pages": "9–10",
+      "summary": "How values guide everyday behaviour.",
+      "sections": [
+        {
+          "heading": "Work with RIIT",
+          "body": "Gamma Way of Working brings the company's four values into everyday work.",
+          "keyPoints": [
+            "Respect others.",
+            "Act with integrity.",
+            "Improve and innovate.",
+            "Work together as one team."
+          ],
+          "memoryTip": "Apply RIIT before making a decision."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "v08",
+      "sourceId": "values",
+      "title": "Ethical Behaviour & Conflict of Interest",
+      "pages": "11",
+      "summary": "Two core professional conduct policies.",
+      "sections": [
+        {
+          "heading": "Ethical Behaviour",
+          "body": "The Ethical Behaviour Policy is intended to ensure integrity, honesty and fairness and foster a positive, lawful work environment.",
+          "keyPoints": [
+            "Act honestly.",
+            "Treat others fairly.",
+            "Follow ethical standards."
+          ],
+          "memoryTip": "Ethics applies even when no one is observing."
+        },
+        {
+          "heading": "Conflict of Interest",
+          "body": "The Conflict of Interest Policy addresses situations where personal interests interfere with professional duties.",
+          "keyPoints": [
+            "Put the company's interests first when performing duties.",
+            "Identify and avoid competing personal interests."
+          ],
+          "memoryTip": "Personal interest must not override your job duties."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "v09",
+      "sourceId": "values",
+      "title": "Harassment, Bullying & Discrimination",
+      "pages": "11",
+      "summary": "A safe and respectful workplace.",
+      "sections": [
+        {
+          "heading": "Prevention",
+          "body": "The source describes a policy defining and prohibiting harassment, bullying and discrimination.",
+          "keyPoints": [
+            "Recognize inappropriate conduct.",
+            "Do not intimidate or harass.",
+            "Follow established reporting and incident procedures."
+          ],
+          "memoryTip": "Speak up through approved workplace channels."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "v10",
+      "sourceId": "values",
+      "title": "Whistleblower Policy",
+      "pages": "12",
+      "summary": "Reporting serious misconduct safely.",
+      "sections": [
+        {
+          "heading": "Speak up",
+          "body": "The policy encourages reports of serious misconduct and aims to protect employees who make them from retaliation.",
+          "keyPoints": [
+            "Report genuine concerns through approved channels.",
+            "Protect the confidentiality of reports as required.",
+            "Do not retaliate against people who raise concerns."
+          ],
+          "memoryTip": "Raise concerns responsibly; protect reporters."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "v11",
+      "sourceId": "values",
+      "title": "IT & Social Media Policies",
+      "pages": "12",
+      "summary": "Responsible digital behaviour.",
+      "sections": [
+        {
+          "heading": "IT User Acceptance",
+          "body": "The IT policy guides proper, secure and responsible use of company technology and information resources.",
+          "keyPoints": [
+            "Use company resources appropriately.",
+            "Protect sensitive data.",
+            "Follow IT security requirements."
+          ],
+          "memoryTip": "Think before clicking, sharing or storing."
+        },
+        {
+          "heading": "Social Media",
+          "body": "The Social Media Policy guides how professional and personal social media activity can affect the company's reputation.",
+          "keyPoints": [
+            "Use social channels responsibly.",
+            "Protect company and customer information.",
+            "Maintain professional conduct."
+          ],
+          "memoryTip": "Online conduct reflects on your team."
+        }
+      ],
+      "art": "policy"
+    },
+    {
+      "id": "v12",
+      "sourceId": "values",
+      "title": "Service Charge Distribution Policy",
+      "pages": "12",
+      "summary": "The distribution principle explained.",
+      "sections": [
+        {
+          "heading": "Staff distribution",
+          "body": "The document describes a requirement for restaurants to distribute 100% of service charges fairly to staff and maintain records of charges and payments.",
+          "keyPoints": [
+            "Fair distribution of service charges.",
+            "Accurate records of charges and payments.",
+            "Refer to current company policy for individual entitlements."
+          ],
+          "memoryTip": "100% refers to the service-charge pool under the policy."
+        }
+      ],
+      "art": "policy"
+    }
+  ]
+}
