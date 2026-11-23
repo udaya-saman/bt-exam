@@ -1,0 +1,714 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "training",
+  "sourceTitle": "Pizza Hut Training Booklet-2.pdf",
+  "pageCount": 20,
+  "verified": true,
+  "lessons": [
+    {
+      "id": "t01",
+      "sourceId": "training",
+      "title": "Pizza Hut: History & Brands",
+      "pages": "2–5",
+      "summary": "Founders, landmark dates, brands and Gamma's role.",
+      "sections": [
+        {
+          "heading": "How it started",
+          "body": "The Training Booklet identifies Frank and Dan Carney as the founders of Pizza Hut in Wichita, Kansas, USA.",
+          "keyPoints": [
+            "15 June 1958: first Pizza Hut opened",
+            "Their mother lent them US$600",
+            "26 November 1993: first Sri Lankan Pizza Hut opened at Union Place"
+          ],
+          "memoryTip": "Remember: 1958 worldwide → 1993 Sri Lanka."
+        },
+        {
+          "heading": "Brands and franchise",
+          "body": "The booklet lists Yum! Brands' KFC, Pizza Hut, Taco Bell and Habit Burger, and names Gamma Pizzakraft Lanka (Pvt) Ltd as the sole Sri Lankan franchisee for Pizza Hut and Taco Bell.",
+          "keyPoints": [
+            "Yum! Brands is listed as the parent company",
+            "Gamma operates Pizza Hut and Taco Bell locally"
+          ],
+          "memoryTip": "Treat the brand list as a record from this training booklet, not a live corporate directory."
+        }
+      ],
+      "art": "history"
+    },
+    {
+      "id": "t02",
+      "sourceId": "training",
+      "title": "Mission, Vision & Goals",
+      "pages": "2–3",
+      "summary": "What Pizza Hut is aiming to deliver.",
+      "sections": [
+        {
+          "heading": "Mission",
+          "body": "The Training Booklet displays Pizza Hut's mission as: “Make it easier for everyone to get a better pizza.”",
+          "keyPoints": [
+            "Make it easier",
+            "For everyone",
+            "To get a better pizza"
+          ],
+          "memoryTip": "Remember the three-part message: easier → everyone → better pizza."
+        },
+        {
+          "heading": "Vision and goals",
+          "body": "The source's vision graphic uses “#mlfg” for Most Loved & Fastest Growing brand.",
+          "keyPoints": [
+            "Win on VALUE",
+            "Win on TASTE",
+            "WOW the Customer"
+          ],
+          "memoryTip": "VALUE • TASTE • WOW."
+        }
+      ],
+      "art": "history"
+    },
+    {
+      "id": "t03",
+      "sourceId": "training",
+      "title": "Outlet Types: RBD, RR, DELCO & FCD",
+      "pages": "5",
+      "summary": "Compare the four outlet formats named in the booklet.",
+      "sections": [
+        {
+          "heading": "RBD and Red Roof",
+          "body": "RBD (Restaurant Based Delivery) provides dine-in, carryout and delivery, with an emphasis on table service. Red Roof (RR) is described as similar to RBD but without delivery.",
+          "keyPoints": [
+            "RBD = dine-in + carryout + delivery",
+            "RR = RBD-style service, without delivery"
+          ],
+          "memoryTip": "Think: RBD delivers; RR does not."
+        },
+        {
+          "heading": "DELCO and FCD",
+          "body": "DELCO stands for Delivery/Carryout; it sells approved products for carryout and delivery. FCD (Fast Casual Delco) includes dine-in, carryout and delivery, with counter ordering and an open-kitchen/fast-service format.",
+          "keyPoints": [
+            "DELCO: delivery + carryout",
+            "FCD: dine-in + carryout + delivery",
+            "The booklet names Jaffna as Sri Lanka's first FCD"
+          ],
+          "memoryTip": "DELCO = two channels; FCD = three with counter ordering."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "t04",
+      "sourceId": "training",
+      "title": "Moments of Truth: DELCO",
+      "pages": "5",
+      "summary": "The booklet's ten-step DELCO guest journey.",
+      "sections": [
+        {
+          "heading": "Steps 1–5",
+          "body": "The DELCO service sequence begins as the guest arrives and places an order.",
+          "keyPoints": [
+            "1. Greet at the door",
+            "2. Guide to the counter",
+            "3. Take the counter order and close the bill",
+            "4. Seat the guest",
+            "5. Serve drinks"
+          ],
+          "memoryTip": "Greet → Guide → Order → Seat → Drinks."
+        },
+        {
+          "heading": "Steps 6–10",
+          "body": "The remaining DELCO moments follow the guest through the meal and goodbye.",
+          "keyPoints": [
+            "6. Serve starters",
+            "7. Serve the main course",
+            "8. Take orders for additions, if any",
+            "9. Close the bill, if applicable",
+            "10. Thank the customer"
+          ],
+          "memoryTip": "Finish warmly: Thank the customer."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "t05",
+      "sourceId": "training",
+      "title": "Moments of Truth: RBD",
+      "pages": "6",
+      "summary": "Ten moments for restaurant-based dining.",
+      "sections": [
+        {
+          "heading": "Arrival and meal",
+          "body": "Follow the RBD service sequence documented by Gamma Training Academy.",
+          "keyPoints": [
+            "1. Greeting",
+            "2. Seating",
+            "3. Taking the order",
+            "4. Serving drinks",
+            "5. Serving starters",
+            "6. Serving main course"
+          ],
+          "memoryTip": "RBD starts with greeting and seating before the order."
+        },
+        {
+          "heading": "Follow-through",
+          "body": "The final stages focus on satisfaction, dessert and departure.",
+          "keyPoints": [
+            "7. Follow up after the main course",
+            "8. Take additional orders, if any",
+            "9. Deliver dessert",
+            "10. Clear the table, take payment and thank"
+          ],
+          "memoryTip": "Follow up → Additional order → Dessert → Payment and thanks."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "t06",
+      "sourceId": "training",
+      "title": "FCD & Takeaway Service Steps",
+      "pages": "6",
+      "summary": "FCD moments of truth and the five takeaway steps.",
+      "sections": [
+        {
+          "heading": "Six FCD moments",
+          "body": "This source lists a shorter FCD sequence.",
+          "keyPoints": [
+            "1. Greeting",
+            "2. Taking the order and settling the bill",
+            "3. Seating",
+            "4. Serve food at the table",
+            "5. Check satisfaction",
+            "6. Thank the guest"
+          ],
+          "memoryTip": "Remember: Greet → Order → Seat → Serve → Check → Thank."
+        },
+        {
+          "heading": "Five T/W service steps",
+          "body": "The booklet lists five steps for takeaway.",
+          "keyPoints": [
+            "1. Greet at the door",
+            "2. Guide to the counter",
+            "3. Take order and close the bill",
+            "4. Deliver the order",
+            "5. Close and thank"
+          ],
+          "memoryTip": "Takeaway is a five-step journey."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "t07",
+      "sourceId": "training",
+      "title": "Guest Complaints: BLAST & Team of Two",
+      "pages": "6, 8",
+      "summary": "Consistent guest recovery principles.",
+      "sections": [
+        {
+          "heading": "Five problem-handling principles",
+          "body": "The booklet emphasizes resolving issues proactively and respectfully.",
+          "keyPoints": [
+            "Never let a customer leave unhappy",
+            "Solve problems before they become complaints",
+            "Treat customers as you wish to be treated",
+            "Never argue with customers",
+            "Never blame fellow crew members"
+          ],
+          "memoryTip": "Care first; never argue or assign blame."
+        },
+        {
+          "heading": "BLAST",
+          "body": "The complaint-handling mnemonic B.L.A.S.T. is:",
+          "keyPoints": [
+            "B — Believe",
+            "L — Listen",
+            "A — Apologize",
+            "S — Satisfy",
+            "T — Thank"
+          ],
+          "memoryTip": "Follow the letters in order: B-L-A-S-T."
+        },
+        {
+          "heading": "Team of Two",
+          "body": "The documented Team of Two process requires:",
+          "keyPoints": [
+            "1. Apologize and show concern",
+            "2. Offer a solution",
+            "3. Tell your manager immediately",
+            "4. Check back on satisfaction"
+          ],
+          "memoryTip": "Apologize → Solution → Manager → Check back."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "t08",
+      "sourceId": "training",
+      "title": "CHAMPS & CARE",
+      "pages": "7",
+      "summary": "Service quality and customer-mania memory aids.",
+      "sections": [
+        {
+          "heading": "The CHAMPS standards",
+          "body": "The Training Booklet gives these six elements and relative percentages.",
+          "keyPoints": [
+            "C — Cleanliness: 18%",
+            "H — Hospitality: 22%",
+            "A — Accuracy: 16%",
+            "M — Maintenance: 6%",
+            "P — Product quality: 20%",
+            "S — Speed of service: 18%"
+          ],
+          "memoryTip": "CHAMPS = Cleanliness, Hospitality, Accuracy, Maintenance, Product quality, Speed."
+        },
+        {
+          "heading": "Customer Mania: CARE",
+          "body": "CARE explains the behaviors expected in interactions.",
+          "keyPoints": [
+            "C — Courtesy",
+            "A — Attentiveness",
+            "R — Respect",
+            "E — Enthusiasm"
+          ],
+          "memoryTip": "CARE is how you show genuine customer attention."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "t09",
+      "sourceId": "training",
+      "title": "Five Food Safety Rules",
+      "pages": "8",
+      "summary": "Daily food-safety habits from the source booklet.",
+      "sections": [
+        {
+          "heading": "The five rules",
+          "body": "Follow the five rules stated in the booklet and your outlet's current approved procedures.",
+          "keyPoints": [
+            "1. Wash your hands often",
+            "2. Sanitize all food-contact areas",
+            "3. Date, rotate and eliminate",
+            "4. Keep food out of the danger zone",
+            "5. Stay home if you are sick"
+          ],
+          "memoryTip": "Hands → Surfaces → Date/Rotate → Temperature → Health."
+        },
+        {
+          "heading": "Date • Rotate • Eliminate",
+          "body": "Stock handling relies on correct dates and safe rotation. Remove items outside their approved shelf life.",
+          "keyPoints": [
+            "Date items",
+            "Use rotation",
+            "Eliminate expired items"
+          ],
+          "memoryTip": "First in, first out (FIFO) is explained in the handbook's food-safety section."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "t10",
+      "sourceId": "training",
+      "title": "How We Win Together — HWWT²",
+      "pages": "8",
+      "summary": "Yum culture phrases from the booklet's visual.",
+      "sections": [
+        {
+          "heading": "Six culture actions",
+          "body": "The HWWT² graphic emphasizes people, guests and teamwork.",
+          "keyPoints": [
+            "Believe in all people",
+            "Be Restaurant & Customer Maniacs NOW",
+            "Go for breakthrough",
+            "Build know-how",
+            "Take the hill teamwork",
+            "Recognise! Recognise! Recognise!"
+          ],
+          "memoryTip": "People → Customers → Breakthrough → Know-how → Team → Recognition."
+        }
+      ],
+      "art": "values"
+    },
+    {
+      "id": "t11",
+      "sourceId": "training",
+      "title": "Equipment Temperature Standards",
+      "pages": "9",
+      "summary": "Equipment temperatures printed in the training booklet.",
+      "sections": [
+        {
+          "heading": "Cold holding",
+          "body": "The Training Booklet lists these cold-storage temperature ranges.",
+          "keyPoints": [
+            "Chiller, retarder, make table, pasta table and cool room: 2–4°C",
+            "Ice cube machine and freezer: −12°C to −23°C"
+          ],
+          "memoryTip": "Cold holding: 2–4°C; frozen: −12 to −23°C."
+        },
+        {
+          "heading": "Hot equipment",
+          "body": "Use the manual's values for study; confirm operational targets against the current outlet SOP.",
+          "keyPoints": [
+            "Proofer: 32°C ±2°C",
+            "Deep fryer: 190°C",
+            "Dishwasher: 75–85°C",
+            "Oven: 250°C",
+            "Rinse water: above 49°C",
+            "Hand-wash sink: 37–43°C"
+          ],
+          "memoryTip": "Group the devices: proofer → fryer → dishwasher → oven."
+        }
+      ],
+      "art": "temperature"
+    },
+    {
+      "id": "t12",
+      "sourceId": "training",
+      "title": "Delivery Rider Safety",
+      "pages": "9",
+      "summary": "Ten practical delivery-accident precautions.",
+      "sections": [
+        {
+          "heading": "Safe driving",
+          "body": "The booklet instructs riders to plan ahead and follow traffic rules.",
+          "keyPoints": [
+            "Never speed; stay within speed limits",
+            "Plan your route",
+            "Check the bike's brakes",
+            "Always wear a helmet",
+            "Obey traffic rules"
+          ],
+          "memoryTip": "Brake check, helmet, route, legal speed."
+        },
+        {
+          "heading": "Awareness on the road",
+          "body": "The source also lists specific riding precautions.",
+          "keyPoints": [
+            "Signal at least five seconds before a turn",
+            "Never overtake on the left",
+            "Do not remain in long-vehicle blind spots",
+            "Drive defensively around others' mistakes"
+          ],
+          "memoryTip": "Signal early; avoid blind spots."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "t13",
+      "sourceId": "training",
+      "title": "Standard Service Times",
+      "pages": "10",
+      "summary": "Study the training booklet's stated guest and product times.",
+      "sections": [
+        {
+          "heading": "Food and beverages",
+          "body": "The source gives these product time targets.",
+          "keyPoints": [
+            "Soft drinks and tea/coffee: 3 minutes",
+            "Milkshake/juice: 10 minutes",
+            "Dessert, starters and soup: 9 minutes",
+            "Pizza: 17.5 minutes",
+            "Pasta: 15 minutes",
+            "Chicken wings: 12 minutes",
+            "Salad: 7 minutes"
+          ],
+          "memoryTip": "3 • 9 • 10 • 12 • 15 • 17.5 are the principal target numbers."
+        },
+        {
+          "heading": "Guest-facing standards",
+          "body": "The source distinguishes greetings by outlet format.",
+          "keyPoints": [
+            "DELCO/FCD greeting: 15 seconds (30 seconds with queue)",
+            "RBD greeting: 5 seconds (30 seconds with queue)",
+            "Present bill and cash out: 3 minutes each",
+            "Reset table: within 5 minutes after guest leaves"
+          ],
+          "memoryTip": "Remember: FCD/DELCO 15 sec, RBD 5 sec."
+        },
+        {
+          "heading": "Production and delivery",
+          "body": "Other time targets in the booklet are:",
+          "keyPoints": [
+            "In-store time: 12 minutes",
+            "Read a docket: 1 minute",
+            "Make time: 2 minutes",
+            "Delivery: within 30 minutes from order time",
+            "First follow-up: after starters, before main course",
+            "Second follow-up: 3 minutes after the first pizza slice"
+          ],
+          "memoryTip": "Use these as booklet training targets; operational reporting may use newer benchmarks."
+        }
+      ],
+      "art": "time"
+    },
+    {
+      "id": "t14",
+      "sourceId": "training",
+      "title": "Delivery Customer Service",
+      "pages": "10–11",
+      "summary": "How riders present the order to the guest.",
+      "sections": [
+        {
+          "heading": "Service habits",
+          "body": "The booklet calls for speed, courtesy and verification.",
+          "keyPoints": [
+            "Always hustle",
+            "Be polite and professional",
+            "Verify the order at the door",
+            "Settle payment and thank the guest by name"
+          ],
+          "memoryTip": "Verify before completing the interaction."
+        },
+        {
+          "heading": "Five rider-service steps",
+          "body": "The training source lists five steps for delivery.",
+          "keyPoints": [
+            "1. Smile, greet and verify",
+            "2. Introduce yourself and the company",
+            "3. Repeat the order",
+            "4. State the amount and give the balance",
+            "5. Thank the guest and invite a call back"
+          ],
+          "memoryTip": "Smile → Introduce → Repeat → Amount → Thank."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "t15",
+      "sourceId": "training",
+      "title": "Vegetable & Topping Cuts",
+      "pages": "11",
+      "summary": "Sizes shown in the Training Booklet.",
+      "sections": [
+        {
+          "heading": "Cuts in millimetres",
+          "body": "The booklet specifies these sizes for kitchen training.",
+          "keyPoints": [
+            "Onion, capsicum, bell pepper: 25 × 8 mm",
+            "Pineapple and tomato: 15 × 15 mm",
+            "Mushroom: 6 mm",
+            "Sausage: 5 mm",
+            "Green chillies: 3 mm"
+          ],
+          "memoryTip": "Link each ingredient with its own dimensions; do not swap them."
+        },
+        {
+          "heading": "Portion-based cuts",
+          "body": "The source also specifies:",
+          "keyPoints": [
+            "Black olive: 4 pieces per olive (3 cuts)",
+            "Paneer: 4 pieces per cube",
+            "Spring onion: 2-inch pieces, with bulb cut into 4"
+          ],
+          "memoryTip": "Pieces: olive 4, paneer 4."
+        }
+      ],
+      "art": "food"
+    },
+    {
+      "id": "t16",
+      "sourceId": "training",
+      "title": "Dough Preparation & Shelf Life",
+      "pages": "11",
+      "summary": "Pan dough figures and production timing.",
+      "sections": [
+        {
+          "heading": "Proofer and pan sizes",
+          "body": "The source says to switch on the proofer 20 minutes before starting the frozen-dough process.",
+          "keyPoints": [
+            "Small: 6-inch diameter, 140 g, 1 oil pump",
+            "Regular: 9-inch diameter, 250 g, 2 oil pumps",
+            "Large: 12-inch diameter, 450 g, 3 oil pumps"
+          ],
+          "memoryTip": "Size → weight → pumps: 6/140/1, 9/250/2, 12/450/3."
+        },
+        {
+          "heading": "Pan dough labels",
+          "body": "Pan dough time labels in the booklet are:",
+          "keyPoints": [
+            "M = proofer out time",
+            "R = 1 hour after proofer out time",
+            "D = 9 hours after proofing",
+            "The booklet states a total usable shelf life of 9 hours after retarding"
+          ],
+          "memoryTip": "M → R (+1 hr) → D (+9 hr after proofing), exactly as labelled in this source."
+        },
+        {
+          "heading": "Late batch",
+          "body": "The booklet says a last batch made at 4 pm or later is discarded by 2 pm the following day.",
+          "keyPoints": [
+            "Follow the currently approved outlet SOP when preparing food"
+          ],
+          "memoryTip": "The time limit quoted here is from the training source."
+        }
+      ],
+      "art": "food"
+    },
+    {
+      "id": "t17",
+      "sourceId": "training",
+      "title": "Approved Cleaning Chemicals",
+      "pages": "12",
+      "summary": "Match the chemical names in the source to their purpose.",
+      "sections": [
+        {
+          "heading": "Hand and surface products",
+          "body": "The booklet lists:",
+          "keyPoints": [
+            "KLEEN HANDS — hand soap",
+            "P3-MANODES — hand sanitizer and, per source, surface sanitizing under COVID safety",
+            "MIKRO CHLOR — vegetable and surface sanitizer",
+            "ALL PURPOSE — three-compartment sink washing soap and floor washing"
+          ],
+          "memoryTip": "Name first, purpose second. Never interchange chemical uses."
+        },
+        {
+          "heading": "Dishwashing and others",
+          "body": "The source also lists:",
+          "keyPoints": [
+            "SUPER KLENE — dishwasher detergent",
+            "RINSE DRY — dishwasher rinse additive",
+            "POWER BLEACH — foot bath",
+            "GLASS CLEANER — glass cleaning detergent"
+          ],
+          "memoryTip": "Always follow current product labels, dilution instructions and approved safety procedures."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "t18",
+      "sourceId": "training",
+      "title": "Danger Zone, Fire & First Aid",
+      "pages": "13–16",
+      "summary": "Key emergency visual mnemonics from the booklet.",
+      "sections": [
+        {
+          "heading": "Food danger zone",
+          "body": "The temperature diagram on page 14 shows a 5°C to 65°C danger zone, with a cold holding boundary below 5°C and hot holding boundary above 65°C.",
+          "keyPoints": [
+            "The booklet illustration identifies 5–65°C as the danger zone",
+            "Use updated approved outlet standards for live operations"
+          ],
+          "memoryTip": "Temperature facts here describe the uploaded booklet."
+        },
+        {
+          "heading": "Fire triangle",
+          "body": "The diagram identifies three elements required for a fire.",
+          "keyPoints": [
+            "Heat",
+            "Fuel",
+            "Oxygen"
+          ],
+          "memoryTip": "Remove one element to stop the fire triangle."
+        },
+        {
+          "heading": "PASS extinguisher method",
+          "body": "Page 15 spells out:",
+          "keyPoints": [
+            "P — Pull the safety pin",
+            "A — Aim at the base of the fire",
+            "S — Squeeze the handle",
+            "S — Sweep from side to side"
+          ],
+          "memoryTip": "PASS = Pull, Aim, Squeeze, Sweep."
+        },
+        {
+          "heading": "First-aid focus",
+          "body": "The booklet's first-aid illustration uses the 3Ps.",
+          "keyPoints": [
+            "Preserve life",
+            "Prevent the condition worsening",
+            "Promote recovery"
+          ],
+          "memoryTip": "Use local emergency-response procedures; the training content is an overview."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "t19",
+      "sourceId": "training",
+      "title": "Grooming & Workplace Awareness",
+      "pages": "16–18",
+      "summary": "Key grooming visuals and safety awareness.",
+      "sections": [
+        {
+          "heading": "Crime prevention",
+          "body": "The source advises extra alertness during opening, closing, after dark and while discarding trash.",
+          "keyPoints": [
+            "Do not try to be a hero in a robbery",
+            "Call emergency services as directed",
+            "Do not disturb evidence",
+            "Cooperate with authorities and follow workplace procedures"
+          ],
+          "memoryTip": "Stay safe and report promptly."
+        },
+        {
+          "heading": "Personal grooming",
+          "body": "The booklet's diagram emphasizes clean, neat appearance, approved uniform and footwear.",
+          "keyPoints": [
+            "Keep hair neat and restrained as the role requires",
+            "Follow current personal-grooming and jewellery policy",
+            "Wear clean, ironed uniform and polished work shoes"
+          ],
+          "memoryTip": "The booklet's gender-specific examples are historical: confirm current inclusion and grooming policy."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "t20",
+      "sourceId": "training",
+      "title": "Pizza Hut Abbreviations",
+      "pages": "19–20",
+      "summary": "Common operating and management acronyms.",
+      "sections": [
+        {
+          "heading": "Outlet and audit",
+          "body": "The source defines:",
+          "keyPoints": [
+            "FCD — Fast Casual Delco",
+            "DELCO — Delivery Carry Out",
+            "RBD — Restaurant Based Dining",
+            "RR — Red Roof",
+            "ACE — Assured Customer Experience",
+            "NSF — National Sanitation Foundation",
+            "FSCC — Food Safety Compliance Check",
+            "GES — Guest Experience Survey"
+          ],
+          "memoryTip": "Learn the outlet codes before audit acronyms."
+        },
+        {
+          "heading": "Outlet operations",
+          "body": "The booklet gives:",
+          "keyPoints": [
+            "FOH — Front of House; BOH — Back of House; MOH — Middle of House",
+            "CSR — Customer Service Representative; CCP — Critical Control Point",
+            "KOT — Kitchen Order Ticket; KDS — Kitchen Display System",
+            "MOD — Manager On Duty; SM — Shift Manager; RGM — Restaurant General Manager"
+          ],
+          "memoryTip": "Front, back, middle; tickets; managers."
+        },
+        {
+          "heading": "Operations and reporting",
+          "body": "Other terms include:",
+          "keyPoints": [
+            "HACCP — Hazard Analysis Critical Control Point",
+            "SLGL — Shelf Life Guideline",
+            "TTCS — Time Temperature Control System",
+            "BSC — Balanced Scorecard",
+            "ADS — Average Daily Sale; ADT — Average Daily Transactions",
+            "APC — Average Per Cheque; OSI — Overall Satisfaction Index",
+            "MIS — Management Information System; SOP — Standard Operating Procedures"
+          ],
+          "memoryTip": "Pair each abbreviation with its full meaning."
+        }
+      ],
+      "art": "training"
+    }
+  ]
+}
