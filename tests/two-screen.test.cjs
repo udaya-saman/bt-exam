@@ -21,16 +21,17 @@ assert.match(app,/className='arena-rewards-grid'/,'Reward grid present');
 assert.match(app,/function changeOutlet\(\)/,'Outlet request panel present');
 assert.match(app,/request\.disabled=true/,'Outlet button disabled until outlet changes');
 assert.match(app,/function accountSettings\(\)/,'Account controls preserved');
-assert.match(app,/function backupPanel\(\)/,'Backup and restore present');
+assert.doesNotMatch(app,/function backupPanel\(\)|Save My Progress|Save a Copy/,'Requested manual backup controls removed');
 assert.match(app,/function viewSyncHealth\(\)/,'Admin saved answers view present');
 assert.match(app,/function openNotifications\(\)/,'Notifications working');
 assert.match(app,/BTExamUI=\{/,'Home actions attached');
 assert.match(app,/role','status'/,'Accessible status card');
 assert.match(app,/recordLastSync\(\)/,'Recent synced status');
-assert.match(app,/getQueue\(\)\.filter\(item=>item\.uid===user\.uid\)/,'Backup is account-specific');
-assert.match(app,/data\.uid!==user\.uid/,'Cross-user backup rejected');
-assert.match(app,/existing=getQueue\(\),unique=new Map/,'Import deduplicates');
-assert.match(app,/confirm\('Add '/,'Import asks permission');
+assert.match(app,/function getQueue\(\)/,'Offline pending answers remain account-specific');
+assert.match(app,/const qkey=\(\)=>user\?/,'Pending answers are scoped by user');
+assert.match(app,/saveQueue\(getQueue\(\)\.filter\(item=>item\.id!==e\.id\)\)/,'Committed answers do not remain pending');
+assert.match(index,/id="paper-select"/,'Created Questions selector exists');
+assert.match(index,/id="study-reader"/,'Study reader exists');
 assert.match(app,/aria-live/,'Reward announces points');
 assert.match(css,/@media\(max-width:530px\)/,'Mobile Player Card responsive');
 assert.match(css,/@media\(max-width:670px\)/,'Home responsive');
@@ -39,7 +40,7 @@ assert.match(css,/\.arena-hero/,'Home hero CSS exists');
 assert.match(css,/\.arena-status-card/,'Status CSS exists');
 assert.match(css,/\.arena-rewards-grid/,'Rewards grid CSS exists');
 assert.match(sw,/pizza-v36\.css/,'Offline caches new theme');
-assert.equal(version.version,'3.6.0-two-screen');
+assert.equal(version.version,'4.0.0-arena');
 for(const source of [index,app,css,sw,fs.readFileSync('manifest.json','utf8')]){
  assert.doesNotMatch(source,/\.svg(?:["'\s?)]|$)|\.webp(?:["'\s?)]|$)/m,'No SVG/WebP visual assets loaded');
 }
@@ -51,10 +52,10 @@ for(const filename of [
  const buf=fs.readFileSync(file);
  assert.equal(buf.toString('hex',0,8),'89504e470d0a1a0a',filename+' is PNG');
  assert.ok(buf.readUInt32BE(16)>=500,filename+' has adequate width');
- assert.ok(buf.includes(Buffer.from('tRNS')),filename+' retains transparency');
+ assert.ok([4,6].includes(buf.readUInt8(25))||buf.includes(Buffer.from('tRNS')),filename+' retains transparency');
 }
 for(const [name,target] of [
  ['Rising Star',1500],['Pizza Legend',6000],['Sharp Mind',50],
  ['Super Student',150],['Weekly Warrior',200],['Outlet Challenger',25]
 ])assert.match(rewards,new RegExp(name+"',"+target+","),name+' target unchanged');
-console.log('Pizza Arena two-screen, backup, accessibility, PNG assets and rewards checks passed.');
+console.log('Pizza Arena redesigned screens, accessible actions, PNG assets and rewards checks passed.');
