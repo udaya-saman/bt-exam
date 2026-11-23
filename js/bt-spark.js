@@ -737,10 +737,38 @@ function promptUpdate(){
  const v=latestUpdate;const box=open('Update available','BT Exam Prep version '+v+' is available. Updating will reload the application.');
  const picture=document.createElement('img');picture.className='pg-celebration';picture.src='./images/mascot/pizza-update.png';picture.alt='Pizza mascot with refresh symbol';box.prepend(picture);
  const updateNow=btn('Update Now',async()=>{
-  try{const reg=await navigator.serviceWorker?.getRegistration();if(reg){await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});}}
-  catch(e){console.warn('Update:',e);}
-  location.reload();
- });updateNow.classList.add('pg-btn-green','arena-update-now');box.append(updateNow,btn('Later',close,true));
+  updateNow.disabled=true;
+  try{
+    const workerHost=navigator.serviceWorker;
+    const reg=await workerHost?.getRegistration();
+    if(reg){
+      await reg.update();
+      if(reg.installing){
+        await Promise.race([
+          new Promise(resolve=>{
+            const worker=reg.installing;
+            const onChange=()=>{if(['installed','activated','redundant'].includes(worker.state)){worker.removeEventListener('statechange',onChange);resolve();}};
+            worker.addEventListener('statechange',onChange);onChange();
+          }),
+          new Promise(resolve=>setTimeout(resolve,6000))
+        ]);
+      }
+      if(reg.waiting){
+        const changing=new Promise(resolve=>{
+          const finish=()=>{workerHost.removeEventListener('controllerchange',finish);resolve();};
+          workerHost.addEventListener('controllerchange',finish,{once:true});
+          setTimeout(finish,6000);
+        });
+        reg.waiting.postMessage({type:'SKIP_WAITING'});
+        await changing;
+      }
+    }
+    location.reload();
+  }catch(e){
+    updateNow.disabled=false;
+    note('The update could not be installed. Check your connection and try again.');
+  }
+});updateNow.classList.add('pg-btn-green','arena-update-now');box.append(updateNow,btn('Later',close,true));
 }
 window.addEventListener('online',()=>{sync();checkForUpdates();});
 setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
