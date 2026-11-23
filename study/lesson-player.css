@@ -1,0 +1,26 @@
+/* Reserved for source-verified Pizza Arena study lessons. */
+.arena-curriculum{background:linear-gradient(150deg,#fffaf4,#fff0e9);color:#25181a;min-height:100vh;padding:20px 14px 54px}
+.arena-curriculum-inner{max-width:860px;margin:auto}
+.arena-curriculum-header{background:linear-gradient(125deg,#8d0419,#e21b31);color:#fff;border-radius:22px;padding:23px 24px;box-shadow:0 8px 25px #a3273344}
+.arena-curriculum-kicker{font-weight:800;color:#ffe28e;letter-spacing:.08em}
+.arena-curriculum-header h1{font-size:clamp(25px,5vw,38px);margin:8px 0}
+.arena-curriculum-header p{color:#fff3ee}
+.arena-curriculum-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+.arena-curriculum-tile,.arena-curriculum-section,.arena-curriculum-empty{background:#fffdf9;border:1px solid #e9c2ac;border-radius:20px;box-shadow:0 5px 13px #ad28441c;padding:19px}
+.arena-curriculum-tile{text-align:left;display:flex;flex-direction:column;gap:9px;cursor:pointer}
+.arena-curriculum-tile strong{color:#a70c24;font-size:20px}
+.arena-curriculum-tile small{color:#5c4946}
+.arena-curriculum-tile span{color:#117826;font-weight:800}
+.arena-curriculum-reader{margin-top:18px}
+.arena-curriculum-reader h2{font-size:clamp(23px,5vw,34px);color:#aa0923}
+.arena-curriculum-back,.arena-curriculum-finish{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(#2acb42,#088323)}
+.arena-curriculum-sections{display:grid;gap:16px;margin:18px 0}
+.arena-curriculum-section{overflow:hidden}
+.arena-curriculum-step{color:#b70c26;font-weight:900;letter-spacing:.08em}
+.arena-curriculum-section h3{margin:8px 0;font-size:22px}
+.arena-curriculum-section p,.arena-curriculum-points li{line-height:1.6}
+.arena-curriculum-art{display:block;max-width:min(100%,380px);width:100%;height:auto;margin:14px auto;object-fit:contain;animation:arena-study-float 3.5s ease-in-out infinite;filter:drop-shadow(0 7px 10px #5c101c25)}
+.arena-curriculum-tip{padding:12px 16px;background:#fff1cb;border-left:5px solid #ffbd2f;border-radius:9px;font-weight:650}
+@keyframes arena-study-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@media(prefers-reduced-motion:reduce){.arena-curriculum-art{animation:none}}
+@media(max-width:420px){.arena-curriculum{padding:12px 10px 30px}.arena-curriculum-header{padding:19px}}
