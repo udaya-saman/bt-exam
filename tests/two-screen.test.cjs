@@ -31,7 +31,7 @@ assert.match(app,/function getQueue\(\)/,'Offline pending answers remain account
 assert.match(app,/const qkey=\(\)=>user\?/,'Pending answers are scoped by user');
 assert.match(app,/saveQueue\(getQueue\(\)\.filter\(item=>item\.id!==e\.id\)\)/,'Committed answers do not remain pending');
 assert.match(index,/id="paper-select"/,'Created Questions selector exists');
-assert.match(index,/id="study-reader"/,'Study reader exists');
+assert.match(index,/id="study-app"/,'New source-based Study reader exists');
 assert.match(app,/aria-live/,'Reward announces points');
 assert.match(css,/@media\(max-width:530px\)/,'Mobile Player Card responsive');
 assert.match(css,/@media\(max-width:670px\)/,'Home responsive');
@@ -40,7 +40,7 @@ assert.match(css,/\.arena-hero/,'Home hero CSS exists');
 assert.match(css,/\.arena-status-card/,'Status CSS exists');
 assert.match(css,/\.arena-rewards-grid/,'Rewards grid CSS exists');
 assert.match(sw,/pizza-v36\.css/,'Offline caches new theme');
-assert.equal(version.version,'4.0.0-arena');
+assert.equal(version.version,'4.1.0-study');
 for(const source of [index,app,css,sw,fs.readFileSync('manifest.json','utf8')]){
  assert.doesNotMatch(source,/\.svg(?:["'\s?)]|$)|\.webp(?:["'\s?)]|$)/m,'No SVG/WebP visual assets loaded');
 }
