@@ -376,6 +376,14 @@ async function profilePanel(){
  const syncStatus=document.createElement('div');syncStatus.className='arena-sync-area';
  const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
  syncStatus.append(status,syncButton);box.append(syncStatus);
+ // Load a ranking snapshot when the card opens before the leaderboard has been visited.
+ // Keep it one-shot, rather than an always-on listener, to conserve mobile resources.
+ if(!users.length&&navigator.onLine){
+   try{
+     const snapshot=await F.getDocs(F.collection(db,'publicRanks'));
+     users=snapshot.docs.map(doc=>doc.data()).filter(rankEligible);
+   }catch(e){console.info('Outlet crown information will refresh when the leaderboard opens.');}
+ }
  const rewards=window.BTRewards;
  if(rewards){
    const eligible=rankEligible({...profile,isAdmin:admins});
