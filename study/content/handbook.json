@@ -538,6 +538,255 @@
         }
       ],
       "art": "handbook"
+    },
+    {
+      "id": "h18",
+      "sourceId": "handbook",
+      "title": "Making a Pizza: Five Stages",
+      "pages": "46",
+      "summary": "Visual sequence for pizza assembly.",
+      "sections": [
+        {
+          "heading": "Pizza-making sequence",
+          "body": "The handbook displays a five-step illustration for making a pizza.",
+          "keyPoints": [
+            "1. Base sauce",
+            "2. Cheese",
+            "3. Toppings",
+            "4. Into the oven",
+            "5. A perfect pizza"
+          ],
+          "memoryTip": "Remember: sauce → cheese → toppings → bake → serve. Actual recipes and safe cooking temperatures must follow the current SOP."
+        }
+      ],
+      "art": "food"
+    },
+    {
+      "id": "h19",
+      "sourceId": "handbook",
+      "title": "Making a Taco: Five Stages",
+      "pages": "47",
+      "summary": "Visual sequence for taco assembly.",
+      "sections": [
+        {
+          "heading": "Taco-making sequence",
+          "body": "The handbook illustrates five stages for assembling a taco.",
+          "keyPoints": [
+            "1. Taco shell",
+            "2. Protein",
+            "3. Sauce",
+            "4. Cold filling",
+            "5. A perfect taco"
+          ],
+          "memoryTip": "Remember shell → protein → sauce → cold filling → serve. Use the current approved recipes."
+        }
+      ],
+      "art": "food"
+    },
+    {
+      "id": "h20",
+      "sourceId": "handbook",
+      "title": "CHAMPS, H2OP & Customer WOW",
+      "pages": "48–50",
+      "summary": "Customer-service culture in pictures.",
+      "sections": [
+        {
+          "heading": "CHAMPS",
+          "body": "The handbook repeats six dimensions of customer expectations.",
+          "keyPoints": [
+            "Cleanliness",
+            "Hospitality",
+            "Accuracy",
+            "Maintenance",
+            "Product Quality",
+            "Speed of Service"
+          ],
+          "memoryTip": "One word per letter: C-H-A-M-P-S."
+        },
+        {
+          "heading": "H2OP",
+          "body": "The handbook's four illustrated H2OP behaviours are:",
+          "keyPoints": [
+            "Hustle: speed in every transaction and shift",
+            "Hospitality: friendly, fun experiences and customer satisfaction",
+            "Own the Zone: be the best in your area",
+            "Passion for Product: make food you would be proud to serve your family"
+          ],
+          "memoryTip": "Hustle • Hospitality • Own the Zone • Passion for Product."
+        },
+        {
+          "heading": "Five Golden Rules",
+          "body": "The Customer WOW illustration reinforces:",
+          "keyPoints": [
+            "Never let a customer leave unhappy.",
+            "Treat customers as you want to be treated.",
+            "Solve problems before they become complaints.",
+            "Never argue with customers.",
+            "Never blame team members."
+          ],
+          "memoryTip": "WOW = resolve concerns before the guest leaves."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "h21",
+      "sourceId": "handbook",
+      "title": "BLAST: Guest Complaint Recovery",
+      "pages": "51",
+      "summary": "Illustrated way to handle customer complaints.",
+      "sections": [
+        {
+          "heading": "The five letters",
+          "body": "The handbook uses the BLAST acronym in a customer-complaint infographic.",
+          "keyPoints": [
+            "B — Believe",
+            "L — Listen",
+            "A — Apologise",
+            "S — Satisfy",
+            "T — Thank"
+          ],
+          "memoryTip": "BLAST is for listening and resolving, not debating."
+        }
+      ],
+      "art": "service"
+    },
+    {
+      "id": "h22",
+      "sourceId": "handbook",
+      "title": "Food Safety & Handwashing",
+      "pages": "52–56",
+      "summary": "Six-step illustrated handwashing and five food-safety rules.",
+      "sections": [
+        {
+          "heading": "Five rules",
+          "body": "Pages 52 and 54–56 explain core food-safety responsibilities.",
+          "keyPoints": [
+            "Wash hands often.",
+            "Sanitize food-contact areas.",
+            "Date, rotate and eliminate.",
+            "Keep food out of the temperature danger zone.",
+            "Stay home when sick and inform the manager."
+          ],
+          "memoryTip": "Hands → Surfaces → Rotation → Temperature → Health."
+        },
+        {
+          "heading": "Six handwashing steps",
+          "body": "The handbook's sequence includes:",
+          "keyPoints": [
+            "1. Wet hands thoroughly.",
+            "2. Apply antibacterial soap.",
+            "3. Lather hands and elbows for 20 seconds.",
+            "4. Wash soap away.",
+            "5. Dry with a disposable towel.",
+            "6. Apply approved hand sanitizer."
+          ],
+          "memoryTip": "20-second lather is the centerpiece of the illustrated procedure."
+        },
+        {
+          "heading": "Temperature and rotation diagram",
+          "body": "The diagram on page 55 shows the 5°C–65°C danger zone and reminds team members to use FIFO and discard expired food.",
+          "keyPoints": [
+            "Cold food below 5°C, according to this edition.",
+            "Hot food above 65°C, according to this edition.",
+            "Date all food, follow FIFO, and discard items out of shelf life."
+          ],
+          "memoryTip": "Temperature limits are transcribed from the source; use the current food-safety SOP in live operations."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h23",
+      "sourceId": "handbook",
+      "title": "Four Accident Prevention Rules",
+      "pages": "58–60",
+      "summary": "Safe equipment and lifting practices.",
+      "sections": [
+        {
+          "heading": "The four rules",
+          "body": "The handbook's illustrated safety wheel highlights:",
+          "keyPoints": [
+            "Clean up after yourself.",
+            "Use things as intended.",
+            "Respect the equipment.",
+            "Lift properly."
+          ],
+          "memoryTip": "C-U-R-L: Clean, Use, Respect, Lift."
+        },
+        {
+          "heading": "Examples",
+          "body": "Pages 59–60 show everyday examples of safe handling.",
+          "keyPoints": [
+            "Clean spills immediately and display caution signs.",
+            "Use the correct tools; do not improvise with sharp objects.",
+            "Follow operating procedures and servicing schedules.",
+            "Lift using bent knees, straight back, and help when needed."
+          ],
+          "memoryTip": "Spot, prevent, and report hazards."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h24",
+      "sourceId": "handbook",
+      "title": "Fire Safety: Triangle & PASS",
+      "pages": "61–66",
+      "summary": "The three fire elements and extinguisher sequence.",
+      "sections": [
+        {
+          "heading": "Three fire elements",
+          "body": "The fire triangle on page 63 labels:",
+          "keyPoints": [
+            "Heat",
+            "Fuel",
+            "Oxygen"
+          ],
+          "memoryTip": "Removing one element can stop the fire."
+        },
+        {
+          "heading": "PASS method",
+          "body": "Page 65 shows the four actions for an extinguisher.",
+          "keyPoints": [
+            "P — Pull the safety pin.",
+            "A — Aim at the base of the fire.",
+            "S — Squeeze the handle.",
+            "S — Sweep side to side."
+          ],
+          "memoryTip": "PASS → Pull • Aim • Squeeze • Sweep."
+        },
+        {
+          "heading": "When fire occurs",
+          "body": "The handbook illustrates staying calm, alerting the manager, attempting an extinguisher only if safe, and contacting emergency responders.",
+          "keyPoints": [
+            "Prioritize safe evacuation and follow your emergency action plan.",
+            "Do not fight a fire if untrained or if escape is unsafe."
+          ],
+          "memoryTip": "Safety of people comes first."
+        }
+      ],
+      "art": "safety"
+    },
+    {
+      "id": "h25",
+      "sourceId": "handbook",
+      "title": "First Aid: The Three Ps",
+      "pages": "67",
+      "summary": "First-aid goals in the final training diagram.",
+      "sections": [
+        {
+          "heading": "The 3Ps",
+          "body": "The first-aid triangle lists three goals.",
+          "keyPoints": [
+            "Preserve life.",
+            "Prevent the condition getting worse.",
+            "Promote recovery."
+          ],
+          "memoryTip": "P-P-P. Call for qualified help and follow the outlet emergency plan."
+        }
+      ],
+      "art": "safety"
     }
   ],
   "notes": "Scanned source; lessons cover verified handbook sections and cite printed PDF page numbers. Employment policies and numerical standards may change; refer to current workplace policies."
