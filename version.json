@@ -1,5 +1,5 @@
 {
-  "version": "3.9.0-performance",
-  "releaseDate": "2026-11-20",
-  "notes": "Faster image loading, scoped artwork rendering and improved offline caching; no scoring or data changes."
+  "version": "4.0.0-arena",
+  "releaseDate": "2026-11-23",
+  "notes": "Two-card home screen, study reader, visual player-card refresh, account editor, reward feedback, outlet qualification and scoring/sync fixes."
 }
