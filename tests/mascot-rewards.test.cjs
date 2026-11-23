@@ -42,7 +42,7 @@ for(const state of ['welcome','rank-up','overtaken','timer','correct','wrong','m
  const png=fs.readFileSync(p);
  assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a',p+' must be PNG');
  assert.ok(png.readUInt32BE(16)>=500,'Mascot must be high resolution');
- assert.ok(png.includes(Buffer.from('tRNS')),'Mascot must have transparency');
+ assert.ok([4,6].includes(png.readUInt8(25)) || png.includes(Buffer.from('tRNS')),'Mascot must support alpha or tRNS transparency');
 }
 const js=fs.readFileSync('js/bt-spark.js','utf8'),rules=fs.readFileSync('firestore.rules','utf8');
 assert.match(js,/F\.collection\(db,'publicRanks'\)/);
