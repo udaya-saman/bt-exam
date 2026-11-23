@@ -18,7 +18,15 @@ for(const width of widths){
   await page.setViewportSize({width,height:820});
   await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
   await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  // Firebase is intentionally blocked in these isolated visual tests. Dismiss its setup overlay.
+  await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
+  await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;});
   await expect(page.locator('.arena-hero h1')).toBeVisible();
+  const heroBefore=await page.locator('.arena-hero').evaluate(el=>el.getBoundingClientRect().height);
+  await page.evaluate(()=>{document.getElementById('resume-banner').style.display='flex';});
+  const heroAfter=await page.locator('.arena-hero').evaluate(el=>el.getBoundingClientRect().height);
+  expect(Math.abs(heroBefore-heroAfter)).toBeLessThan(1);
+
   const modes=await dimensions(page,'#home .arena-path-card');
   expect(modes).toHaveLength(2);
   noOverlap(modes,width,'Home mode cards');
@@ -27,23 +35,26 @@ for(const width of widths){
   }));
   expect(source.png).toBe(true);
   expect(source.width).toBeGreaterThanOrEqual(200);
+  await page.screenshot({path:'tests/screenshot-home-'+width+'.png',fullPage:true});
   await page.evaluate(()=>openQuestions());
   await expect(page.locator('#paper-select.active .paper-card')).toHaveCount(5);
   const papers=await dimensions(page,'#paper-select .paper-card');
   noOverlap(papers,width,'Question paper cards');
   const overflow=await page.evaluate(()=>({document:document.documentElement.scrollWidth,viewport:innerWidth}));
   expect(overflow.document).toBeLessThanOrEqual(width+2);
-  await page.screenshot({path:'tests/screenshot-home-'+width+'.png',fullPage:true});
+  await page.screenshot({path:'tests/screenshot-papers-'+width+'.png',fullPage:true});
  });
 }
 test('Study library preserves all five papers and displays answers',async({page})=>{
  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
- await page.evaluate(()=>openStudy());
+ await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
+ await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;openStudy();});
  await expect(page.locator('#study-select.active .arena-study-paper')).toHaveCount(5);
  await page.evaluate(()=>showStudyPaper('past2024'));
  await expect(page.locator('#study-reader.active #study-question-text')).not.toBeEmpty();
  await expect(page.locator('#study-answer-text')).not.toBeEmpty();
  await expect(page.locator('#study-next')).toBeEnabled();
+ await page.screenshot({path:'tests/screenshot-study.png',fullPage:true});
 });
 test('Player Card and rewards fit narrow phones',async({page})=>{
  await page.setViewportSize({width:375,height:812});
