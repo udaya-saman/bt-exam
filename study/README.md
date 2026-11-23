@@ -1,18 +1,28 @@
-# Source-verified Study lessons (staging only)
+# Pizza Arena Study Academy — verified source edition
 
-This directory is a **non-deployed staging framework** for replacing the old quiz-derived Study reader with source-verified lessons.
+This revision replaces the previous quiz-derived Study reader. It **does not** alter Questions, question answers, Firebase scoring, player cards or ranking calculations.
 
-The three Adobe Acrobat links have been recorded in `lesson-content.json`, but **their pages have not been retrieved**. They must not be represented as imported course material until the PDF bytes are available and reviewed.
+## Source documents
 
-## Content rules
-- Each source must be read page-by-page; confirm titles, topics, numerical values and diagrams.
-- Only mark `source.verified=true` after comparison against the original PDF.
-- Each lesson must have an ID, title, sourceId, and ordered sections.
-- Section fields: heading, body, keyPoints (array), illustration (local PNG under ./images/study/), illustrationAlt, memoryTip.
-- Store source page references when importing, then cross-check each point and its illustration.
-- Convert only the specific diagrams required for learning to transparent PNG and retain recognizable labels.
-- Illustrations can animate slightly with CSS; they must not distort steps or physical procedures.
-- Do not merge to `main` while source files are unavailable.
+1. `Pizza Hut Training Booklet-2.pdf` — 20 PDF pages → 20 lessons (`content/training.json`)
+2. `Gamma Values and Policies.pdf` — 14 PDF pages → 12 lessons (`content/values.json`)
+3. `Employee Handbook Final.pdf` — 68 scanned PDF pages → 25 lessons (`content/handbook.json`)
 
-## Integration
-Once all lessons are verified, load the JSON and `lesson-player.js`/CSS in the Study route, replacing the current question-bank Study interface. The Questions route, Firebase scoring, and quiz state must remain untouched.
+Total: **57 topic-based lessons**. Each contains its PDF source and page range, section explanations, key points and memory cues.
+
+The imported training figures, dated organisational information, and employment arrangements are **specific to these uploaded editions**, not verified as current policy or legal advice. Consult current approved procedures for live operations.
+
+## Interaction and safety
+
+- Search lesson titles, source names, headings and key points.
+- Filter by source.
+- Animate an existing local transparent PNG mascot and factual flow/timeline memory aids; no SVG.
+- Mark lessons as learned; saved in a new isolated `localStorage` key, without changing quiz progress.
+- Respect `prefers-reduced-motion`.
+- Cache the three small JSON modules, viewer and CSS for offline-first use.
+- Render extracted content using `textContent` rather than untrusted HTML.
+- The original PDFs were not committed to this public website: the study import consists of concise verified learning notes and page provenance.
+
+## Testing
+
+Verify each PDF page reference against the uploaded PDF, ensure all 57 lessons load, test search/filter/completion and mobile layouts, then verify Questions, Firebase scoring and existing account interfaces still work.
