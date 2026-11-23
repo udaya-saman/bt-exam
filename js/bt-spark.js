@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='3.9.0-performance';let latestUpdate=null;
+const APP_VERSION='4.0.0-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -18,12 +18,12 @@ const root=document.createElement('div');root.id='bt-spark-root';root.hidden=tru
 const style=document.createElement('style');style.textContent='#bt-spark-root{position:fixed;inset:0;z-index:2147483000;background:#0a163ab8;display:grid;place-items:center;padding:12px;box-sizing:border-box;font:15px Arial,sans-serif;color:#26344a}#bt-spark-root[hidden]{display:none}#bt-spark-root .panel{background:white;border-radius:17px;width:min(100%,540px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px;box-sizing:border-box;box-shadow:0 15px 50px #0003}#bt-spark-root h2{font-size:22px;color:#21306b;margin:0 0 8px}#bt-spark-root p{font-size:13px;color:#63748b;line-height:1.45}#bt-spark-root label{display:block;font-weight:700;margin:12px 0 4px;font-size:12px}#bt-spark-root input,#bt-spark-root select{display:block;padding:11px;border-radius:10px;border:1px solid #cbd6e3;width:100%;box-sizing:border-box;font:inherit}#bt-spark-root button{padding:10px 13px;margin:6px 4px 4px 0;background:#0b71b4;color:white;border:0;border-radius:9px;font-weight:750;cursor:pointer}#bt-spark-root button.alt{background:#e8f0f9;color:#21306b}#bt-spark-root .err{color:#c00}#bt-spark-root .entry{padding:11px 0;border-bottom:1px solid #e5eaf0;display:flex;justify-content:space-between;gap:12px}#bt-spark-dock{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147482000;background:#21306b;color:white;border:0;border-radius:30px;padding:11px 14px;font-weight:800}';document.head.append(style);
 const dock=document.createElement('button');dock.id='bt-spark-dock';dock.textContent='🏆 Leaderboard';dock.onclick=()=>show('board');document.body.append(dock);
 function note(msg){console.info('[BT Spark]',msg);const n=document.createElement('div');n.textContent=msg;n.className='pg-toast';document.body.append(n);setTimeout(()=>n.remove(),3200);}
-function award(points,correct){
+function award(points,correct,practice=false){
  const old=document.querySelector('.pg-earned-toast');if(old)old.remove();
  const pill=document.createElement('div');pill.className='pg-earned-toast';pill.setAttribute('aria-live','polite');
  const mascot=document.createElement('img');mascot.alt='';mascot.src=correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
- const count=document.createElement('strong');count.textContent=(points>0?'+':'')+points+' PTS';
- pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),1750);
+ const count=document.createElement('strong');count.textContent=practice?'PRACTICE · NO RANK POINTS':(points>0?'+':'')+points+' PTS';
+ pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),4000);
 }
 function statTotals(){
  const pending=getQueue().filter(q=>q.uid===user?.uid);
@@ -137,7 +137,7 @@ function onResume(paper,saved){
 function onFinish(){clearTimeout(cloudTimer);cloudTimer=null;pendingCloudSnapshot=null;if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
 async function onAnswer(a){
  if(!user||!profile||!active||active.paper!==a.paperId)return;
- if(active.ranked===false){award(0,Boolean(a.correct));return;}
+ if(active.ranked===false){award(0,Boolean(a.correct),true);return;}
  const index=Number(a.originalQuestionIndex),selected=Number(a.selectedOriginalIndex);
  if(!Number.isInteger(index)||index<0||!Number.isInteger(selected))return;
  const id=user.uid+'_'+active.id+'_'+active.paper+'_'+index,q=getQueue();
@@ -208,9 +208,11 @@ async function sync(){
         outletWeeklyAnswers:change(b.outletWeeklyAnswers,wk,1),outletMonthlyAnswers:change(b.outletMonthlyAnswers,mk,1),updatedAt:F.serverTimestamp()});
      }
     });done.push(e.id);
+    // A committed event must not also remain in the optimistic pending count.
+    saveQueue(getQueue().filter(item=>item.id!==e.id));
    }catch(err){
     const message=errorMessage(err);
-    if(/PRACTICE_ONLY/.test(message)){console.warn('Ranked claim conflict retained:',e.id);syncIssue='You already have a ranked attempt for this paper today.';break;}
+    if(/PRACTICE_ONLY/.test(String(err?.message||err))){console.warn('Ranked claim conflict retained:',e.id);syncIssue='You already have a ranked attempt for this paper today.';break;}
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
@@ -247,19 +249,19 @@ function board(){
  const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
  const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
  big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
- const sub=document.createElement('small');sub.textContent=outletView?'At least 3 active players per outlet':'Ready for your next victory?';
+ const sub=document.createElement('small');sub.textContent=outletView?'At least 2 active players per outlet':'Ready for your next victory?';
  text.append(label,big,sub);hero.append(text);box.append(hero);
  if(window.BTRewards){const season=window.BTRewards.season(day());if(season){const chip=document.createElement('div');chip.className='pg-season-chip';const crown=document.createElement('span');crown.className='pg-crown-icon';crown.textContent='👑';chip.append(crown,document.createTextNode(' WEEKLY SEASON · '+season.daysRemaining+' DAYS LEFT · Ends '+season.end));box.append(chip);}}
  const buttons=document.createElement('div');buttons.className='pg-nav';
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
  
- const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=3).slice(0,3):records.slice(0,3);
+ const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
   const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
- if(outletView){const crown=records.find(v=>v.people>=3);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 3 active players are needed.';box.append(status);}
+ if(outletView){const crown=records.find(v=>v.people>=2);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 2 active players are needed.';box.append(status);}
  const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
  if(!records.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='🍕 The first ranked scores will appear here.';box.append(empty);}
  const shown=(outletView||showAllPlayers)?records:records.slice(0,20);
@@ -324,9 +326,9 @@ async function profilePanel(){
  explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. Try Sync again later.':totals.answered?'Your latest answers are saved.':'Your player card is ready.';
  statusCopy.append(heading,explanation);
  const statusMascot=document.createElement('img');statusMascot.src='./images/arena/mascot-avatar.png';statusMascot.decoding='async';statusMascot.alt='';
- status.append(symbol,statusCopy,statusMascot);box.append(status);
+ status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
- const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
+ const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='♟  My Player Card';card.append(cardHeader);
  const body=document.createElement('div');body.className='arena-card-body';
  const profileRow=document.createElement('div');profileRow.className='arena-profile-top';
  const avatar=document.createElement('img');avatar.className='arena-avatar';
@@ -337,11 +339,11 @@ async function profilePanel(){
  const outletLabel=document.createElement('span');outletLabel.className='arena-outlet-pill';outletLabel.textContent=profile.outlet;
  person.append(personName,outletLabel);
  const levels=document.createElement('div');levels.className='arena-level-wrap';
- const lvl=window.BTRewards?.level(Number(profile.totalPoints||0))||{number:1,percent:0,next:500,points:0};
+ const lvl=window.BTRewards?.level(Number(totals.points||0))||{number:1,percent:0,next:500,points:0};
  const levelBadge=document.createElement('span');levelBadge.className='arena-level-badge';levelBadge.textContent='Lv. '+lvl.number;
  const progress=document.createElement('div');progress.className='arena-level-track';
  const progressFill=document.createElement('span');progressFill.className='arena-level-fill';progressFill.style.width=lvl.percent+'%';progress.append(progressFill);
- const nextGoal=document.createElement('small');nextGoal.textContent=lvl.points.toLocaleString()+' / '+lvl.next.toLocaleString()+' pts';
+ const nextGoal=document.createElement('small');nextGoal.textContent=totals.points.toLocaleString()+' / '+lvl.next.toLocaleString()+' pts';
  levels.append(levelBadge,progress,nextGoal);profileRow.append(avatar,person,levels);body.append(profileRow);
  const stats=document.createElement('div');stats.className='arena-stats-grid';
  for(const [glyph,count,word] of [['🏆',totals.points,'Points'],['🎯',totals.correct,'Correct'],['📘',totals.answered,'Answered']]){
@@ -352,21 +354,23 @@ async function profilePanel(){
  }body.append(stats);
  const actions=document.createElement('div');actions.className='arena-actions';
  const boardButton=btn('🏆 Leaderboard',board);boardButton.classList.add('pg-btn-green');
- const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green');
  const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.add('pg-btn-red');
  const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
- actions.append(boardButton,syncButton,signoutButton,closeAction);body.append(actions);
+ actions.append(boardButton,signoutButton,closeAction);body.append(actions);
  const outletRow=document.createElement('button');outletRow.type='button';outletRow.className='arena-outlet-row';
  const pencil=document.createElement('span');pencil.className='arena-outlet-symbol';pencil.textContent='✎';
  const copy=document.createElement('span');const strong=document.createElement('strong');strong.textContent='Change your outlet?';
- const detail=document.createElement('small');detail.textContent='You can request a change here.';copy.append(strong,detail);
+ copy.append(strong);
  const arrow=document.createElement('span');arrow.textContent='›';arrow.style.fontSize='28px';
  outletRow.append(pencil,copy,arrow);outletRow.onclick=changeOutlet;body.append(outletRow);
  card.append(body);box.append(card);
+ const syncStatus=document.createElement('div');syncStatus.className='arena-sync-area';
+ const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
+ syncStatus.append(status,syncButton);box.append(syncStatus);
  const rewards=window.BTRewards;
  if(rewards){
    const eligible=rankEligible({...profile,isAdmin:admins});
-   const leader=users.length?ranked('weekly',true).find(x=>x.people>=3):null;
+   const leader=users.length?ranked('weekly',true).find(x=>x.people>=2):null;
    const crown=!!(eligible&&leader&&leader.name===profile.outlet);
    const entries=rewards.achievements(profile,day(),week(),crown);
    const priority=['rising-star','legend','sharp-mind','super-student','weekly-50','outlet-drive'];
@@ -387,7 +391,7 @@ async function profilePanel(){
        const name=document.createElement('strong');name.textContent=item.label;
        const requirement=document.createElement('small');
        const suffix=['rising-star','legend','first-slice'].includes(item.id)?' pts':['sharp-mind','super-student','centurion'].includes(item.id)?' correct':['weekly-50','outlet-drive'].includes(item.id)?' answers':'';
-       requirement.textContent=item.target.toLocaleString()+suffix+(item.unlocked?' · Earned':'');
+       requirement.textContent=Math.max(0,Number(item.current)||0).toLocaleString()+' / '+item.target.toLocaleString()+suffix+(item.unlocked?' · Earned':'');
        const track=document.createElement('div');track.className='arena-reward-track';
        const progress=document.createElement('span');progress.style.width=item.percent+'%';track.append(progress);
        tile.append(icon,name,requirement,track);grid.append(tile);
@@ -396,8 +400,8 @@ async function profilePanel(){
    renderRewards(false);
  }
  const utilities=document.createElement('div');utilities.className='arena-actions';
- utilities.append(btn('Account Settings',accountSettings),btn('Save My Progress',backupPanel));
- if(admins)utilities.append(btn('Manage',adminPanel),btn('Check Saved Answers',viewSyncHealth));
+ utilities.append(btn('Account',accountSettings));
+ if(admins)utilities.append(btn('Manage',adminPanel));
  utilities.querySelectorAll('button').forEach(b=>b.classList.add('pg-btn-green'));
  box.append(utilities);
  const last=lastSyncTime();
@@ -545,7 +549,6 @@ function viewSyncHealth(){
   row.append(key,val);box.append(row);
  }
  box.append(btn('Try Sync',async()=>{await sync();viewSyncHealth();}),
-            btn('Save a Copy',backupPanel),
             btn('Manage',adminPanel),
             btn('Close',close));
 }
