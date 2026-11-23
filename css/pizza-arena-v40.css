@@ -145,3 +145,11 @@ body #bt-spark-root .arena-admin-panel>button{display:block!important;width:100%
  .arena-photo-preview{width:78px!important;height:78px!important}
 }
 @media(prefers-reduced-motion:reduce){#home .arena-hero-mascot img,#home .arena-hero-mascot:before,.pg-earned-toast{animation:none!important}#home .arena-hero-mascot img{will-change:auto}}
+
+/* PNG icons remain sharp and readable in the redesigned cards. */
+#home .arena-path-icon.arena-png-icon{width:60px!important;height:60px!important;flex:0 0 60px!important;margin:0 0 12px!important;background-color:#fff0e1!important;background-size:400% 300%!important}
+#paper-select .pc-icon-big.arena-png-icon{width:48px!important;height:48px!important;flex:0 0 48px!important;margin:0!important;background-size:400% 300%!important}
+body #bt-spark-root button.arena-update-now{background:linear-gradient(180deg,#36ce47,#078621)!important;color:#fff!important;border:1px solid #95ef9a!important;font-weight:950!important}
+body #bt-spark-root .arena-admin-panel>button{min-height:49px!important}
+body #bt-spark-root .arena-password-fields .pg-btn-green{background:linear-gradient(#31c64b,#098427)!important;color:white!important}
+@media(max-width:390px){#home .arena-path-icon.arena-png-icon{width:51px!important;height:51px!important;flex-basis:51px!important}}
