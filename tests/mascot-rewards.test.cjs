@@ -20,7 +20,7 @@ assert.equal(rw.level(500).number,2);
 assert.equal(rw.level(549).percent,10);
 assert.deepEqual(JSON.parse(JSON.stringify(rw.season('2026-11-13'))),{start:'2026-11-09',end:'2026-11-15',daysRemaining:3});
 const progress={outlet:'Matara',totalPoints:6500,correctAnswers:160,dailyActivity:daily,
-outletWeeklyAnswers:{'2026-11-09__Matara':225}};
+outletWeeklyAnswers:{'2026-11-09__Matara':225},weeklyPoints:{'2026-11-09':225}};
 let a=rw.achievements(progress,'2026-11-13','2026-11-09',true);
 const unlocked=id=>a.find(x=>x.id===id)?.unlocked;
 assert.equal(unlocked('centurion'),true);
@@ -53,7 +53,7 @@ assert.match(rules,/correctAnswers/);
 assert.match(rules,/dailyActivity/);
 assert.match(rules,/reviewSuggested/);
 const thresholds=rw.achievements({outlet:'Matara',totalPoints:1499,correctAnswers:49,
- outletWeeklyAnswers:{'2026-11-09__Matara':24}},'2026-11-13','2026-11-09');
+ outletWeeklyAnswers:{'2026-11-09__Matara':24},weeklyPoints:{'2026-11-09':199}},'2026-11-13','2026-11-09');
 for(const id of ['rising-star','sharp-mind','super-student','weekly-50','outlet-drive'])
  assert.equal(thresholds.find(x=>x.id===id).unlocked,false,id+' must be earned at harder threshold');
 assert.equal(thresholds.find(x=>x.id==='rising-star').target,1500);
