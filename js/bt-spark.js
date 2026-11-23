@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.1.0-study';let latestUpdate=null;
+const APP_VERSION='4.2.0-profile';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -40,8 +40,8 @@ function syncDetail(err){
    return 'No internet. Your answers are safe. Try again later.';
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub){root.classList.remove('arena-profile-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.classList.remove('arena-profile-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
+function open(title,sub){root.classList.remove('arena-profile-mode','arena-account-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -322,7 +322,7 @@ async function profilePanel(){
  const box=open('MY PLAYER CARD','');
  root.classList.add('arena-profile-mode');
  const bar=document.createElement('div');bar.className='arena-page-top';
- const title=document.createElement('span');title.textContent='PIZZA ARENA · MY PLAYER CARD';
+ const title=document.createElement('span');title.textContent='PIZZA ARENA · PLAYER HQ';
  const closeButton=btn('Close',close);closeButton.setAttribute('aria-label','Close player card');
  bar.append(title,closeButton);root.querySelector('.panel').prepend(bar);
  const totals=statTotals(),pending=totals.syncCount;
@@ -333,11 +333,12 @@ async function profilePanel(){
  const heading=document.createElement('strong');heading.textContent=pending?(syncIssue?'Sync failed':'Answers waiting'):'All caught up';
  const explanation=document.createElement('small');
  explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
+ status.classList.add(pending?'has-pending':'is-synced');
  statusCopy.append(heading,explanation);
  const statusMascot=document.createElement('img');statusMascot.src='./images/arena/mascot-avatar.png';statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
- const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='♟  My Player Card';card.append(cardHeader);
+ const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='🏆  MY PLAYER CARD';card.append(cardHeader);
  const body=document.createElement('div');body.className='arena-card-body';
  const profileRow=document.createElement('div');profileRow.className='arena-profile-top';
  const avatar=document.createElement('img');avatar.className='arena-avatar';
@@ -375,7 +376,7 @@ async function profilePanel(){
  card.append(body);box.append(card);
  const syncStatus=document.createElement('div');syncStatus.className='arena-sync-area';
  const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
- syncStatus.append(status,syncButton);box.append(syncStatus);
+ syncStatus.append(status,syncButton);
  // Load a ranking snapshot when the card opens before the leaderboard has been visited.
  // Keep it one-shot, rather than an always-on listener, to conserve mobile resources.
  if(!users.length&&navigator.onLine){
@@ -425,6 +426,8 @@ async function profilePanel(){
  const footer=document.createElement('p');footer.style.cssText='text-align:center;color:#826964;font-size:11px;margin:13px 0 8px';
  footer.textContent=last?'Last updated: '+new Date(last).toLocaleString():'Your answers are stored safely on this device until they can be saved.';
  box.append(footer);
+ // Sync information belongs at the bottom, after achievements and account controls.
+ box.append(syncStatus);
 }
 function changeOutlet(){
  if(!profile)return;
@@ -449,7 +452,11 @@ async function accountSettings(){
  if(!user||!profile)return;
  const box=open('ACCOUNT SETTINGS','Update your player picture, username or password.');
  box.classList.add('arena-settings-dialog');
- const msg=document.createElement('p');msg.className='err';msg.setAttribute('role','alert');box.append(msg);
+ root.classList.add('arena-account-mode');
+ const intro=document.createElement('div');intro.className='arena-account-intro';
+ intro.textContent='Changes are saved to your account only when you tap Save.';
+ box.prepend(intro);
+ const msg=document.createElement('p');msg.className='arena-account-feedback';msg.setAttribute('role','alert');msg.setAttribute('aria-live','polite');box.append(msg);
  const photoSection=document.createElement('div');photoSection.className='arena-account-photo';
  const preview=document.createElement('img');preview.className='arena-photo-preview';
  const fallback='./images/arena/mascot-avatar.png';
@@ -457,22 +464,26 @@ async function accountSettings(){
  preview.alt='Current player picture';preview.width=120;preview.height=120;
  const photoControls=document.createElement('div');photoControls.className='arena-photo-controls';
  const image=field(photoControls,'Profile picture (PNG)','file');image.accept='image/png';image.required=false;
- const removeImage=btn('Remove picture',()=>{pendingAvatar='';preview.src=fallback;image.value='';msg.textContent='Press Save to confirm this change.';},true);
+ const removeImage=btn('Remove picture',()=>{
+   pendingAvatar='';preview.src=fallback;image.value='';msg.textContent='Tap Save to confirm this change.';
+ },true);
  photoControls.append(removeImage);photoSection.append(preview,photoControls);box.append(photoSection);
- const newname=field(box,'Change username');newname.value=profile.username;newname.maxLength=24;newname.autocomplete='username';
- let pendingAvatar=typeof profile.avatar==='string'?profile.avatar:'';
- // Preview a selected PNG immediately. Saving the image and username is one transaction.
+ const newname=field(box,'Username');newname.value=profile.username;newname.maxLength=24;newname.autocomplete='username';
+ let pendingAvatar=typeof profile.avatar==='string'?profile.avatar:'',avatarBusy=false;
+ // A preview appears immediately; the upload is resized to fit Firestore safely.
  image.onchange=async()=>{
   const file=image.files?.[0];if(!file)return;
   msg.textContent='';
   if(file.type!=='image/png'){msg.textContent='Please choose a PNG image.';image.value='';return;}
+  avatarBusy=true;save.disabled=true;
   try{
    const src=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
    const img=await new Promise((resolve,reject)=>{const picture=new Image();picture.onload=()=>resolve(picture);picture.onerror=reject;picture.src=src;});
    let avatar='';
    for(const size of [160,144,128,112,96,80]){
     const canvas=document.createElement('canvas');canvas.width=canvas.height=size;
-    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,size,size);
+    const ctx=canvas.getContext('2d');if(!ctx)throw Error('Unable to process picture.');
+    ctx.clearRect(0,0,size,size);
     const scale=Math.max(size/img.width,size/img.height);
     ctx.drawImage(img,(size-img.width*scale)/2,(size-img.height*scale)/2,img.width*scale,img.height*scale);
     avatar=canvas.toDataURL('image/png');
@@ -481,53 +492,52 @@ async function accountSettings(){
    if(avatar.length>24000)throw Error('Image too large');
    pendingAvatar=avatar;preview.src=src;preview.alt='Selected player picture';
   }catch(e){msg.textContent=errorMessage(e);image.value='';}
+  finally{avatarBusy=false;save.disabled=false;}
  };
- const save=btn('Save',async()=>{
-  const name=newname.value.trim();
-  if(!valid(name)){msg.textContent='Use 3–24 letters, numbers, dots, dashes or underscores.';return;}
-  if(pendingAvatar.length>24000){msg.textContent='Please choose a smaller PNG image.';return;}
-  save.disabled=true;msg.textContent='';
-  try{
-   await F.runTransaction(db,async tx=>{
-    const userRef=F.doc(db,'users',user.uid),publicRef=F.doc(db,'publicRanks',user.uid);
-    const previous=F.doc(db,'usernames',profile.usernameLower),next=F.doc(db,'usernames',norm(name));
-    // All document reads must happen before any write in a Firestore transaction.
-    const [oldRegistration,newRegistration,publicSnapshot]=await Promise.all([
-      tx.get(previous),norm(name)===profile.usernameLower?Promise.resolve(null):tx.get(next),tx.get(publicRef)
-    ]);
-    if(!oldRegistration.exists()||oldRegistration.data().uid!==user.uid)throw Error('Username registry mismatch.');
-    if(newRegistration?.exists())throw Error('Username already taken.');
-    if(norm(name)!==profile.usernameLower){
-      tx.set(next,{uid:user.uid,authEmail:user.email});tx.delete(previous);
-    }
-    tx.update(userRef,{username:name,usernameLower:norm(name),avatar:pendingAvatar,updatedAt:F.serverTimestamp()});
-    if(publicSnapshot.exists()){
-      if(profile.outlet==='Other'||RESERVED.has(norm(name))||admins)tx.delete(publicRef);
-      else tx.update(publicRef,{name,avatar:pendingAvatar,updatedAt:F.serverTimestamp()});
-    }
-   });
-   profile={...profile,username:name,usernameLower:norm(name),avatar:pendingAvatar};note('Player details saved.');accountSettings();
-  }catch(e){msg.textContent=errorMessage(e);save.disabled=false;}
- });save.classList.add('pg-btn-green','arena-account-save');box.append(save);
- const passwordToggle=btn('Change Password',()=>{passwordFields.hidden=!passwordFields.hidden;if(!passwordFields.hidden)oldpass.focus();});
- passwordToggle.className='arena-password-toggle';box.append(passwordToggle);
+ const passwordToggle=btn('Change Password',()=>{
+   passwordFields.hidden=!passwordFields.hidden;
+   passwordToggle.setAttribute('aria-expanded',String(!passwordFields.hidden));
+   if(passwordFields.hidden){oldpass.value='';newpass.value='';}
+   else oldpass.focus();
+ });
+ passwordToggle.className='arena-password-toggle';passwordToggle.type='button';passwordToggle.setAttribute('aria-expanded','false');box.append(passwordToggle);
  const passwordFields=document.createElement('div');passwordFields.className='arena-password-fields';passwordFields.hidden=true;
  const oldpass=field(passwordFields,'Current password','password');oldpass.autocomplete='current-password';oldpass.required=false;
  const newpass=field(passwordFields,'New password (8 or more characters)','password');newpass.autocomplete='new-password';newpass.required=false;
- const savePassword=btn('Save Password',async()=>{
-  savePassword.disabled=true;msg.textContent='';
+ const securityHelp=document.createElement('p');securityHelp.className='arena-password-help';securityHelp.textContent='Enter both passwords, then tap the main Save button below.';
+ passwordFields.append(securityHelp);box.append(passwordFields);
+ const controls=document.createElement('div');controls.className='arena-dialog-footer arena-account-footer';
+ const save=btn('Save',async()=>{
+  if(avatarBusy){msg.textContent='Please finish selecting your picture first.';return;}
+  const name=newname.value.trim();
+  const changePassword=!passwordFields.hidden;
+  save.disabled=true;save.textContent='Saving…';msg.textContent='Saving your changes…';msg.classList.remove('is-success');
   try{
-   if(!oldpass.value||newpass.value.length<8)throw Error('Please enter both passwords.');
-   await A.reauthenticateWithCredential(user,A.EmailAuthProvider.credential(user.email,oldpass.value));
-   await A.updatePassword(user,newpass.value);
-   note('Password updated.');oldpass.value='';newpass.value='';passwordFields.hidden=true;savePassword.hidden=true;
-  }catch(e){msg.textContent=errorMessage(e);savePassword.disabled=false;}
- });savePassword.classList.add('pg-btn-green');savePassword.hidden=true;
- const showSave=()=>{savePassword.hidden=!(oldpass.value.length>0&&newpass.value.length>=8);};
- oldpass.addEventListener('input',showSave);newpass.addEventListener('input',showSave);
- passwordFields.append(savePassword);box.append(passwordFields);
- const controls=document.createElement('div');controls.className='arena-dialog-footer';
- controls.append(btn('My Player Card',profilePanel),btn('Close',close));box.append(controls);
+   const result=await window.BTProfileSave.save({
+     F,A,db,user,profile,admins,reserved:RESERVED,name,avatar:pendingAvatar,
+     changePassword,currentPassword:oldpass.value,newPassword:newpass.value
+   });
+   if(result.detailsSaved)profile=result.profile;
+   msg.textContent=result.changed?'Your account changes have been saved.':'There are no changes to save.';
+   msg.classList.add('is-success');
+   note(result.changed?'Account saved successfully.':'No changes to save.');
+   if(result.passwordSaved){
+     oldpass.value='';newpass.value='';passwordFields.hidden=true;
+     passwordToggle.setAttribute('aria-expanded','false');
+   }
+  }catch(e){
+   if(e.detailsSaved){
+     profile=e.savedProfile;
+     msg.textContent='Username and picture saved, but the password could not be updated. '+errorMessage(e);
+   }else{
+     msg.textContent=e?.message&&/Use 3|Enter your current|Choose a new password|Connect to the internet|account was changed|username information needs|Account information could not/i.test(e.message)?e.message:errorMessage(e);
+   }
+  }finally{
+   save.disabled=false;save.textContent='Save';
+  }
+ });save.type='button';save.classList.add('pg-btn-green','arena-account-save');
+ const closeButton=btn('Close',profilePanel);closeButton.classList.add('pg-btn-red');
+ controls.append(save,closeButton);box.append(controls);
 }
 function viewSyncHealth(){
  if(!admins){profilePanel();return;}
