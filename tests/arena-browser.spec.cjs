@@ -45,20 +45,29 @@ for(const width of widths){
   await page.screenshot({path:'tests/screenshot-papers-'+width+'.png',fullPage:true});
  });
 }
-test('Study library preserves all five papers and displays answers',async({page})=>{
+test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})=>{
  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
  await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
  await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;openStudy();});
- await expect(page.locator('#study-select.active .arena-study-paper')).toHaveCount(5);
- await page.evaluate(()=>showStudyPaper('past2024'));
- await expect(page.locator('#study-reader.active #study-question-text')).not.toBeEmpty();
- await expect(page.locator('#study-answer-text')).not.toBeEmpty();
- await expect(page.locator('#study-next')).toBeEnabled();
+ await expect(page.locator('#study-select.active .pa-study-card')).toHaveCount(57,{timeout:12000});
+ await expect(page.locator('.pa-study-hero h1')).toContainText('Learn. Remember. Grow.');
+ await page.locator('.pa-study-card').first().click();
+ await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
+ await expect(page.locator('.pa-study-source')).toContainText('PDF pages');
+ await expect(page.locator('.pa-study-bullets li').first()).toBeVisible();
+ await page.locator('.pa-study-mark').click();
+ await expect(page.locator('.pa-study-mark')).toContainText('Lesson completed');
  await page.screenshot({path:'tests/screenshot-study.png',fullPage:true});
+ await page.locator('.pa-study-back').click();
+ await expect(page.locator('.pa-study-progress')).toContainText('1 of 57');
+ await page.locator('.pa-study-search').fill('temperature');
+ await expect(page.locator('.pa-study-card').first()).toBeVisible();
 });
 test('Player Card and rewards fit narrow phones',async({page})=>{
  await page.setViewportSize({width:375,height:812});
  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
+ await page.waitForTimeout(250); // allow the account overlay's initial render to finish before the fixture
  await page.evaluate(()=>{
   let root=document.querySelector('#bt-spark-root');
   if(!root){root=document.createElement('div');root.id='bt-spark-root';document.body.append(root);}
