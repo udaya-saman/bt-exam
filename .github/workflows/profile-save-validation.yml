@@ -1,0 +1,30 @@
+name: Account Save and Player HQ validation
+on:
+  push:
+    branches:
+      - feature/account-save-player-card-v42-20261123
+      - main
+  pull_request:
+    paths:
+      - 'js/account-profile-save.js'
+      - 'js/bt-spark.js'
+      - 'css/player-card-v42.css'
+      - 'tests/account-save-v42.test.cjs'
+      - 'index.html'
+      - 'sw.js'
+      - 'version.json'
+      - '.github/workflows/profile-save-validation.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify account Save, Firebase profile transactions and Player Card DOM
+        run: |
+          node tests/account-save-v42.test.cjs
+          node --check js/account-profile-save.js
+          node --check js/bt-spark.js
+          node --check sw.js
