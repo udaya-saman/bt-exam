@@ -1,6 +1,6 @@
 /* Pizza Arena artwork placement v3.8. Presentation-only; never modifies scores, profile layout, or stored data. */
 (()=>{'use strict';
-const labels={'Rising Star':0,'Pizza Legend':1,'Sharp Mind':2,'Super Student':3,'Weekly Warrior':4,'Outlet Challenger':5,'Weekly 50':4,'Outlet Drive':5,'Legend':1,'Points':6,'Correct':7,'Answered':8};
+const labels={'Rising Star':0,'Pizza Legend':1,'Sharp Mind':2,'Super Student':3,'Weekly Warrior':4,'Outlet Challenger':5,'Weekly 50':4,'Outlet Drive':5,'Legend':1,'Points':6,'Correct':7,'Answered':8,'First Slice':10,'100 Correct Club':2,'3-Day Streak':4,'7-Day Streak':4,'14-Day Streak':1,'Crown Squad':1};
 function icon(node,index){
   if(!node||node.dataset.arenaPng===String(index))return;
   node.dataset.arenaPng=String(index);
@@ -17,7 +17,9 @@ function homeArtwork(){
     wordmark.dataset.arenaReady='1';wordmark.setAttribute('role','img');
     wordmark.setAttribute('aria-label','Pizza Hut');wordmark.textContent='';
   }
-  home.querySelectorAll('.paper-card').forEach(card=>{
+  icon(home.querySelector('.arena-path-icon-questions'),10);
+  icon(home.querySelector('.arena-path-icon-study'),3);
+  document.querySelectorAll('#paper-select .paper-card').forEach(card=>{
     const title=card.querySelector('.pc-title')?.textContent||'';
     icon(card.querySelector('.pc-icon-big'),/paper 2|operations|model 2/i.test(title)?9:10);
   });

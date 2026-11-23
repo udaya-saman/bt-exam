@@ -275,6 +275,7 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./css/pizza-v34.css">
 <link rel="stylesheet" href="./css/pizza-v36.css">
 <link rel="stylesheet" href="./css/pizza-reference.css?v=3.9">
+<link rel="stylesheet" href="./css/pizza-arena-v40.css?v=4.0.1">
 </head>
 <body>
 
@@ -315,10 +316,36 @@ button { outline: none; border: none; font-family: inherit; }
 
     <div class="home-section-label">
       <span>CHOOSE YOUR CHALLENGE</span>
-      <button id="sound-toggle" onclick="toggleSound()" style="background: var(--opt-bg); border: 1px solid var(--border-light); color: var(--text-main); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px; cursor: pointer;">🔊 Sound On</button>
+      <button id="sound-toggle" onclick="toggleSound()" >🔊 Sound On</button>
     </div>
 
-    <div class="paper-grid">
+    <div class="arena-paths" role="group" aria-label="Choose your activity">
+      <button type="button" class="arena-path-card arena-path-questions" onclick="openQuestions()" aria-label="Questions, choose an exam paper">
+        <span class="arena-path-icon arena-path-icon-questions" aria-hidden="true">📝</span>
+        <span class="arena-path-name">Questions</span>
+        <span class="arena-path-desc">Choose a paper, answer questions and earn points.</span>
+        <span class="arena-path-action">CHOOSE QUESTIONS <span aria-hidden="true">→</span></span>
+      </button>
+      <button type="button" class="arena-path-card arena-path-study" onclick="openStudy()" aria-label="Study, review the learning materials">
+        <span class="arena-path-icon arena-path-icon-study" aria-hidden="true">📚</span>
+        <span class="arena-path-name">Study</span>
+        <span class="arena-path-desc">Review answers and explanations at your own pace.</span>
+        <span class="arena-path-action">START STUDYING <span aria-hidden="true">→</span></span>
+      </button>
+    </div>
+
+    <div class="home-footer">
+      <div class="home-footer-text">Designed &amp; developed by Udaya Saman - 0719698799</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUESTIONS LIBRARY: the original five papers are kept intact -->
+<div id="paper-select" class="screen">
+  <div class="arena-library-wrap">
+    <header class="arena-library-head"><button type="button" class="arena-library-back" onclick="showScreen('home')">← Back</button><span>🏆 PIZZA ARENA</span></header>
+    <h1>Choose Your Questions</h1><p>Select an exam paper to begin. Each paper keeps its existing questions and scoring rules.</p>
+    <div class="paper-grid paper-selection-grid" id="all-question-papers">
       <!-- Row 1 (New Past Paper) -->
       <div class="paper-card" onclick="startPaper('past2024')">
         <div class="pc-strip" style="background: #E11D48;"></div>
@@ -326,7 +353,7 @@ button { outline: none; border: none; font-family: inherit; }
         <div class="pc-meta">
           <div class="pc-title-row">
             <div class="pc-title">Past Paper 2024</div>
-            <div class="pc-tag" style="background: rgba(225, 29, 72, 0.1); color: #BE123C;">24 Qs</div>
+            <div class="pc-tag" style="background: rgba(225, 29, 72, 0.1); color: #BE123C;">29 Qs</div>
           </div>
           <div class="pc-desc">Buddy Trainer Mock Questions 2024.</div>
           <div class="pc-bottom-row">
@@ -405,9 +432,29 @@ button { outline: none; border: none; font-family: inherit; }
       </div>
     </div>
 
-    <div class="home-footer">
-      <div class="home-footer-text">Designed & developed by Udaya Saman - 0719698799</div>
-    </div>
+
+  </div>
+</div>
+<!-- STUDY LIBRARY: read the existing question bank without changing rank points -->
+<div id="study-select" class="screen">
+  <div class="arena-library-wrap">
+    <header class="arena-library-head"><button type="button" class="arena-library-back" onclick="showScreen('home')">← Back</button><span>📚 STUDY ARENA</span></header>
+    <h1>Study &amp; Learn</h1><p>Browse the correct answers and explanations without a timer or ranked points.</p>
+    <div id="study-paper-list" class="arena-study-paper-grid"></div>
+  </div>
+</div>
+<div id="study-reader" class="screen">
+  <div class="arena-library-wrap">
+    <header class="arena-library-head"><button type="button" class="arena-library-back" onclick="showScreen('study-select')">← Papers</button><span>📚 STUDY ARENA</span></header>
+    <h1 id="study-paper-heading">Study</h1>
+    <div class="arena-study-count" id="study-question-count"></div>
+    <article class="arena-study-article">
+      <h2 id="study-question-text"></h2>
+      <div class="arena-study-answer"><span>✓ CORRECT ANSWER</span><strong id="study-answer-text"></strong></div>
+      <div id="study-explanation-text" class="arena-study-explanation"></div>
+      <div id="study-sinhala-text" class="arena-study-sinhala"></div>
+    </article>
+    <nav class="arena-study-nav"><button type="button" id="study-prev" onclick="changeStudy(-1)">← Previous</button><button type="button" id="study-next" onclick="changeStudy(1)">Next →</button></nav>
   </div>
 </div>
 
@@ -1231,10 +1278,17 @@ let soundEnabled = localStorage.getItem('bt_sound') !== 'false';
 let audioCtx = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('sound-toggle').textContent = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
+  updateSoundButton();
   checkSavedSession();
 });
 
+function updateSoundButton(){
+ const button=document.getElementById('sound-toggle');
+ if(!button)return;
+ button.textContent=soundEnabled?'🔊 Sound On':'🔇 Sound Off';
+ button.classList.toggle('sound-off',!soundEnabled);
+ button.setAttribute('aria-pressed',String(soundEnabled));
+}
 function toggleSound() {
   soundEnabled = !soundEnabled;
   localStorage.setItem('bt_sound', soundEnabled);
@@ -1341,6 +1395,50 @@ function resumeSavedSession() {
 // ══════════════════════════════════════════════════════════════
 // UI & NAVIGATION
 // ══════════════════════════════════════════════════════════════
+let studyPaperId=null;
+let studyIndex=0;
+function openQuestions(){showScreen('paper-select');}
+function openStudy(){
+  const list=document.getElementById('study-paper-list');
+  list.replaceChildren();
+  for(const [id,paper] of Object.entries(PAPERS)){
+    const button=document.createElement('button');
+    button.type='button';button.className='arena-study-paper';
+    const name=document.createElement('strong');name.textContent=paper.title;
+    const detail=document.createElement('small');detail.textContent=paper.qs.length+' learning topics · No timer · No ranking points';
+    const arrow=document.createElement('span');arrow.textContent='→';
+    button.append(name,detail,arrow);
+    button.onclick=()=>showStudyPaper(id);
+    list.append(button);
+  }
+  showScreen('study-select');
+}
+function showStudyPaper(id){
+  if(!PAPERS[id])return;
+  studyPaperId=id;studyIndex=0;
+  showScreen('study-reader');
+  renderStudy();
+}
+function changeStudy(direction){
+  if(!PAPERS[studyPaperId])return;
+  studyIndex=Math.max(0,Math.min(PAPERS[studyPaperId].qs.length-1,studyIndex+direction));
+  renderStudy();
+}
+function renderStudy(){
+  const paper=PAPERS[studyPaperId];if(!paper)return;
+  const q=paper.qs[studyIndex];
+  document.getElementById('study-paper-heading').textContent=paper.title;
+  document.getElementById('study-question-count').textContent='Topic '+(studyIndex+1)+' of '+paper.qs.length;
+  document.getElementById('study-question-text').textContent=q.q;
+  document.getElementById('study-answer-text').textContent=q.opts[q.ans]||'';
+  document.getElementById('study-explanation-text').textContent=q.exp||'';
+  const si=document.getElementById('study-sinhala-text');
+  si.textContent=(q.si||'').replace(/<[^>]*>/g,' ').replace(/\\s+/g,' ').trim();
+  si.hidden=!si.textContent;
+  document.getElementById('study-prev').disabled=studyIndex===0;
+  document.getElementById('study-next').disabled=studyIndex===paper.qs.length-1;
+  window.scrollTo({top:0,behavior:'instant'});
+}
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1751,6 +1849,6 @@ window.addEventListener('popstate', function() {
 <script src="./js/bt-rewards.js"></script>
 <script src="./firebase-config.js"></script>
 <script type="module" src="./js/bt-spark.js"></script>
-<script defer src="./js/pizza-reference.js?v=3.9"></script>
+<script defer src="./js/pizza-reference.js?v=4.0.0"></script>
 </body>
 </html>

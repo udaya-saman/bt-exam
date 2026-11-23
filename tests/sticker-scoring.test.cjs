@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
 const html=fs.readFileSync('index.html','utf8'),js=fs.readFileSync('js/bt-spark.js','utf8'),sw=fs.readFileSync('sw.js','utf8'),rules=fs.readFileSync('firestore.rules','utf8');
 const png=fs.readFileSync('images/mascot/pizza-welcome.png');
 assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
-assert.ok(png.includes(Buffer.from('tRNS')));
+assert.ok([4,6].includes(png.readUInt8(25))||png.includes(Buffer.from('tRNS')),'PNG alpha channel or tRNS transparency required');
 assert.doesNotMatch(html,/bt-mascot-sprite\.js/);
 assert.match(html,/class="arena-hero"/);
 assert.match(html,/css\/pizza-v34\.css/);
