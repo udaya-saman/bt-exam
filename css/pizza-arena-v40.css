@@ -153,3 +153,13 @@ body #bt-spark-root button.arena-update-now{background:linear-gradient(180deg,#3
 body #bt-spark-root .arena-admin-panel>button{min-height:49px!important}
 body #bt-spark-root .arena-password-fields .pg-btn-green{background:linear-gradient(#31c64b,#098427)!important;color:white!important}
 @media(max-width:390px){#home .arena-path-icon.arena-png-icon{width:51px!important;height:51px!important;flex-basis:51px!important}}
+
+/* Preserve comfortable reading width for full paper descriptions on narrow phones. */
+@media(max-width:420px){
+ #paper-select .paper-grid{grid-template-columns:1fr!important;gap:12px!important}
+ #paper-select .paper-card{min-height:158px!important;padding:17px!important}
+ #paper-select .pc-title{font-size:19px!important}
+ #paper-select .pc-desc{font-size:13px!important;line-height:1.4!important}
+ #paper-select .pc-bottom-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;flex-wrap:wrap!important}
+ .arena-study-paper-grid{grid-template-columns:1fr}
+}
