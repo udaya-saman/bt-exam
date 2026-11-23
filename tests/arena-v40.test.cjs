@@ -42,7 +42,7 @@ assert.ok(!app.includes('Save a Copy')&&!app.includes('Save My Progress'));
 assert.ok(app.includes('async function seedKeys()'));
 assert.ok(app.includes("who.append(tiny)"),'leaderboard must not reference an undefined detail variable');
 assert.ok(css.includes('arena-point-toast 4s')&&css.includes('.sound-off')&&css.includes('arena-update-now'));
-assert.ok(sw.includes('pizza-arena-v40.css?v=4.0.0'));
+assert.ok(sw.includes('pizza-arena-v40.css?v=4.0.1'));
 assert.ok(html.includes('pizza-reference.js?v=4.0.0')&&sw.includes('pizza-reference.js?v=4.0.0'));
 assert.ok(app.includes("APP_VERSION='"+version+"'"));
 assert.doesNotMatch(css+art,/\.svg|data:image\/svg|<svg/i);
