@@ -1,0 +1,491 @@
+/* Pizza Arena v4.2 — premium arcade Player HQ and unified account editor.
+   Scope everything to the Spark UI; no global question or Study changes. */
+body #bt-spark-root.arena-profile-mode{
+ background:radial-gradient(ellipse at 50% -10%,#74101bd9,transparent 38%),linear-gradient(165deg,#0d0c14,#1c111b 48%,#100c15)!important;
+ color:#f9f2e9!important;
+}
+body #bt-spark-root.arena-profile-mode .panel{
+ background:radial-gradient(circle at 100% 0%,#8a17302d,transparent 40%),linear-gradient(165deg,#151019,#281520 55%,#150f18)!important;
+ color:#fff8f0!important;
+ min-height:100dvh!important;
+ max-width:880px!important;
+ padding:0 0 max(35px,env(safe-area-inset-bottom))!important;
+ overflow:visible!important;
+ box-shadow:0 12px 42px #02010565!important;
+}
+body #bt-spark-root.arena-profile-mode #bt-spark-content{
+ max-width:840px!important;
+ margin:auto!important;
+ padding:17px clamp(12px,3vw,26px) 24px!important;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:19px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-page-top{
+ position:sticky;top:0;z-index:4;
+ min-height:72px!important;
+ padding:15px clamp(14px,4vw,28px)!important;
+ background:linear-gradient(115deg,#70051a,#c70d2b 58%,#ea2037)!important;
+ box-shadow:inset 0 -3px 0 #fac651,0 9px 23px #0601094c!important;
+ color:#fff!important;
+ font-size:clamp(14px,2.8vw,21px)!important;
+ letter-spacing:.06em!important;
+ text-transform:uppercase;
+}
+body #bt-spark-root.arena-profile-mode .arena-page-top button{
+ border:1px solid #ffc47390!important;
+ background:#410b20b3!important;
+ padding:10px 19px!important;
+ border-radius:12px!important;
+ font-size:13px!important;
+ box-shadow:inset 0 1px 0 #ffffff28!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-page-top button:active{transform:translateY(2px)}
+body #bt-spark-root.arena-profile-mode .arena-card,
+body #bt-spark-root.arena-profile-mode .arena-achievements-card{
+ border:1px solid #d9a6577a!important;
+ border-radius:25px!important;
+ margin:0!important;
+ background:linear-gradient(148deg,#32212c,#1b1722 55%,#251a28)!important;
+ box-shadow:0 11px 32px #01010860,inset 0 1px 0 #ffffff16!important;
+ overflow:hidden!important;
+ position:relative;
+}
+body #bt-spark-root.arena-profile-mode .arena-card:before,
+body #bt-spark-root.arena-profile-mode .arena-achievements-card:before{
+ content:"";position:absolute;right:-60px;top:50px;width:210px;height:210px;border-radius:100%;
+ border:1px solid #f9c15e14;box-shadow:0 0 0 32px #f9c15e08,0 0 0 65px #f9c15e05;
+ pointer-events:none;
+}
+body #bt-spark-root.arena-profile-mode .arena-card-heading,
+body #bt-spark-root.arena-profile-mode .arena-achievements-heading{
+ min-height:62px!important;
+ padding:17px clamp(17px,4vw,26px)!important;
+ background:linear-gradient(115deg,#8c0924,#d31330 66%,#f03640)!important;
+ border:0!important;
+ border-bottom:3px solid #f5bf54!important;
+ font-size:clamp(17px,3.2vw,22px)!important;
+ font-weight:1000!important;
+ letter-spacing:.065em!important;
+ font-style:normal!important;
+ text-shadow:0 2px 5px #4f0517a0!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-achievements-heading button{
+ background:#560d25bb!important;color:#fff!important;
+ border:1px solid #ffd17d5e!important;border-radius:11px!important;
+ padding:9px 12px!important;
+ box-shadow:inset 0 1px 0 #ffffff1d!important;
+ min-height:38px!important;
+ font-size:12px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card-body{
+ position:relative;
+ padding:clamp(17px,4vw,30px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-profile-top{
+ display:grid!important;
+ grid-template-columns:clamp(84px,16vw,112px) minmax(0,1fr)!important;
+ gap:10px clamp(13px,3vw,24px)!important;
+ align-items:center!important;
+ margin:0 0 23px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-avatar{
+ width:clamp(84px,16vw,112px)!important;
+ height:clamp(84px,16vw,112px)!important;
+ border:4px solid #f4bf49!important;
+ border-radius:24px!important;
+ background:linear-gradient(145deg,#ffe4b5,#b71d30)!important;
+ box-shadow:0 0 0 3px #7f2631,0 0 21px #ffcf574d,0 7px 17px #010104b8!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-person-info{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:10px!important;
+ min-width:0;
+}
+body #bt-spark-root.arena-profile-mode .arena-person-info h3{
+ font-size:clamp(22px,4.5vw,32px)!important;color:#fffdf7!important;
+ text-shadow:0 3px 10px #030007b0!important;
+ line-height:1.08!important;margin:0!important;
+ overflow-wrap:anywhere;
+}
+body #bt-spark-root.arena-profile-mode .arena-outlet-pill{
+ background:#f6c55b19!important;
+ color:#ffdf9a!important;
+ border:1px solid #ffce6b65!important;
+ padding:6px 15px!important;
+ font-size:12px!important;font-weight:950!important;
+ letter-spacing:.04em;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-wrap{
+ grid-column:1/-1!important;
+ display:grid!important;
+ grid-template-columns:auto minmax(0,1fr) auto!important;
+ align-items:center!important;
+ gap:10px!important;
+ padding:15px 16px!important;
+ min-width:0!important;
+ text-align:left!important;
+ border:1px solid #f5cc7857!important;
+ border-radius:16px!important;
+ background:linear-gradient(120deg,#120f1bb3,#3d2124ac)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-badge{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ min-width:73px!important;min-height:42px!important;
+ padding:7px 13px!important;
+ color:#3a2010!important;
+ font-size:16px!important;
+ font-weight:1000!important;
+ border-radius:13px!important;
+ border:1px solid #ffe895!important;
+ background:linear-gradient(145deg,#fff6b7,#edb73c 72%,#d98c26)!important;
+ box-shadow:0 3px 0 #946226,inset 0 1px 0 #fffce6!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-track{
+ min-width:0!important;
+ height:14px!important;
+ margin:0!important;
+ border-radius:99px!important;
+ border:1px solid #ffffff29!important;
+ background:#080b10!important;
+ box-shadow:inset 0 2px 5px #0007!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-fill{
+ height:100%!important;
+ background:linear-gradient(90deg,#10a534,#32e35e,#b0ff64)!important;
+ box-shadow:0 0 11px #29f1639e!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-wrap small{
+ font-size:clamp(10px,2vw,13px)!important;
+ color:#fff0d7!important;
+ font-weight:900!important;
+ white-space:nowrap!important;
+ font-variant-numeric:tabular-nums;
+}
+body #bt-spark-root.arena-profile-mode .arena-stats-grid{
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:clamp(6px,2vw,14px)!important;
+ margin:0 0 24px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat{
+ min-width:0!important;
+ padding:15px 8px!important;
+ gap:8px!important;
+ flex-direction:column!important;
+ text-align:center!important;
+ background:linear-gradient(150deg,#4a2631,#271822 75%)!important;
+ border:1px solid #d7a26060!important;
+ border-radius:16px!important;
+ box-shadow:inset 0 1px 0 #ffffff15,0 4px 11px #0805098c!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat strong{
+ color:#fff8ea!important;
+ font-size:clamp(19px,4vw,29px)!important;
+ font-weight:1000!important;
+ font-variant-numeric:tabular-nums;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat span:last-child{
+ color:#d4c0b4!important;
+ font-size:clamp(10px,1.6vw,12px)!important;
+ font-weight:850!important;
+ letter-spacing:.04em;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat-icon.arena-png-icon{
+ width:clamp(38px,7vw,52px)!important;
+ height:clamp(38px,7vw,52px)!important;
+ flex:0 0 auto!important;
+ filter:drop-shadow(0 3px 5px #050208a8)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat-icon{font-size:clamp(27px,5vw,36px)!important}
+body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:12px!important;
+ margin:0 0 19px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions button:first-child{
+ grid-column:1/-1!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-actions button{
+ min-width:0!important;
+ min-height:52px!important;
+ margin:0!important;
+ padding:11px 13px!important;
+ border-radius:14px!important;
+ font-size:clamp(12px,2.5vw,16px)!important;
+ font-weight:950!important;
+ box-shadow:inset 0 1px 1px #ffffff54,0 4px 0 #02020984!important;
+ transition:transform .15s ease,filter .15s ease!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-actions button:active{
+ transform:translateY(3px)!important;
+ box-shadow:inset 0 1px 1px #ffffff3b,0 1px 0 #02020984!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-actions button.pg-btn-green{
+ background:linear-gradient(180deg,#3cdb62,#10a939 58%,#00721b)!important;
+ border:1px solid #a5f6ac!important;color:#fff!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-actions button.pg-btn-red{
+ background:linear-gradient(180deg,#ff4256,#e01a34 58%,#9d0b24)!important;
+ border:1px solid #ff8791!important;color:#fff!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-outlet-row{
+ display:flex!important;align-items:center!important;gap:12px!important;
+ width:100%!important;
+ min-height:61px!important;
+ margin:0!important;
+ padding:15px 18px!important;
+ border:1px solid #e8b76c8f!important;
+ border-radius:16px!important;
+ background:linear-gradient(105deg,#7d122a,#c21e39)!important;
+ box-shadow:inset 0 1px 0 #ffffff2d,0 4px 10px #07000c40!important;
+ color:white!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-outlet-row strong,
+body #bt-spark-root.arena-profile-mode .arena-outlet-row span{
+ color:#fff!important;
+ font-size:clamp(13px,2.8vw,17px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-outlet-symbol{font-size:23px!important}
+body #bt-spark-root.arena-profile-mode .arena-rewards-grid{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:clamp(7px,2vw,14px)!important;
+ padding:clamp(11px,2vw,22px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-reward-item{
+ position:relative;
+ min-width:0!important;
+ min-height:154px!important;
+ padding:16px 9px!important;
+ gap:7px!important;
+ background:linear-gradient(158deg,#fae7c9,#fff6e5 44%,#efc89f)!important;
+ border:1px solid #ffdd93!important;
+ border-radius:19px!important;
+ box-shadow:inset 0 1px 0 #fffefa,0 4px 0 #b88c5b,0 10px 15px #0201064a!important;
+ filter:none!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-reward-item.is-locked{opacity:.82!important}
+body #bt-spark-root.arena-profile-mode .arena-reward-item strong{
+ color:#3f2026!important;
+ font-size:clamp(11px,2vw,15px)!important;
+ line-height:1.25!important;
+ font-weight:1000!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-reward-item small{
+ color:#674c42!important;
+ font-size:clamp(9px,1.7vw,12px)!important;
+ line-height:1.35!important;
+ font-weight:780!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-reward-icon.arena-png-icon{
+ width:clamp(45px,8vw,69px)!important;
+ height:clamp(45px,8vw,69px)!important;
+ flex:0 0 auto!important;
+ filter:drop-shadow(0 3px 3px #8b4b2691)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-reward-icon{font-size:clamp(31px,6vw,44px)!important}
+body #bt-spark-root.arena-profile-mode .arena-reward-track{
+ height:7px!important;
+ margin-top:auto!important;
+ width:92%!important;
+ border:1px solid #d7b99c!important;
+ background:#d9c3ab!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-reward-track span{
+ height:100%!important;
+ background:linear-gradient(90deg,#0d9e34,#41e26e)!important;
+}
+body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-actions{
+ width:100%!important;
+ max-width:none!important;
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ margin:0!important;
+ gap:12px!important;
+}
+body #bt-spark-root.arena-profile-mode #bt-spark-content>p{
+ color:#aa978f!important;
+ text-align:center!important;
+ font-size:12px!important;
+ line-height:1.5!important;
+ margin:0!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area{
+ width:100%!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:stretch!important;
+ gap:13px!important;
+ margin:0!important;
+ border-radius:21px!important;
+ padding:15px!important;
+ background:linear-gradient(120deg,#25151f,#401f2b)!important;
+ border:1px solid #e2ad646d!important;
+ box-shadow:inset 0 1px 0 #ffffff14,0 6px 17px #0502098c!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-card{
+ display:flex!important;
+ min-height:96px!important;
+ min-width:0!important;
+ margin:0!important;
+ padding:13px!important;
+ background:linear-gradient(115deg,#32272d,#171c22)!important;
+ border:1px solid #6aa66e80!important;
+ border-left:4px solid #36c365!important;
+ box-shadow:none!important;
+ border-radius:14px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-card.has-pending{
+ border-color:#e4b160a1!important;border-left:4px solid #e6ae42!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-icon{
+ width:37px!important;height:37px!important;
+ font-size:22px!important;
+ background:#169e47!important;color:white!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .has-pending .arena-status-icon{background:#d49528!important}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-copy strong{
+ color:#f5f7ee!important;
+ font-size:clamp(15px,2.7vw,19px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-copy small{
+ color:#d2bdad!important;
+ font-size:clamp(11px,2vw,13px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-card img{
+ width:65px!important;height:75px!important;object-fit:contain!important;
+}
+body #bt-spark-root.arena-profile-mode button.arena-sync-action{
+ min-width:116px!important;
+ height:100%!important;
+ padding:11px 17px!important;
+ border:1px solid #82f5a8!important;
+ border-radius:14px!important;
+ background:linear-gradient(#36d75b,#0b9432)!important;
+ color:#fff!important;
+ font-size:16px!important;
+ font-weight:1000!important;
+ box-shadow:0 3px 0 #006d1d!important;
+}
+body #bt-spark-root.arena-profile-mode button.arena-sync-action:disabled{opacity:.55}
+body #bt-spark-root.arena-account-mode{
+ background:radial-gradient(ellipse at 50% 0%,#8523337c,transparent 50%),#0f0b13!important;
+ color:#fff!important;
+}
+body #bt-spark-root.arena-account-mode .panel{
+ width:min(100%,560px)!important;
+ max-height:min(92dvh,950px)!important;
+ border-radius:23px!important;
+ border:1px solid #bf874d!important;
+ background:linear-gradient(160deg,#261720,#161721 70%,#241b24)!important;
+ box-shadow:0 16px 40px #0009!important;
+ padding:clamp(18px,4vw,29px)!important;
+ color:#fdf1e8!important;
+}
+body #bt-spark-root.arena-account-mode .panel h2{color:#ffdb9b!important;font-size:clamp(22px,4vw,27px)!important}
+body #bt-spark-root.arena-account-mode .panel>p{color:#d8c1bb!important;font-size:13px!important}
+body #bt-spark-root.arena-account-mode .arena-settings-dialog label{color:#f5e6d9!important;font-size:13px!important}
+body #bt-spark-root.arena-account-mode .arena-settings-dialog input{
+ color:#20161c!important;background:#fff9f3!important;
+ border:1px solid #e8c8a7!important;
+ min-height:44px!important;
+}
+body #bt-spark-root.arena-account-mode .arena-account-intro{
+ color:#fbe2b4;background:#8a142c53;border:1px solid #e5b3656d;
+ font-weight:700;font-size:12px;line-height:1.5;padding:10px 13px;border-radius:12px;
+ margin-bottom:12px;
+}
+body #bt-spark-root.arena-account-mode .arena-account-feedback{font-size:13px!important;color:#ffb8b8!important;margin:7px 0 10px!important;min-height:0!important}
+body #bt-spark-root.arena-account-mode .arena-account-feedback.is-success{color:#8ff3a8!important}
+body #bt-spark-root.arena-account-mode .arena-photo-preview{
+ border:4px solid #f5bf5d!important;
+ border-radius:21px!important;
+ width:110px!important;height:110px!important;
+ box-shadow:0 0 0 3px #64232e,0 6px 16px #0006!important;
+}
+body #bt-spark-root.arena-account-mode .arena-settings-dialog .arena-account-photo{
+ gap:15px!important;
+ background:#ffffff09!important;
+ padding:12px!important;
+ border:1px solid #f9b85e43!important;border-radius:15px!important;
+}
+body #bt-spark-root.arena-account-mode .arena-photo-controls button.alt{
+ background:#f7e2cd!important;
+ color:#9a172d!important;
+ border:1px solid #dfbe96!important;
+ font-size:12px!important;
+}
+body #bt-spark-root.arena-account-mode .arena-password-toggle{
+ display:block!important;width:100%!important;
+ background:#fff9f5!important;color:#b50822!important;
+ border:1px solid #e0a8a9!important;
+ font-size:14px!important;
+ margin-top:18px!important;
+ padding:13px!important;border-radius:13px!important;
+}
+body #bt-spark-root.arena-account-mode .arena-password-toggle[aria-expanded="true"]{box-shadow:0 0 0 2px #e5af5470!important}
+body #bt-spark-root.arena-account-mode .arena-password-fields{
+ background:#351e2b!important;border:1px solid #ba835a!important;
+ padding:15px!important;border-radius:15px!important;
+ margin:10px 0!important;
+}
+body #bt-spark-root.arena-account-mode .arena-password-help{color:#dfc6b3!important;font-size:12px!important}
+body #bt-spark-root.arena-account-mode .arena-dialog-footer.arena-account-footer{
+ display:grid!important;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)!important;
+ gap:12px!important;
+ margin-top:21px!important;
+}
+body #bt-spark-root.arena-account-mode .arena-account-footer button{
+ min-height:51px!important;
+ margin:0!important;border-radius:13px!important;
+ font-weight:1000!important;
+ font-size:16px!important;
+}
+body #bt-spark-root.arena-account-mode .arena-account-footer .arena-account-save{
+ background:linear-gradient(#37d65b,#079c30)!important;
+ color:white!important;border:1px solid #85f5a5!important;
+ box-shadow:0 4px 0 #075c20!important;
+ width:100%!important;
+}
+body #bt-spark-root.arena-account-mode .arena-account-footer .pg-btn-red{
+ background:linear-gradient(#ef4356,#af092a)!important;color:white!important;
+ border:1px solid #ff8d93!important;
+}
+body #bt-spark-root.arena-account-mode .arena-account-footer button:disabled{opacity:.5!important;cursor:wait!important}
+@media(max-width:560px){
+ body #bt-spark-root.arena-profile-mode #bt-spark-content{gap:14px!important;padding:13px 11px 18px!important}
+ body #bt-spark-root.arena-profile-mode .arena-card-body{padding:15px!important}
+ body #bt-spark-root.arena-profile-mode .arena-level-wrap{padding:12px 9px!important;gap:7px!important}
+ body #bt-spark-root.arena-profile-mode .arena-level-badge{min-width:60px!important;padding:7px!important;font-size:13px!important}
+ body #bt-spark-root.arena-profile-mode .arena-level-wrap small{font-size:10px!important}
+ body #bt-spark-root.arena-profile-mode .arena-stats-grid{margin-bottom:18px!important}
+ body #bt-spark-root.arena-profile-mode .arena-stat{padding:12px 5px!important}
+ body #bt-spark-root.arena-profile-mode .arena-rewards-grid{gap:7px!important;padding:10px!important}
+ body #bt-spark-root.arena-profile-mode .arena-reward-item{min-height:136px!important;padding:11px 4px!important}
+ body #bt-spark-root.arena-profile-mode .arena-reward-icon.arena-png-icon{width:44px!important;height:44px!important}
+ body #bt-spark-root.arena-profile-mode .arena-sync-area{display:flex!important;flex-direction:column!important;gap:10px!important;padding:11px!important}
+ body #bt-spark-root.arena-profile-mode button.arena-sync-action{width:100%!important;min-height:48px!important;height:auto!important}
+ body #bt-spark-root.arena-profile-mode .arena-page-top{font-size:13px!important;min-height:62px!important}
+ body #bt-spark-root.arena-profile-mode .arena-page-top button{padding:8px 12px!important}
+}
+@media(max-width:350px){
+ body #bt-spark-root.arena-profile-mode .arena-rewards-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body #bt-spark-root.arena-profile-mode .arena-level-wrap{grid-template-columns:auto minmax(0,1fr)!important}
+ body #bt-spark-root.arena-profile-mode .arena-level-wrap small{grid-column:1/-1!important;text-align:right!important}
+ body #bt-spark-root.arena-profile-mode .arena-stat{gap:3px!important}
+ body #bt-spark-root.arena-profile-mode .arena-stat strong{font-size:17px!important}
+ body #bt-spark-root.arena-account-mode .arena-account-photo{flex-direction:column!important;align-items:center!important}
+}
+@media(prefers-reduced-motion:no-preference){
+ body #bt-spark-root.arena-profile-mode .arena-level-fill{animation:arenaPlayerGlow 2.8s ease-in-out infinite}
+ body #bt-spark-root.arena-profile-mode .arena-reward-item{animation:arenaPlayerRise .35s both}
+ body #bt-spark-root.arena-profile-mode .arena-reward-item:nth-child(2){animation-delay:.06s}
+ body #bt-spark-root.arena-profile-mode .arena-reward-item:nth-child(3){animation-delay:.12s}
+ body #bt-spark-root.arena-profile-mode .arena-reward-item:nth-child(4){animation-delay:.18s}
+ body #bt-spark-root.arena-profile-mode .arena-reward-item:nth-child(5){animation-delay:.24s}
+ body #bt-spark-root.arena-profile-mode .arena-reward-item:nth-child(6){animation-delay:.3s}
+}
+@keyframes arenaPlayerGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
+@keyframes arenaPlayerRise{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){
+ body #bt-spark-root.arena-profile-mode *{animation:none!important;transition:none!important}
+}
