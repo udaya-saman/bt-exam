@@ -40,7 +40,7 @@ assert.match(css,/\.arena-hero/,'Home hero CSS exists');
 assert.match(css,/\.arena-status-card/,'Status CSS exists');
 assert.match(css,/\.arena-rewards-grid/,'Rewards grid CSS exists');
 assert.match(sw,/pizza-v36\.css/,'Offline caches new theme');
-assert.equal(version.version,'4.5.0-arena');
+assert.equal(version.version,'4.6.0-arena');
 for(const source of [index,app,css,sw,fs.readFileSync('manifest.json','utf8')]){
  assert.doesNotMatch(source,/\.svg(?:["'\s?)]|$)|\.webp(?:["'\s?)]|$)/m,'No SVG/WebP visual assets loaded');
 }
