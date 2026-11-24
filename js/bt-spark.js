@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.0-arena';let latestUpdate=null;
+const APP_VERSION='4.7.1-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -40,8 +40,8 @@ function syncDetail(err){
    return 'No internet. Your answers are safe. Try again later.';
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub,restore){boardOpen=false;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode');root.innerHTML='';boardOpen=false;}
+function open(title,sub,restore){boardOpen=false;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout');root.innerHTML='';boardOpen=false;}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -297,37 +297,34 @@ function celebrateAchievements(p,crown=false){
 }
 
 let period='weekly',outletView=false;
-function board(){
+function board(keepScroll=false){
+ const previousScroll=keepScroll&&root.classList.contains('arena-leaderboard-layout')?(root.querySelector('.pg-standings-scroll')?.scrollTop||0):0;
  boardOpen=true;
  if(!unsubscribe)listen();
- const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut competition · Asia/Colombo',board);boardOpen=true;root.classList.add('arena-board-mode');
- const hero=document.createElement('div');hero.className='pg-hero';
- const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.png':rankNotice==='champion'?'./images/mascot/pizza-champ.png':rankNotice==='dethroned'?'./images/mascot/pizza-challenge.png':rankNotice==='up'?'./images/mascot/pizza-rank-up.png':rankNotice==='down'?'./images/mascot/pizza-overtaken.png':'./images/mascot/pizza-welcome.png';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
- const text=document.createElement('div');text.className='pg-hero-copy';
- const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='champion'?'YOU ARE #1!':rankNotice==='dethroned'?'THE CROWN IS IN PLAY':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
- const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
- big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
- const sub=document.createElement('small');sub.textContent=outletView?'At least 2 active players per outlet':'Ready for your next victory?';
- text.append(label,big,sub);hero.append(text);box.append(hero);
+ const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','',board);boardOpen=true;root.classList.add('arena-board-mode','arena-leaderboard-layout');
+ root.querySelector('.panel>p')?.remove();
  if(window.BTRewards){const season=window.BTRewards.season(day());if(season){const chip=document.createElement('div');chip.className='pg-season-chip';const crown=document.createElement('span');crown.className='pg-crown-icon';crown.textContent='👑';chip.append(crown,document.createTextNode(' WEEKLY SEASON · '+season.daysRemaining+' DAYS LEFT · Ends '+season.end));box.append(chip);}}
  const buttons=document.createElement('div');buttons.className='pg-nav';
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
  
- const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
+ const records=ranked(period,outletView);const places=new Map(records.map((entry,index)=>[entry,index+1]));const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
-  const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+r.rank+(outletView?'':' arena-player-podium');if(!outletView)attachPlayerDetails(cell,r);const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[r.rank]||'';badge.style.fontSize='23px';cell.append(badge);
+  const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+(i+1)+(outletView?'':' arena-player-podium');if(!outletView)attachPlayerDetails(cell,r);const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[i+1]||'';badge.style.fontSize='23px';cell.append(badge);
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
  if(outletView){const crown=records.find(v=>v.people>=2);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 2 active players are needed.';box.append(status);}
  const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
- if(!records.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='🍕 The first ranked scores will appear here.';box.append(empty);}
- const shown=(outletView||showAllPlayers)?records:records.slice(0,20);
+ const standings=document.createElement('div');standings.className='pg-standings-scroll';
+ standings.setAttribute('role','region');standings.setAttribute('aria-label',outletView?'Outlet standings':'Player standings, fourth place onwards');box.append(standings);
+ if(!records.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='🍕 The first ranked scores will appear here.';standings.append(empty);}
+ const remaining=records.filter(r=>!winners.includes(r));
+ const shown=(outletView||showAllPlayers)?remaining:remaining.slice(0,Math.max(0,20-winners.length));
  const own=records.find(r=>r.uid===user?.uid);
- if(!outletView&&!showAllPlayers&&own&&!shown.some(r=>r.uid===own.uid))shown.push(own);
+ if(!outletView&&!showAllPlayers&&own&&!winners.includes(own)&&!shown.some(r=>r.uid===own.uid))shown.push(own);
  for(const r of shown){
   const card=document.createElement('div');card.className='pg-leader-card '+(outletView?'arena-rank-'+r.rank:'arena-player-standing');if(!outletView)attachPlayerDetails(card,r);if(r.uid===user?.uid)card.classList.add('pg-you');
-  const place=document.createElement('span');place.className='pg-place';place.textContent=outletView?(r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank):'#'+r.rank;card.append(place);
+  const place=document.createElement('span');place.className='pg-place';place.textContent='#'+places.get(r);card.append(place);
   if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.png';card.append(pic);}
   const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
   if(!outletView&&window.BTRewards){
@@ -336,11 +333,13 @@ function board(){
    const earned=priority.map(id=>badges.find(b=>b.id===id&&b.unlocked)).find(Boolean);
    if(earned){const tiny=document.createElement('small');tiny.className='pg-mini-badge';tiny.textContent=earned.icon+' '+earned.label;who.append(tiny);}
   }
-  const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);box.append(card);
+  const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);standings.append(card);
  }
- if(!outletView&&records.length>20){box.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board();},true));}
- 
- box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
+ if(!outletView&&records.length>20){standings.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board(true);},true));}
+ if(records.length>0&&!remaining.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='More players will appear here as they earn points.';standings.append(empty);}
+ const footer=document.createElement('div');footer.className='pg-board-footer';
+ footer.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));box.append(footer);
+ if(keepScroll)standings.scrollTop=previousScroll;
 }
 function attachPlayerDetails(node,r){
  node.setAttribute('role','button');node.tabIndex=0;
@@ -383,7 +382,7 @@ function listen(){
   if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites){rankSnapshotReady=true;window.ArenaRankHistory?.observe(ranked('alltime'));rememberOwnRank();const leader=ranked('weekly',true).find(x=>x.people>=2);celebrateAchievements(profile,!!(rankEligible({...profile,isAdmin:admins})&&leader?.name===profile?.outlet));}const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
   if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites&&previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=mine===1?'champion':previousRank===1?'dethroned':risen?'up':'down';const ev=window.ArenaRankHistory?.change(previousRank,mine);if(ev)mascotToast(ev.title,ev.text,ev.mascot);}
   if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites)previousRank=mine;
-  if(boardOpen&&!root.hidden)board();
+  if(boardOpen&&!root.hidden)board(true);
   if(root.hidden&&!$('#quiz')?.classList.contains('active'))monthly();
  },err=>console.warn('Leaderboard listener',err));
 }

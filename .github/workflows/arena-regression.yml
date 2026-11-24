@@ -16,3 +16,4 @@ jobs:
           node tests/arena-v40.test.cjs
           node tests/assessment-bank.test.cjs
           node tests/two-screen.test.cjs
+          node tests/leaderboard-layout.test.cjs

@@ -128,3 +128,51 @@ test('Imported 2025–26 assessments are grouped without duplicates on phones',a
  const overflow=await page.evaluate(()=>({w:document.documentElement.scrollWidth,viewport:innerWidth}));
  expect(overflow.w).toBeLessThanOrEqual(overflow.viewport+2);
 });
+
+
+test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scroll',async({page})=>{
+ await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+ for(const width of [320,375,430,768]){
+  await page.setViewportSize({width,height:740});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.waitForTimeout(250);
+  await page.evaluate(()=>{
+   const root=document.getElementById('bt-spark-root');
+   root.hidden=false;root.className='arena-board-mode arena-leaderboard-layout';
+   root.innerHTML='<div class="panel"><h2>🏆 LEADERBOARD</h2><div id="bt-spark-content"><div class="pg-nav"><button>THIS WEEK</button><button>ALL TIME</button><button>OUTLETS</button></div><div class="pg-podium">'+[1,2,3].map(i=>'<div class="pg-podium-item arena-player-podium arena-rank-'+i+'"><div>🏅</div><strong>Player '+i+'</strong><small>100 PTS</small></div>').join('')+'</div><div class="pg-section">PLAYER STANDINGS</div><div class="pg-standings-scroll">'+Array.from({length:30},(_,i)=>'<div class="pg-leader-card arena-player-standing"><span class="pg-place">#'+(i+4)+'</span><img class="pg-avatar" src="./images/default-avatar.png"><div class="pg-person"><strong>Player '+(i+4)+'</strong><small>Matara</small></div><span class="pg-score">20 PTS</span></div>').join('')+'</div><div class="pg-board-footer"><button class="pg-btn-green">👤 MY PROFILE</button><button class="pg-btn-red">CLOSE</button></div></div></div>';
+  });
+  await expect(page.locator('.pg-standings-scroll .pg-leader-card')).toHaveCount(30);
+  const before=await page.evaluate(()=>{
+   const panel=document.querySelector('#bt-spark-root .panel');
+   const footer=document.querySelector('.pg-board-footer');
+   const rows=document.querySelector('.pg-standings-scroll');
+   const podium=document.querySelector('.pg-podium');
+   const rect=x=>x.getBoundingClientRect().toJSON();
+   return {footer:rect(footer),podium:rect(podium),rows:rect(rows),
+    panelOverflow:getComputedStyle(panel).overflowY,
+    scrollOverflow:getComputedStyle(rows).overflowY,
+    maxScroll:rows.scrollHeight-rows.clientHeight,
+    panelClient:panel.clientWidth,panelScroll:panel.scrollWidth,
+    buttons:[...footer.querySelectorAll('button')].map(rect)};
+  });
+  expect(before.panelOverflow).toBe('hidden');
+  expect(before.scrollOverflow).toBe('auto');
+  expect(before.maxScroll).toBeGreaterThan(0);
+  expect(before.panelScroll).toBeLessThanOrEqual(before.panelClient+2);
+  expect(before.footer.bottom).toBeLessThanOrEqual(740);
+  expect(before.buttons).toHaveLength(2);
+  for(const button of before.buttons){
+   expect(button.width).toBeGreaterThanOrEqual(before.footer.width*.45);
+   expect(button.width).toBeLessThanOrEqual(before.footer.width*.50);
+  }
+  await page.locator('.pg-standings-scroll').evaluate(el=>{el.scrollTop=el.scrollHeight;});
+  const after=await page.evaluate(()=>({
+   scrollTop:document.querySelector('.pg-standings-scroll').scrollTop,
+   footerTop:document.querySelector('.pg-board-footer').getBoundingClientRect().top,
+   podiumTop:document.querySelector('.pg-podium').getBoundingClientRect().top
+  }));
+  expect(after.scrollTop).toBeGreaterThan(0);
+  expect(Math.abs(after.footerTop-before.footer.top)).toBeLessThan(1);
+  expect(Math.abs(after.podiumTop-before.podium.top)).toBeLessThan(1);
+ }
+});
