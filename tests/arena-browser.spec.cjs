@@ -113,7 +113,7 @@ test('Imported 2025–26 assessments are grouped without duplicates on phones',a
  await expect(page.locator('#paper-select .pa-assessment-entry')).toBeVisible();
  await page.locator('#paper-select .pa-assessment-entry').click();
  await expect(page.locator('#assessment-library.active')).toBeVisible();
- await expect(page.locator('.pa-assessment-summary strong')).toHaveText('75 distinct questions');
+ await expect(page.locator('.pa-assessment-summary strong')).toHaveText('88 distinct questions');
  await expect(page.locator('.pa-assessment-card')).toHaveCount(15);
  await page.locator('.pa-assessment-search').fill('Cheesy Kottchi Sauce');
  await expect(page.locator('.pa-assessment-card')).toHaveCount(1);
