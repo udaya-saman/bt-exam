@@ -1,0 +1,284 @@
+{
+  "schema": 1,
+  "id": "las-jan-2026",
+  "title": "LAS Assessment · January 2026",
+  "description": "27 legible questions; questions 17–19 are missing from the supplied pages. Review mode; no ranking points.",
+  "sourceImages": [
+    "IMG-20261008-WA0024.jpg",
+    "IMG-20261008-WA0023.jpg",
+    "IMG-20261008-WA0019.jpg",
+    "IMG-20261008-WA0016.jpg"
+  ],
+  "missingQuestionNumbers": [
+    17,
+    18,
+    19
+  ],
+  "questions": [
+    {
+      "n": 1,
+      "q": "Which of the following is related to Profit & Loss (P&L)?",
+      "options": [
+        "Cost of sales",
+        "Labour cost",
+        "COSV",
+        "Values",
+        "Delivery cost"
+      ]
+    },
+    {
+      "n": 2,
+      "q": "Write down four Gamma employee benefits.",
+      "options": []
+    },
+    {
+      "n": 3,
+      "q": "How many balls come in a Spicy Chicken and Cheese Balls portion?",
+      "options": [
+        "3",
+        "2",
+        "14",
+        "8"
+      ]
+    },
+    {
+      "n": 4,
+      "q": "Which of the following are the five steps of service for delivery riders?",
+      "options": [
+        "Smile, Greet and Verify",
+        "Introduce yourself and the company",
+        "Repeat the order",
+        "State the amount and give the balance",
+        "All of the above"
+      ],
+      "key": "delivery-five"
+    },
+    {
+      "n": 5,
+      "q": "What is the quantity of basil leaves for Margarita Thin Crust Large and Medium pizza?",
+      "options": [
+        "1 Blue Cup and 1 Small Cup",
+        "20 and 10 leaves",
+        "8 and 4 leaves",
+        "10 and 5 leaves"
+      ]
+    },
+    {
+      "n": 6,
+      "q": "How long does it take to stretch Thin & Crispy dough?",
+      "options": [
+        "10 minutes",
+        "30 minutes",
+        "60 minutes",
+        "15 minutes"
+      ]
+    },
+    {
+      "n": 7,
+      "q": "Which is the correct cream cheese line quantity?",
+      "options": [
+        "18 g (4 lines), 30 g (8 lines), 60 g (16 lines)",
+        "18 g (4 lines), 40 g (8 lines), 70 g (16 lines)",
+        "18 g (4 lines), 35 g (8 lines), 70 g (16 lines)",
+        "18 g (4 lines), 35 g (8 lines), 50 g (16 lines)"
+      ]
+    },
+    {
+      "n": 8,
+      "q": "What is the updated PPM strength?",
+      "options": [
+        "50 to 100 ppm",
+        "150 to 200 ppm",
+        "100 to 200 ppm",
+        "100 to 150 ppm"
+      ]
+    },
+    {
+      "n": 9,
+      "q": "What does U20 mean in the Dragontail system?",
+      "options": [
+        "Time from a delivery order arriving at MT KDS until rider-captured delivery",
+        "Time from a delivery order being bumped from CT KDS until rider-captured delivery",
+        "Time from a delivery order being bumped from MT KDS until rider-captured delivery",
+        "Time from a delivery order being dispatched to a rider until rider-captured delivery"
+      ]
+    },
+    {
+      "n": 10,
+      "q": "How many Arrabbiata sauce mix spoodles are added to Spaghetti with Chicken and Sausage Pasta?",
+      "options": [
+        "2 L Spoodles",
+        "1 L Spoodle",
+        "2 R Spoodles",
+        "1 R Spoodle"
+      ]
+    },
+    {
+      "n": 11,
+      "q": "How many batches of Large, Medium and Small dough can be kept in the thawing process for a BOGO promotion?",
+      "options": [
+        "1 Batch",
+        "2 Batches",
+        "3 Batches",
+        "½ Batch"
+      ]
+    },
+    {
+      "n": 12,
+      "q": "What is the minimum expected percentage U30 of the Dragontail system?",
+      "options": [
+        "70",
+        "85",
+        "60",
+        "90"
+      ]
+    },
+    {
+      "n": 13,
+      "q": "Choose the correct temperatures in the order: Hand wash, Hot water, Danger zone, Ambient temperature.",
+      "options": [
+        "21–49°C / above 49°C / 5–75°C / 16–28°C",
+        "21–49°C / above 59°C / 2–4°C / 22–30°C",
+        "21–49°C / above 49°C / 5–65°C / 22–26°C",
+        "21–49°C / above 36°C / 4–60°C / 16–29°C"
+      ],
+      "key": "jan2026-temperatures"
+    },
+    {
+      "n": 14,
+      "q": "How many caramel topping lines are added for Chocolate Caramel Crunch?",
+      "options": [
+        "1 line",
+        "3 lines",
+        "2 lines",
+        "1½ lines"
+      ]
+    },
+    {
+      "n": 15,
+      "q": "Within how many days should a new team member complete Expert on HU?",
+      "options": [
+        "15 Days",
+        "15 Weeks",
+        "14 Days",
+        "30 Days"
+      ]
+    },
+    {
+      "n": 16,
+      "q": "Which of the following are the Gamma Strategy House Enablers?",
+      "options": [
+        "Values",
+        "Leadership",
+        "People",
+        "Policies"
+      ]
+    },
+    {
+      "n": 20,
+      "q": "How many oregano sachets are used to make a new seafood pasta?",
+      "options": [
+        "1 sachet",
+        "2 sachets",
+        "½ sachet",
+        "3 sachets"
+      ]
+    },
+    {
+      "n": 21,
+      "q": "Which of the following is NOT part of the Golden Rule of Problem Solving?",
+      "options": [
+        "Never let a customer leave unhappy",
+        "Resolve issues after a complaint has been made",
+        "Treat the customer like you want to be treated",
+        "Never argue with the customer"
+      ],
+      "key": "problem-principles-negative"
+    },
+    {
+      "n": 22,
+      "q": "Which are the correct overnight cooling products?",
+      "options": [
+        "Fresh Milk, Cream Cheese, Soya Oil, Black Olive",
+        "Fresh Milk, Nacho Sauce, Garlic Butter, Jalapeno",
+        "Fresh Milk, Nacho Sauce, Tomato, Garlic Bread",
+        "Fresh Milk, Jalapeno, Black Olive, Garlic Bread"
+      ]
+    },
+    {
+      "n": 23,
+      "q": "Which is NOT related to delivery accident prevention rules?",
+      "options": [
+        "Never speed",
+        "Always check your bike for brakes",
+        "Always wear your helmet",
+        "Never overtake from the left side",
+        "State the amount and give the balance",
+        "Drive carefully yourself and watch out for other people's wrong driving"
+      ],
+      "key": "delivery-prevention-negative"
+    },
+    {
+      "n": 24,
+      "q": "What are the four possible times when a crime can happen?",
+      "options": [],
+      "key": "robbery-times"
+    },
+    {
+      "n": 25,
+      "q": "Which of the following is NOT related to food-safety rules?",
+      "options": [
+        "Wash your hands often",
+        "Sanitize all food-contact areas",
+        "Danger zone is 5°C to 65°C",
+        "Date – Rotate – Eliminate",
+        "Keep food out of the danger zone",
+        "Stay at home if you are sick"
+      ]
+    },
+    {
+      "n": 26,
+      "q": "Fill in the abbreviations: SSTG, SSSG, ADS, ADT, APC.",
+      "options": [],
+      "key": "abbrev-lasjan2026"
+    },
+    {
+      "n": 27,
+      "q": "In which year was Pizza Hut founded?",
+      "options": [
+        "1994",
+        "1958",
+        "1962",
+        "1955"
+      ],
+      "key": "pizza-founded"
+    },
+    {
+      "n": 28,
+      "q": "In Dragon Tail, which metric measures average production time?",
+      "options": [
+        "U3",
+        "U30",
+        "U12",
+        "U40"
+      ],
+      "key": "production-u3"
+    },
+    {
+      "n": 29,
+      "q": "Write down the four main categories of FER.",
+      "options": []
+    },
+    {
+      "n": 30,
+      "q": "Calculate attrition: 3 employees left last month; staff cadre was 12.",
+      "options": [
+        "0.36",
+        "25",
+        "400",
+        "0.09"
+      ],
+      "key": "attrition-example"
+    }
+  ]
+}
