@@ -6,6 +6,9 @@
  const Nav={
   visit(key,restore){
    if(replaying)return;
+   if(key==='study:library'&&stack.at(-1)?.key==='screen:study-select')stack.pop();
+   if(key==='screen:results'&&stack.at(-1)?.key==='screen:quiz')stack.pop();
+   if(key.startsWith('screen:'))while(stack.at(-1)?.key.startsWith('panel:'))stack.pop();
    const i=stack.findIndex(x=>x.key===key);
    if(i>=0){stack.splice(i+1);stack[i].restore=restore;}
    else stack.push({key,restore});
