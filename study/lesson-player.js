@@ -84,7 +84,7 @@
    const text=make('div','pa-study-hero-text');
    append(text,make('div','pa-study-eyebrow','GAMMA TRAINING ACADEMY'),
      make('h1','', 'Learn. Remember. Grow.'),
-     make('p','', 'Lessons built from the three training PDFs. Learn at your own pace — no timer or ranking points.'));
+     make('p','', 'Learn at your own pace — no timer or ranking points.'));
    const image=make('img','pa-study-hero-mascot');
    image.src=assets.mascot;image.alt='Pizza Arena cartoon mascot holding a trophy';
    image.width=180;image.height=200;image.decoding='async';
@@ -142,8 +142,7 @@
          make('span','pa-study-card-state',done[lesson.id]?'✓ Learned':'Start →'));
        const name=make('strong','pa-study-card-name',lesson.title);
        const summary=make('small','pa-study-card-desc',lesson.summary);
-       const foot=make('span','pa-study-card-pages','Source pages '+lesson.pages);
-       append(card,top,name,summary,foot);
+       append(card,top,name,summary);
        card.onclick=()=>openLesson(lesson.id);
        grid.append(card);
      }
@@ -151,6 +150,7 @@
    }
  }
  function library(){
+   global.ArenaNav?.visit('study:library',library);
    current=null;const root=userSelection();if(!root)return;
    navBar(root);titleCard(root);metric(root);controls(root);
    listNode=make('div','pa-study-library');root.append(listNode);renderCards();
@@ -158,14 +158,15 @@
  function mnemonic(section,art){
    if(!section.keyPoints.length)return null;
    const box=make('div','pa-study-memory');
-   const caption=make('span','pa-study-memory-title','REMEMBER THE STEPS');
+   const caption=make('span','pa-study-memory-title','VISUAL RECALL');
+   const guide=make('img','pa-study-guide');guide.src='./images/mascot/'+({safety:'pizza-correct.png',service:'pizza-welcome.png',values:'pizza-champ.png',riit:'pizza-welcome.png',policy:'pizza-private.png',time:'pizza-timer.png',food:'pizza-correct.png',temperature:'pizza-challenge.png',history:'pizza-crown.png'}[art]||'pizza-welcome.png');guide.alt='';guide.loading='lazy';guide.decoding='async';box.append(guide);
    box.append(caption);
    const flow=make('div','pa-study-visual-flow');
-   section.keyPoints.slice(0,6).forEach((point,i)=>{
+   section.keyPoints.forEach((point,i)=>{
      const item=make('div','pa-study-visual-step');
-     const head=point.split(/[—–:]/)[0].replace(/^\d+\.\s*/,'').trim();
+     const head=point.replace(/^\d+\.\s*/,'').trim();
      append(item,make('span','pa-study-visual-number',String(i+1)),
-       make('span','pa-study-visual-text',head.length>40?head.slice(0,39)+'…':head));
+       make('span','pa-study-visual-text',head));
      flow.append(item);
    });
    box.append(flow);return box;
@@ -181,7 +182,7 @@
      section.keyPoints.forEach(point=>{const li=make('li','',point);list.append(li);});
      block.append(list);
    }
-   if(section.keyPoints.length>=3&&section.keyPoints.length<=9){
+   if(section.keyPoints.length){
      const visual=mnemonic(section,art);if(visual)block.append(visual);
    }
    if(section.memoryTip){
@@ -195,17 +196,16 @@
    return block;
  }
  function openLesson(id){
-   const lesson=byId.get(id);if(!lesson)return;current=id;
+   const lesson=byId.get(id);if(!lesson)return;current=id;global.ArenaNav?.visit('study:'+id,()=>openLesson(id));
    const root=userSelection();if(!root)return;
    navBar(root);
-   const back=make('button','pa-study-back','← All Lessons');back.type='button';back.onclick=library;
+   const back=make('button','pa-study-back','← All Lessons');back.type='button';back.onclick=()=>global.ArenaNav?.back();
    root.append(back);
    const hero=make('div','pa-study-lesson-hero');
    const text=make('div','pa-study-lesson-intro');
    append(text,make('span','pa-study-tag',categories[lesson.sourceId].icon+' '+categories[lesson.sourceId].title),
      make('h1','',lesson.title),
-     make('p','',lesson.summary),
-     make('small','pa-study-source','Source: '+sourceName(lesson)+' · PDF pages '+lesson.pages));
+     make('p','',lesson.summary));
    const art=make('div','pa-study-lesson-art');
    const image=make('img','pa-study-lesson-mascot');
    image.src=assets.mascot;image.loading='lazy';image.decoding='async';
@@ -226,8 +226,7 @@
    next.type='button';next.disabled=index>=lessons.length-1;
    next.onclick=()=>openLesson(lessons[index+1].id);
    append(footer,mark,prev,next);root.append(footer);
-   const note=make('p','pa-study-edition-note','These lessons summarize the supplied PDF editions. For live safety procedures, benefits and operating standards, follow the latest company-approved documents.');
-   root.append(note);
+
    const screen=$('study-select');if(screen)screen.scrollTop=0;
    global.scrollTo?.({top:0,behavior:'instant'});
  }
