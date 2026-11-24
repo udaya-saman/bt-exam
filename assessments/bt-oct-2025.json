@@ -2,11 +2,12 @@
   "schema": 1,
   "id": "bt-oct-2025",
   "title": "Buddy Trainer Assessment · October 2025",
-  "description": "27 questions transcribed from the supplied assessment pages. Review mode; no ranking points.",
+  "description": "40 questions from the supplied Buddy Trainer October 2025 assessment pages. Review mode; no ranking points.",
   "sourceImages": [
     "IMG-20261008-WA0022.jpg",
     "IMG-20261008-WA0018.jpg",
-    "IMG-20261008-WA0013.jpg"
+    "IMG-20261008-WA0013.jpg",
+    "IMG-20261008-WA0021.jpg"
   ],
   "questions": [
     {
@@ -285,6 +286,124 @@
         "Customer / Attentiveness / Respect / Energy"
       ],
       "key": "care"
+    },
+    {
+      "n": 28,
+      "q": "What does HWWT stand for?",
+      "options": [
+        "How We Waste Together",
+        "How We Win Together",
+        "How We Worry Together",
+        "How We Wake Up Together"
+      ]
+    },
+    {
+      "n": 29,
+      "q": "“Be a restaurant Customer Master Now” is a statement of HWWT2.",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 30,
+      "q": "In DELCO and FCD we must greet the customer within 15 seconds (30 seconds if there is a queue).",
+      "options": [
+        "True",
+        "False"
+      ],
+      "key": "greeting-15s"
+    },
+    {
+      "n": 31,
+      "q": "What does H&F stand for?",
+      "options": [
+        "Hot & Foods",
+        "Hot & Fresh",
+        "Hold & Fast",
+        "Host & Fact"
+      ],
+      "key": "hot-fresh"
+    },
+    {
+      "n": 32,
+      "q": "Pizza Hut riders must wear their standard jacket while riding.",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 33,
+      "q": "A Pizza Hut rider does not need to double-check the side items in a delivery order.",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 34,
+      "q": "Pizza Hut riders must keep their delivery bikes clean and maintained.",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 35,
+      "q": "“Do not wear your helmet” is a delivery accident-prevention rule.",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 36,
+      "q": "What does U30 in the Dragon Tail system mean?",
+      "options": [
+        "Average production time",
+        "Average drive time",
+        "Average delivery time",
+        "None of the above"
+      ],
+      "key": "delivery-u30"
+    },
+    {
+      "n": 37,
+      "q": "What does average Rack Time mean in Dragon Tail?",
+      "options": [
+        "Bumped from Cut Table KDS time to Dispatch time",
+        "Bumped from Make Table KDS to Dispatch time",
+        "Out to Door",
+        "Bumped from Cut Table time to Mark Delivered at Place time"
+      ],
+      "key": "rack-time"
+    },
+    {
+      "n": 38,
+      "q": "Why was Dragon Tail implemented?",
+      "options": [
+        "Customer receives the order Hot & Fresh",
+        "Dispatcher and customer can track the rider",
+        "Dine-in customers receive orders in sequence",
+        "All of the above"
+      ]
+    },
+    {
+      "n": 39,
+      "q": "Pizza Hut riders must wear a clear name tag.",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 40,
+      "q": "Pizza Hut riders can carry three orders at one time.",
+      "options": [
+        "True",
+        "False"
+      ]
     }
   ]
 }
