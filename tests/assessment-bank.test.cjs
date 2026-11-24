@@ -44,8 +44,9 @@ assert(sw.includes('./js/assessment-bank.js?v=4.7.0'));
 assert(sw.includes('./css/assessment-bank.css?v=4.7.0'));
 assert.match(css,/pa-assessment-card/);
 assert.match(css,/max-width:390px/);
-assert.equal(JSON.parse(read('version.json')).version,'4.7.0-arena');
-assert(read('js/bt-spark.js').includes("APP_VERSION='4.7.0-arena'"));
+const release=JSON.parse(read('version.json')).version;
+assert.match(release,/^4\.7\.\d+-arena$/);
+assert(read('js/bt-spark.js').includes("APP_VERSION='"+release+"'"));
 // Preserve existing ranked question indexes and paper counts for Firebase validation.
 const a=html.indexOf('const PAPERS = {'),b=html.indexOf('window.BT_EXAM_PAPERS = PAPERS;',a);
 assert(a>=0&&b>a);
