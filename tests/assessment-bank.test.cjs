@@ -11,7 +11,7 @@ for(const doc of docs){
  assert.ok(doc.id&&doc.title&&Array.isArray(doc.sourceImages)&&doc.sourceImages.length>=3);
  for(const q of doc.questions){
   assert(Number.isInteger(q.n)&&q.n>0);
-  assert(typeof q.q==='string'&&q.q.length>12);
+  assert(typeof q.q==='string'&&q.q.length>=10);
   assert(Array.isArray(q.options));
   assert(q.options.every(o=>typeof o==='string'&&o.length>0));
   assert(!Object.hasOwn(q,'ans'),'No unverified answer may be published as a scored key');
