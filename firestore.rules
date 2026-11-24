@@ -153,6 +153,21 @@ service cloud.firestore {
       'correctAnswers':0, 'dailyActivity':{}
     };
   }
+  // Self-observed history is display-only, not an authoritative score or reward.
+  match /rankHistory/{uid} {
+    allow get: if logged();
+    allow list: if false;
+    allow create, update: if mine(uid)
+      && exists(/databases/$(database)/documents/publicRanks/$(uid))
+      && request.resource.data.keys().hasOnly(['uid','bestRank','updatedAt'])
+      && request.resource.data.uid == uid
+      && request.resource.data.bestRank is int
+      && request.resource.data.bestRank >= 1
+      && request.resource.data.updatedAt == request.time
+      && (!exists(/databases/$(database)/documents/rankHistory/$(uid))
+        || request.resource.data.bestRank <= resource.data.bestRank);
+    allow delete: if admin();
+  }
   match /publicRanks/{uid} {
     allow read: if logged();
     allow create: if allowedToPublish(uid, request.resource.data.name, request.resource.data.outlet)
