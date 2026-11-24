@@ -66,6 +66,8 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
  await expect(page.locator('.pa-study-source')).toHaveCount(0);
  await expect(page.locator('.pa-study-memory')).not.toHaveCount(0);
+ await expect(page.locator('.pa-study-illustration').first()).toBeVisible();
+ await expect.poll(()=>page.locator('.pa-study-illustration').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
  await page.getByRole('button',{name:'Quick revision'}).click();
  await expect(page.locator('.pa-revision-card')).toBeVisible();
  await page.getByRole('button',{name:'Reveal learning point'}).click();
@@ -80,6 +82,11 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await expect(page.locator('.pa-study-progress')).toContainText('1 of 57');
  await page.locator('.pa-study-search').fill('temperature');
  await expect(page.locator('.pa-study-card').first()).toBeVisible();
+ await page.locator('.pa-study-search').fill('Making a Pizza: Five Stages');
+ await page.getByRole('button',{name:/Making a Pizza: Five Stages/}).click();
+ const concepts=await page.locator('.pa-study-illustration').evaluateAll(nodes=>nodes.map(n=>n.dataset.concept));
+ expect(concepts).toEqual(['sauce','cheese','toppings','oven','pizza']);
+ await expect.poll(()=>page.locator('.pa-study-illustration').evaluateAll(nodes=>nodes.every(n=>n.complete&&n.naturalWidth===256&&n.src.startsWith('data:image/png')))).toBe(true);
 });
 test('Player Card and rewards fit narrow phones',async({page})=>{
  await page.setViewportSize({width:375,height:812});

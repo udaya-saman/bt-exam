@@ -4,7 +4,6 @@
  const FILES=['training.json','values.json','handbook.json'];
  const BASE='./study/content/';
  const KEY='pizza-arena-study-done-v2';
- const assets={mascot:'./images/arena/mascot-champion.png'};
  const categories={
    training:{title:'Operations & Training',label:'Key Standards & Information',icon:'🍕',description:'Service, food safety, products, times and procedures'},
    values:{title:'Gamma Values & Policies',label:'RIIT & Company Policies',icon:'🏅',description:'Values, ethics, teamwork and workplace policies'},
@@ -85,9 +84,7 @@
    append(text,make('div','pa-study-eyebrow','GAMMA TRAINING ACADEMY'),
      make('h1','', 'Learn. Remember. Grow.'),
      make('p','', 'Learn at your own pace — no timer or ranking points.'));
-   const image=make('img','pa-study-hero-mascot');
-   image.src=assets.mascot;image.alt='Pizza Arena cartoon mascot holding a trophy';
-   image.width=180;image.height=200;image.decoding='async';
+   const image=global.PizzaStudyArt?.image('Study and training','Learning','h01','pa-study-topic-cover')||make('div','pa-study-step-id','STUDY');
    append(hero,text,image);root.append(hero);
  }
  function controls(root){
@@ -155,29 +152,21 @@
    navBar(root);titleCard(root);metric(root);controls(root);
    listNode=make('div','pa-study-library');root.append(listNode);renderCards();
  }
- function topicPicture(section,art){
-   // Render a sharp PNG diagram from the actual lesson text, not a celebration mascot.
-   const points=section.keyPoints.length?section.keyPoints:[section.body];
-   const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
-   const W=960, margin=36, lineHeight=34;
-   function wrap(value,width){const lines=[];let line='';for(const word of String(value).split(/\s+/)){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>width){lines.push(line);line=word;}else line=next;}if(line)lines.push(line);return lines;}
-   ctx.font='600 27px system-ui,sans-serif';
-   const rows=points.map(p=>wrap(p,790));
-   const title=wrap(section.heading,880);
-   canvas.width=W;canvas.height=100+title.length*lineHeight+rows.reduce((n,a)=>n+Math.max(76,a.length*lineHeight+28),0)+margin;
-   ctx.fillStyle='#fff5e5';ctx.fillRect(0,0,W,canvas.height);
-   ctx.fillStyle='#a90921';ctx.fillRect(0,0,W,80+title.length*lineHeight);
-   ctx.font='bold 24px system-ui,sans-serif';ctx.fillStyle='#ffdb91';ctx.fillText('VISUAL STUDY MAP',margin,34);
-   ctx.font='bold 27px system-ui,sans-serif';ctx.fillStyle='#fff';title.forEach((t,i)=>ctx.fillText(t,margin,70+i*lineHeight));
-   let y=100+title.length*lineHeight;
-   rows.forEach((lines,i)=>{const h=Math.max(76,lines.length*lineHeight+28);ctx.fillStyle=i%2?'#ffe8cf':'#fffaf1';ctx.fillRect(margin,y,W-2*margin,h-10);ctx.fillStyle='#b5172d';ctx.beginPath();ctx.arc(75,y+32,23,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 24px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText(String(i+1),75,y+40);ctx.textAlign='left';ctx.font='600 27px system-ui,sans-serif';ctx.fillStyle='#34231f';lines.forEach((t,j)=>ctx.fillText(t,116,y+32+j*lineHeight));y+=h;});
-   const image=make('img','pa-topic-picture');image.src=canvas.toDataURL('image/png');image.alt=section.heading+': '+points.join('; ');image.width=W;image.height=canvas.height;image.decoding='async';return image;
- }
- function mnemonic(section,art){
+ function mnemonic(section,art,id){
    const box=make('div','pa-study-memory');
-   box.append(topicPicture(section,art));return box;
+   box.append(make('span','pa-study-memory-title','ILLUSTRATED RECALL'));
+   const flow=make('div','pa-study-visual-flow');
+   const points=section.keyPoints.length?section.keyPoints:[section.body];
+   points.forEach((point,i)=>{
+     const item=make('div','pa-study-visual-step');
+     const pic=global.PizzaStudyArt?.image(point,section.heading,id);
+     if(pic)item.append(pic);
+     append(item,make('span','pa-study-visual-number',String(i+1)),make('span','pa-study-visual-text',point.replace(/^\d+\.\s*/,'')));
+     flow.append(item);
+   });
+   box.append(flow);return box;
  }
- function renderSection(section,art,index){
+ function renderSection(section,art,index,id){
    const block=make('section','pa-study-section');
    const header=make('div','pa-study-section-title');
    append(header,make('span','pa-study-step-id','STEP '+(index+1)),
@@ -189,7 +178,7 @@
      block.append(list);
    }
    if(section.keyPoints.length){
-     const visual=mnemonic(section,art);if(visual)block.append(visual);
+     const visual=mnemonic(section,art,id);if(visual)block.append(visual);
    }
    if(section.memoryTip){
      const tip=make('div','pa-study-tip');
@@ -214,7 +203,7 @@
  function render(){
   card.replaceChildren();
   const item=cards[index];
-  const mascot=make('div','pa-study-step-id','RECALL');
+  const mascot=global.PizzaStudyArt?.image(item.answer,item.heading,id,'pa-study-revision-art')||make('div','pa-study-step-id','RECALL');
   const progress=make('small','pa-study-step-id',(index+1)+' / '+cards.length);
   const heading=make('h3','',item.heading);
   const hint=make('p','pa-study-copy','Recall one learning point for this topic.');
@@ -238,10 +227,10 @@
      make('h1','',lesson.title),
      make('p','',lesson.summary));
    const art=make('div','pa-study-lesson-art');
-   art.append(make('span','pa-study-art-icon',iconFor(lesson.art)));
+   const cover=global.PizzaStudyArt?.image(lesson.title,lesson.sections[0]?.heading,lesson.id,'pa-study-topic-cover');if(cover)art.append(cover);
    append(hero,text,art);root.append(hero);
    const sections=make('div','pa-study-reader');
-   lesson.sections.forEach((section,i)=>sections.append(renderSection(section,lesson.art,i)));
+   lesson.sections.forEach((section,i)=>sections.append(renderSection(section,lesson.art,i,lesson.id)));
    root.append(sections);
    const footer=make('div','pa-study-lesson-footer');
    const mark=make('button','pa-study-mark',done[id]?'✓ Lesson completed':'✓ Mark as learned');

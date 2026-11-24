@@ -68,3 +68,16 @@ body #home .arena-header-actions{display:flex!important;align-items:center!impor
 body #home .arena-header-actions>button.arena-header-icon{box-sizing:border-box!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;flex:0 0 46px!important;aspect-ratio:1!important;border-radius:50%!important;padding:0!important;display:grid!important;place-items:center!important;line-height:1!important}
 body #home .arena-header-actions>button.arena-header-icon>.arena-header-symbol{display:block!important;width:25px!important;height:25px!important;max-width:none!important;margin:0!important;object-fit:contain!important;pointer-events:none;filter:drop-shadow(0 1px 1px #42000c66)}
 @media(max-width:670px){body #home .arena-header-actions{gap:6px!important}body #home .arena-header-actions>button.arena-header-icon{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;max-width:36px!important;max-height:36px!important;flex-basis:36px!important}body #home .arena-header-actions>button.arena-header-icon>.arena-header-symbol{width:21px!important;height:21px!important}}
+
+/* Actual educational illustrations, with readable live-text captions. */
+#study-select .pa-study-visual-flow{grid-template-columns:repeat(auto-fit,minmax(min(100%,148px),1fr));gap:10px}
+#study-select .pa-study-visual-step{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:10px 9px 13px;background:#fffaf1;border:1px solid #f0d6b9;border-radius:15px;min-width:0;text-align:center}
+#study-select .pa-study-illustration{width:100%;max-width:128px;height:auto;aspect-ratio:4/3;object-fit:contain;display:block}
+#study-select .pa-study-visual-number{position:absolute;top:6px;left:6px;width:22px;height:22px;font-size:11px}
+#study-select .pa-study-visual-text{font-size:clamp(13px,2vw,15px);color:#362323;line-height:1.45;overflow-wrap:anywhere}
+#study-select .pa-study-topic-cover{display:block;width:clamp(70px,22vw,155px);height:auto;object-fit:contain;flex:none}
+#study-select .pa-study-revision-art{display:block;width:128px;height:auto;margin:0 auto 12px}
+#bt-spark-root .pg-podium-item.arena-player-podium{aspect-ratio:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:5px!important;min-width:0}
+#bt-spark-root .arena-player-podium strong,#bt-spark-root .arena-player-podium small{max-width:100%}
+body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions button:first-child{gap:4px!important;letter-spacing:normal!important;justify-content:center!important}
+body #bt-spark-root.arena-profile-mode .arena-board-trophy{width:28px!important;height:28px!important;flex:0 0 28px!important;object-fit:contain;margin:0!important}
