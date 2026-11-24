@@ -195,11 +195,36 @@
    }
    return block;
  }
+ function revision(id){
+ const lesson=byId.get(id);if(!lesson)return;
+ const cards=lesson.sections.flatMap(section=>section.keyPoints.map(point=>({heading:section.heading,answer:point})));
+ if(!cards.length)return;
+ global.ArenaNav?.visit('study:revision:'+id,()=>revision(id));
+ const root=userSelection();navBar(root);
+ const back=make('button','pa-study-back','← Lesson');back.onclick=()=>global.ArenaNav?.back();root.append(back);
+ const title=make('h1','pa-revision-title',lesson.title+' · Quick revision');root.append(title);
+ const card=make('section','pa-study-section pa-revision-card');root.append(card);
+ let index=0;
+ function render(){
+  card.replaceChildren();
+  const item=cards[index];
+  const mascot=make('img','pa-study-guide');mascot.src='./images/mascot/pizza-challenge.png';mascot.alt='';mascot.decoding='async';
+  const progress=make('small','pa-study-step-id',(index+1)+' / '+cards.length);
+  const heading=make('h3','',item.heading);
+  const hint=make('p','pa-study-copy','Recall one learning point for this topic.');
+  const answer=make('p','pa-study-copy',item.answer);answer.hidden=true;
+  const reveal=make('button','pa-study-mark','Reveal learning point');reveal.onclick=()=>{answer.hidden=false;reveal.hidden=true;};
+  const next=make('button','pa-study-next','Next card →');next.onclick=()=>{index=(index+1)%cards.length;render();};
+  append(card,mascot,progress,heading,hint,reveal,answer,next);
+ }
+ render();
+}
+
  function openLesson(id){
    const lesson=byId.get(id);if(!lesson)return;current=id;global.ArenaNav?.visit('study:'+id,()=>openLesson(id));
    const root=userSelection();if(!root)return;
    navBar(root);
-   const back=make('button','pa-study-back','← All Lessons');back.type='button';back.onclick=()=>global.ArenaNav?.back();
+   const back=make('button','pa-study-back','← All Lessons');back.type='button';back.onclick=library;
    root.append(back);
    const hero=make('div','pa-study-lesson-hero');
    const text=make('div','pa-study-lesson-intro');
@@ -225,7 +250,7 @@
    const next=make('button','pa-study-next','Next lesson →');
    next.type='button';next.disabled=index>=lessons.length-1;
    next.onclick=()=>openLesson(lessons[index+1].id);
-   append(footer,mark,prev,next);root.append(footer);
+   const revise=make('button','pa-study-next','Quick revision');revise.onclick=()=>revision(id);append(footer,mark,prev,next,revise);root.append(footer);
 
    const screen=$('study-select');if(screen)screen.scrollTop=0;
    global.scrollTo?.({top:0,behavior:'instant'});
@@ -233,7 +258,7 @@
  async function open(){
    const root=userSelection();if(!root)return;
    navBar(root);root.append(make('div','pa-study-loading','Opening the training academy…'));
-   try{await load();library();}
+   try{await load();if($('study-select')?.classList.contains('active'))library();}
    catch(err){const node=userSelection();navBar(node);emptyState(node,'The saved lesson files could not be loaded.');console.error('Study data:',err);}
  }
  global.PizzaStudyLessons={open,openLesson,getLessonCount:()=>lessons.length};
