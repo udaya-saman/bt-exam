@@ -41,15 +41,15 @@
  }
  function card(entry){
   const wrap=els('article','pa-assessment-card');
+  const selected=entry.variants.find(v=>source==='all'||v.paper===source)||entry.variants[0];
   const head=els('div','pa-assessment-card-head');
-  const title=els('h3','',entry.q);
+  const title=els('h3','',selected.q);
   const badges=els('div','pa-assessment-badges');
   for(const v of entry.variants){
    const p=FILES.find(f=>f.id===v.paper);
    badges.append(els('span','pa-assessment-source',(p?.label||v.paper)+' · Q'+v.n));
   }
   head.append(title,badges);wrap.append(head);
-  const selected=entry.variants.find(v=>source==='all'||v.paper===source)||entry.variants[0];
   const variants=entry.variants.filter(v=>v!==selected);
   const choices=els('div','pa-assessment-options');
   function appendVersion(v,where){
