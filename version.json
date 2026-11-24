@@ -1,5 +1,5 @@
 {
-  "version": "4.2.0-profile",
-  "releaseDate": "2026-11-23",
-  "notes": "Single Save button updates account username, profile picture and optional Firebase password; redesigned gaming Player Card; sync status and button moved below achievements and account actions."
+  "version": "4.3.0-arena",
+  "releaseDate": "2026-11-24",
+  "notes": "Arena polish, rank history and mascot reactions, player details, achievement celebrations, Study revision, navigation and offline improvements."
 }
