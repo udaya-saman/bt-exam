@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const read=file=>fs.readFileSync(file,'utf8');
 const docs=['bt-oct-2025','las-2025','las-jan-2026'].map(id=>JSON.parse(read('assessments/'+id+'.json')));
-assert.deepEqual(docs.map(x=>x.questions.length),[27,30,27],'All readable questions transcribed by assessment');
+assert.deepEqual(docs.map(x=>x.questions.length),[40,30,27],'All readable questions transcribed by assessment');
 const seenByPaper=new Set();
 for(const doc of docs){
  assert.equal(doc.schema,1);
@@ -26,10 +26,10 @@ assert.equal(docs[1].questions.find(x=>x.n===22).options[1],'3 min / 5 min / 10 
 assert.equal(docs[2].questions.find(x=>x.n===13).options[2],'21–49°C / above 49°C / 5–65°C / 22–26°C');
 const ctx={window:{}};new vm.Script(read('js/assessment-bank.js'),{filename:'js/assessment-bank.js'}).runInNewContext(ctx);
 const merged=ctx.window.BTAssessmentBank.groupPapers(docs);
-assert.equal(docs.reduce((sum,x)=>sum+x.questions.length,0),84);
-assert.equal(merged.groups.length,75,'Repeated question variants must show as one card');
-assert.equal(new Set(merged.groups.map(x=>x.key)).size,75);
-assert.equal(merged.groups.reduce((sum,x)=>sum+x.variants.length,0),84,'No original question lost');
+assert.equal(docs.reduce((sum,x)=>sum+x.questions.length,0),97);
+assert.equal(merged.groups.length,88,'Repeated question variants must show as one card');
+assert.equal(new Set(merged.groups.map(x=>x.key)).size,88);
+assert.equal(merged.groups.reduce((sum,x)=>sum+x.variants.length,0),97,'No original question lost');
 for(const g of merged.groups){
  assert(new Set(g.variants.map(v=>v.paper+':'+v.n)).size===g.variants.length);
 }
@@ -52,4 +52,4 @@ assert(a>=0&&b>a);
 const papers=vm.runInNewContext(html.slice(a,b)+'\nPAPERS;');
 assert.deepEqual(['past2024','questions','paper1','paper2','paper3'].map(k=>papers[k].qs.length),[29,40,50,50,45]);
 assert(!Object.keys(papers).some(k=>k.includes('las-')||k.includes('assessment-')),'New review questions must not mutate ranked papers');
-console.log('PASS: 84 image-transcribed entries consolidated to 75 unique assessment questions; no answer keys fabricated, 214 ranked questions preserved.');
+console.log('PASS: 97 image-transcribed entries consolidated to 88 unique assessment questions; no answer keys fabricated, 214 ranked questions preserved.');
