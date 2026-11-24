@@ -85,7 +85,7 @@ async function register(name,password,outlet){
  const created=await provisionAccount(name,password,outlet,auth,db);await session(created);
 }
 async function provisionAccount(name,password,outlet,targetAuth,targetDb){
- if(!valid(name)||password.length<8)throw Error('Username must have 3–24 letters, numbers, dots, dashes or underscores; password 8+ characters.');
+ if(!valid(name)||password.length<8||!OUTLETS.includes(outlet))throw Error('Username must have 3–24 letters, numbers, dots, dashes or underscores; password 8+ characters.');
  const authEmail='bt-'+rand()+'@users.bt-exam.example.com';
  const created=await A.createUserWithEmailAndPassword(targetAuth,authEmail,password);
  try{
@@ -653,6 +653,7 @@ window.BTExamUI={
  dismissForNavigation:()=>{if(user&&profile)close();}
 };
 function adminPanel(){
+ if(!admins||!user)return;
  const box=open('Manage','Review outlet changes and manage accounts.',adminPanel);box.classList.add('arena-admin-panel');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
@@ -670,12 +671,12 @@ async function adminCreateUser(){
  form.append(message,submit);box.append(form,btn('Back to users',manageUsers,true));
  form.onsubmit=async e=>{
   e.preventDefault();if(!admins||!user||submit.disabled)return;
-  const n=name.value.trim(),p=password.value,o=outlet.value;
+  const n=name.value.trim(),p=password.value,o=outlet.value,adminUid=user.uid;
   if(!valid(n)||RESERVED.has(norm(n))||p.length<8||!OUTLETS.includes(o)){message.textContent='Choose a valid, non-reserved username, outlet and password of at least 8 characters.';return;}
   submit.disabled=true;let isolated;
   try{
-   const role=await F.getDocFromServer(F.doc(db,'admins',user.uid));
-   if(!role.exists()||role.data().enabled!==true)throw Error('Administrator access required.');
+   const role=await F.getDocFromServer(F.doc(db,'admins',adminUid));
+   if(user?.uid!==adminUid||!admins||!role.exists()||role.data().enabled!==true)throw Error('Administrator access required.');
    if((await F.getDocFromServer(F.doc(db,'usernames',norm(n)))).exists())throw Error('Username already taken.');
    const module=await import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-app.js');
    isolated=module.initializeApp(config,'admin-create-'+rand());
