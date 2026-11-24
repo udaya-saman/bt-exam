@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.2.0-profile';let latestUpdate=null;
+const APP_VERSION='4.3.0-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -40,8 +40,8 @@ function syncDetail(err){
    return 'No internet. Your answers are safe. Try again later.';
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub){root.classList.remove('arena-profile-mode','arena-account-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
+function open(title,sub,restore){root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode');root.innerHTML='';boardOpen=false;}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -247,15 +247,60 @@ function ranked(period='weekly',outletView=false){
  list.sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
  let position=0,last=-1;return list.map((entry,i)=>{if(entry.score!==last)position=i+1;last=entry.score;return{...entry,rank:position}});
 }
+// Rank history is a client-observed personal record; never used to award points.
+let cloudRank=new Map(),rankWrites=new Set(),rankReads=new Map(),rankCloudUnavailable=false,rankSnapshotReady=false;
+function readBest(uid){return [window.ArenaRankHistory?.get(uid),cloudRank.get(uid)].filter(n=>Number.isInteger(n)&&n>0).sort((a,b)=>a-b)[0]||null;}
+async function loadBest(uid){
+ if(!uid||!user||!navigator.onLine||rankCloudUnavailable)return;
+ if(rankReads.has(uid))return rankReads.get(uid);
+ const promise=F.getDoc(F.doc(db,'rankHistory',uid)).then(doc=>{
+  if(doc.exists()){const n=doc.data().bestRank;if(Number.isInteger(n)&&n>0)cloudRank.set(uid,n);}
+ }).catch(e=>{if(e.code==='permission-denied')rankCloudUnavailable=true;}).finally(()=>rankReads.delete(uid));
+ rankReads.set(uid,promise);return promise;
+}
+async function rememberOwnRank(){
+ if(!user||!profile||!rankSnapshotReady||!navigator.onLine||rankCloudUnavailable||!rankEligible({...profile,isAdmin:admins}))return;
+ const uid=user.uid,rank=ranked('alltime').find(r=>r.uid===uid)?.rank;if(!rank||rankWrites.has(uid))return;
+ const old=cloudRank.get(uid);if(old&&old<=rank)return;
+ rankWrites.add(uid);
+ try{
+  const best=await F.runTransaction(db,async tx=>{
+   const ref=F.doc(db,'rankHistory',uid),snap=await tx.get(ref);
+   const before=snap.exists()?snap.data().bestRank:null;
+   if(Number.isInteger(before)&&before<=rank)return before;
+   tx.set(ref,{uid,bestRank:rank,updatedAt:F.serverTimestamp()});return rank;
+  });
+  cloudRank.set(uid,best);
+ }catch(e){if(e.code==='permission-denied')rankCloudUnavailable=true;}
+ finally{rankWrites.delete(uid);}
+}
+function mascotToast(title,caption,file){
+ const old=document.querySelector('.arena-event-toast');if(old)old.remove();
+ const el=document.createElement('div');el.className='arena-event-toast';el.setAttribute('role','status');
+ const img=document.createElement('img');img.src='./images/mascot/'+file;img.alt='';img.decoding='async';
+ const copy=document.createElement('div'),h=document.createElement('strong'),p=document.createElement('span');h.textContent=title;p.textContent=caption;copy.append(h,p);el.append(img,copy);document.body.append(el);setTimeout(()=>el.remove(),4000);
+}
+function celebrateAchievements(p,crown=false){
+ if(!user||!p||!window.BTRewards)return;
+ const key='bt_achievement_seen_v1:'+user.uid;
+ const entries=window.BTRewards.achievements(p,day(),week(),crown).filter(a=>a.unlocked);
+ try{
+  const raw=localStorage.getItem(key);const seen=new Set(raw?JSON.parse(raw):[]);
+  const newly=entries.filter(a=>!seen.has(a.id));
+  entries.forEach(a=>seen.add(a.id));localStorage.setItem(key,JSON.stringify([...seen]));
+  if(raw&&newly.length)mascotToast('ACHIEVEMENT UNLOCKED',newly.map(a=>a.label).join(' · '),'pizza-champ.png');
+ }catch(_){}
+}
+
 let period='weekly',outletView=false;
 function board(){
  boardOpen=true;
  if(!unsubscribe)listen();
- const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
+ const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut competition · Asia/Colombo',board);root.classList.add('arena-board-mode');
  const hero=document.createElement('div');hero.className='pg-hero';
- const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.png':rankNotice==='up'?'./images/mascot/pizza-rank-up.png':rankNotice==='down'?'./images/mascot/pizza-overtaken.png':'./images/mascot/pizza-welcome.png';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
+ const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.png':rankNotice==='champion'?'./images/mascot/pizza-champ.png':rankNotice==='dethroned'?'./images/mascot/pizza-challenge.png':rankNotice==='up'?'./images/mascot/pizza-rank-up.png':rankNotice==='down'?'./images/mascot/pizza-overtaken.png':'./images/mascot/pizza-welcome.png';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
  const text=document.createElement('div');text.className='pg-hero-copy';
- const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
+ const label=document.createElement('small');label.textContent=outletView?'OUTLET CROWN CHALLENGE':rankNotice==='champion'?'YOU ARE #1!':rankNotice==='dethroned'?'THE CROWN IS IN PLAY':rankNotice==='up'?'🚀 YOU RANKED UP!':rankNotice==='down'?'⚔️ RANK CHALLENGE':'THE PIZZA ARENA';
  const big=document.createElement('strong');const my=rankEligible({...profile,isAdmin:admins})?ranked(period).find(v=>v.uid===user?.uid):null;
  big.textContent=outletView?'Who wears the crown?':my?'#'+my.rank+' · '+my.score+' PTS':'PLAY · LEARN · LEVEL UP';
  const sub=document.createElement('small');sub.textContent=outletView?'At least 2 active players per outlet':'Ready for your next victory?';
@@ -266,7 +311,7 @@ function board(){
  
  const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
-  const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
+  const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+r.rank;if(!outletView)attachPlayerDetails(cell,r);const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[r.rank]||'#'+r.rank;badge.style.fontSize='23px';cell.append(badge);
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
@@ -277,7 +322,7 @@ function board(){
  const own=records.find(r=>r.uid===user?.uid);
  if(!outletView&&!showAllPlayers&&own&&!shown.some(r=>r.uid===own.uid))shown.push(own);
  for(const r of shown){
-  const card=document.createElement('div');card.className='pg-leader-card';if(r.uid===user?.uid)card.classList.add('pg-you');
+  const card=document.createElement('div');card.className='pg-leader-card arena-rank-'+r.rank;if(!outletView)attachPlayerDetails(card,r);if(r.uid===user?.uid)card.classList.add('pg-you');
   const place=document.createElement('span');place.className='pg-place';place.textContent=r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank;card.append(place);
   if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.png';card.append(pic);}
   const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
@@ -293,9 +338,31 @@ function board(){
  
  box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
 }
-function showRankMascot(risen,rank){
- const box=open(risen?'🚀 RANK UP!':'⚔️ RANK CHALLENGE',risen?'Great work! You climbed the leaderboard.':'Another player overtook you. Practice and reclaim your position!');
- const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-rank-up.png':'./images/mascot/pizza-overtaken.png';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
+function attachPlayerDetails(node,r){
+ node.setAttribute('role','button');node.tabIndex=0;
+ node.setAttribute('aria-label','View '+r.name+' player details');
+ node.onclick=()=>playerDetails(r.uid);
+ node.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}};
+}
+function playerDetails(uid){
+ const r=ranked('alltime').find(x=>x.uid===uid);if(!r)return;
+ boardOpen=false;
+ const box=open('PLAYER DETAILS','',()=>playerDetails(uid));root.classList.add('arena-board-mode');
+ const panel=document.createElement('div');panel.className='arena-player-detail arena-rank-'+r.rank;
+ const avatar=document.createElement('img');avatar.src=r.avatar?.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png';avatar.alt='';avatar.onerror=()=>{avatar.onerror=null;avatar.src='./images/default-avatar.png';};
+ const name=document.createElement('h3');name.textContent=r.name;
+ const outlet=document.createElement('p');outlet.textContent=r.outlet;
+ const stats=document.createElement('div');stats.className='arena-detail-stats';
+ const best=readBest(uid);
+ for(const [label,value] of [['Level',window.BTRewards?.level(r.lifetimePoints)?.number||1],['Points',r.lifetimePoints.toLocaleString()],['Current all-time rank','#'+r.rank],['Best observed rank',best?'#'+best:'Not recorded']]){
+ const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=value;small.textContent=label;tile.append(strong,small);stats.append(tile);}
+ panel.append(avatar,name,outlet,stats);box.append(panel,btn('Back to leaderboard',()=>window.ArenaNav?.back(),true));
+ loadBest(uid).then(()=>{if(panel.isConnected){const n=readBest(uid);stats.lastElementChild.firstElementChild.textContent=n?'#'+n:'Not recorded';}});
+}
+function showRankMascot(before,rank){
+ const event=window.ArenaRankHistory?.change(before,rank);if(!event)return;
+ const box=open(event.title,event.text,()=>showRankMascot(before,rank));
+ const pic=document.createElement('img');pic.className='pg-celebration';pic.src='./images/mascot/'+event.mascot;pic.alt=event.title;box.prepend(pic);
  const msg=document.createElement('div');msg.className='pg-private';msg.textContent='CURRENT WEEKLY RANK · #'+rank;box.append(msg,btn('LET’S GO!',close));
 }
 function monthly(){
@@ -307,19 +374,19 @@ function monthly(){
 }
 function listen(){
  if(unsubscribe)return;
- unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),snap=>{
+ unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),{includeMetadataChanges:true},snap=>{
   users=snap.docs.map(d=>d.data()).filter(rankEligible);
-  const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=risen?'up':'down';note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(risen,mine);}
-  previousRank=mine;
+  if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites){rankSnapshotReady=true;window.ArenaRankHistory?.observe(ranked('alltime'));rememberOwnRank();const leader=ranked('weekly',true).find(x=>x.people>=2);celebrateAchievements(profile,!!(rankEligible({...profile,isAdmin:admins})&&leader?.name===profile?.outlet));}const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
+  if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites&&previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=mine===1?'champion':previousRank===1?'dethroned':risen?'up':'down';const ev=window.ArenaRankHistory?.change(previousRank,mine);if(ev)mascotToast(ev.title,ev.text,ev.mascot);}
+  if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites)previousRank=mine;
   if(boardOpen&&!root.hidden)board();
-  monthly();
+  if(root.hidden&&!$('#quiz')?.classList.contains('active'))monthly();
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
  if(!user||!profile){gate();return;}
- boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
- const box=open('MY PLAYER CARD','');
+ boardOpen=false;
+ const box=open('MY PLAYER CARD','',profilePanel);
  root.classList.add('arena-profile-mode');
  const bar=document.createElement('div');bar.className='arena-page-top';
  const title=document.createElement('span');title.textContent='PIZZA ARENA · PLAYER HQ';
@@ -335,7 +402,7 @@ async function profilePanel(){
  explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
  status.classList.add(pending?'has-pending':'is-synced');
  statusCopy.append(heading,explanation);
- const statusMascot=document.createElement('img');statusMascot.src='./images/arena/mascot-avatar.png';statusMascot.decoding='async';statusMascot.alt='';
+ const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-update.png':'./images/mascot/pizza-correct.png';statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
  const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='🏆  MY PLAYER CARD';card.append(cardHeader);
@@ -378,19 +445,24 @@ async function profilePanel(){
  const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
  syncStatus.append(status,syncButton);
  // Load a ranking snapshot when the card opens before the leaderboard has been visited.
- // Keep it one-shot, rather than an always-on listener, to conserve mobile resources.
- if(!users.length&&navigator.onLine){
+ // Use the existing shared listener whenever it is available.
+ if(!rankSnapshotReady&&!unsubscribe&&navigator.onLine){
    try{
      const snapshot=await F.getDocs(F.collection(db,'publicRanks'));
-     users=snapshot.docs.map(doc=>doc.data()).filter(rankEligible);
+     users=snapshot.docs.map(doc=>doc.data()).filter(rankEligible);if(!snapshot.metadata?.fromCache&&!snapshot.metadata?.hasPendingWrites){rankSnapshotReady=true;window.ArenaRankHistory?.observe(ranked('alltime'));rememberOwnRank();}
    }catch(e){console.info('Outlet crown information will refresh when the leaderboard opens.');}
  }
+ if(!box.isConnected||!user||!profile)return;
+ const rankRow=document.createElement('div');rankRow.className='arena-personal-ranks';
+ const currentRank=rankEligible({...profile,isAdmin:admins})?ranked('alltime').find(r=>r.uid===user.uid)?.rank:null;
+ const bestRank=currentRank?readBest(user.uid):null;
+ for(const [label,value] of [['Current all-time rank',currentRank?'#'+currentRank:rankSnapshotReady?'Unranked':'Not available'],['Best observed rank',bestRank?'#'+bestRank:'Not recorded']]){const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=value;small.textContent=label;tile.append(strong,small);rankRow.append(tile);}body.insertBefore(rankRow,actions);if(currentRank){const uid=user.uid;loadBest(uid).then(()=>{if(rankRow.isConnected){const n=readBest(uid);rankRow.lastElementChild.firstElementChild.textContent=n?'#'+n:'Not recorded';}});}
  const rewards=window.BTRewards;
  if(rewards){
    const eligible=rankEligible({...profile,isAdmin:admins});
    const leader=users.length?ranked('weekly',true).find(x=>x.people>=2):null;
    const crown=!!(eligible&&leader&&leader.name===profile.outlet);
-   const entries=rewards.achievements(profile,day(),week(),crown);
+   const entries=rewards.achievements(profile,day(),week(),crown);celebrateAchievements(profile,crown);
    const priority=['rising-star','legend','sharp-mind','super-student','weekly-50','outlet-drive'];
    const sorted=[...entries].sort((a,b)=>priority.indexOf(a.id)===-1?(priority.indexOf(b.id)===-1?0:1):(priority.indexOf(b.id)===-1?-1:priority.indexOf(a.id)-priority.indexOf(b.id)));
    const achievements=document.createElement('section');achievements.className='arena-achievements-card';
@@ -404,12 +476,12 @@ async function profilePanel(){
      showAll=expand;grid.replaceChildren();viewAll.textContent=showAll?'Show Less':'View All ›';
      const display=showAll?sorted:sorted.slice(0,6);
      for(const item of display){
-       const tile=document.createElement('div');tile.className='arena-reward-item'+(item.unlocked?'':' is-locked');
+       const tile=document.createElement('div');tile.className='arena-reward-item'+(item.unlocked?' is-earned':' is-locked');
        const icon=document.createElement('span');icon.className='arena-reward-icon';icon.textContent=item.icon;
        const name=document.createElement('strong');name.textContent=item.label;
        const requirement=document.createElement('small');
        const suffix=['rising-star','legend','first-slice'].includes(item.id)?' pts':['sharp-mind','super-student','centurion'].includes(item.id)?' correct':item.id==='weekly-50'?' weekly pts':item.id==='outlet-drive'?' answers':'';
-       requirement.textContent=Math.max(0,Number(item.current)||0).toLocaleString()+' / '+item.target.toLocaleString()+suffix+(item.unlocked?' · Earned':'');
+       requirement.textContent=Math.max(0,Number(item.current)||0).toLocaleString()+' / '+item.target.toLocaleString()+suffix;
        const track=document.createElement('div');track.className='arena-reward-track';
        const progress=document.createElement('span');progress.style.width=item.percent+'%';track.append(progress);
        tile.append(icon,name,requirement,track);grid.append(tile);
@@ -417,7 +489,7 @@ async function profilePanel(){
    }
    renderRewards(false);
  }
- const utilities=document.createElement('div');utilities.className='arena-actions';
+ const utilities=document.createElement('div');utilities.className='arena-actions'+(admins?'':' arena-account-only');
  utilities.append(btn('Account',accountSettings));
  if(admins)utilities.append(btn('Manage',adminPanel));
  utilities.querySelectorAll('button').forEach(b=>b.classList.add('pg-btn-green'));
@@ -431,7 +503,7 @@ async function profilePanel(){
 }
 function changeOutlet(){
  if(!profile)return;
- const box=open('CHANGE OUTLET','Choose your new outlet.');
+ const box=open('CHANGE OUTLET','Choose your new outlet.',changeOutlet);
  const fieldSelect=sel(box,'Outlet');fieldSelect.value=profile.outlet;
  const controls=document.createElement('div');controls.className='arena-actions';
  const back=btn('Close',profilePanel);
@@ -450,7 +522,7 @@ function changeOutlet(){
 }
 async function accountSettings(){
  if(!user||!profile)return;
- const box=open('ACCOUNT SETTINGS','Update your player picture, username or password.');
+ const box=open('ACCOUNT SETTINGS','Update your player picture, username or password.',accountSettings);
  box.classList.add('arena-settings-dialog');
  root.classList.add('arena-account-mode');
  const intro=document.createElement('div');intro.className='arena-account-intro';
@@ -541,7 +613,7 @@ async function accountSettings(){
 }
 function viewSyncHealth(){
  if(!admins){profilePanel();return;}
- const box=open('CHECK SAVED ANSWERS','Check answers saved on this phone.');
+ const box=open('CHECK SAVED ANSWERS','Check answers saved on this phone.',viewSyncHealth);
  const pending=getQueue().filter(e=>e.uid===user?.uid);
  const rows=[
   ['Answers waiting',String(pending.length)],
@@ -561,7 +633,7 @@ function viewSyncHealth(){
 }
 function openNotifications(){
  if(!user||!profile){gate();return;}
- const box=open('NOTIFICATIONS','Your latest updates.');
+ const box=open('NOTIFICATIONS','Your latest updates.',openNotifications);
  const content=document.createElement('div');content.className='pg-private';
  if(admins&&requests.length){content.textContent=requests.length+' outlet '+(requests.length===1?'request needs':'requests need')+' your attention.';}
  else if(getQueue().length){content.textContent=pendingDescription();}
@@ -574,10 +646,11 @@ function openNotifications(){
 window.BTExamUI={
  openProfile:()=>show('profile'),
  openBoard:()=>show('board'),
- openNotifications
+ openNotifications,
+ dismissForNavigation:()=>{if(user&&profile)close();}
 };
 function adminPanel(){
- const box=open('Manage','Review outlet changes and manage accounts.');box.classList.add('arena-admin-panel');
+ const box=open('Manage','Review outlet changes and manage accounts.',adminPanel);box.classList.add('arena-admin-panel');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
  box.append(btn('Manage users',manageUsers,true));
@@ -586,7 +659,7 @@ function adminPanel(){
 }
 async function manageUsers(){
  if(!admins)return;
- const box=open('MANAGE USERS','Remove an account with two confirmations.');
+ const box=open('MANAGE USERS','Remove an account with two confirmations.',manageUsers);
  const status=document.createElement('p');status.className='pg-muted';status.textContent='Loading users…';box.append(status);
  const search=field(box,'Search username or outlet');search.required=false;
  const list=document.createElement('div');box.append(list);
@@ -710,7 +783,7 @@ async function seedKeys(){
 }
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
- user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;gate();return;}
+ user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;rankSnapshotReady=false;cloudRank.clear();rankCloudUnavailable=false;gate();return;}
  try{
   const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
   if(blocked.exists()){await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;}
@@ -725,8 +798,8 @@ async function session(u){
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
-  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists())profile=d.data();});
-  close();if(typeof checkSavedSession==='function')checkSavedSession();restoreCloudSession();sync();
+  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists()){profile=d.data();if(!d.metadata?.hasPendingWrites&&!d.metadata?.fromCache)celebrateAchievements(profile);}});
+  close();celebrateAchievements(profile);if(typeof checkSavedSession==='function')checkSavedSession();restoreCloudSession();sync();if(!unsubscribe)listen();
  }catch(e){gate('setup',errorMessage(e));}
 }
 async function checkForUpdates(){
