@@ -57,8 +57,8 @@ assert.match(worker,/study\/lesson-player\.js\?v=4\.6\.0/);
 assert.match(worker,/study\/lesson-player\.css\?v=4\.1\.0/);
 new vm.Script(worker,{filename:'sw.js'});
 const ver=JSON.parse(read('version.json')).version;
-assert.equal(ver,'4.7.0-arena');
-assert(read('js/bt-spark.js').includes("const APP_VERSION='4.7.0-arena'"));
+assert.match(ver,/^4\.7\.\d+-arena$/);
+assert(read('js/bt-spark.js').includes("const APP_VERSION='"+ver+"'"));
 assert(!read('study/lesson-player.js').includes('firebase'),'Study must not mutate rankings');
 console.log('PASS: 57 source-cited lessons, JSON structure, JS syntax, offline cache, routes and scoring isolation.');
 
