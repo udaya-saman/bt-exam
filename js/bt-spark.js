@@ -374,11 +374,11 @@ function monthly(){
 }
 function listen(){
  if(unsubscribe)return;
- unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),snap=>{
+ unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),{includeMetadataChanges:true},snap=>{
   users=snap.docs.map(d=>d.data()).filter(rankEligible);
-  if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites){rankSnapshotReady=true;window.ArenaRankHistory?.observe(ranked('alltime'));rememberOwnRank();}const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=mine===1?'champion':previousRank===1?'dethroned':risen?'up':'down';const ev=window.ArenaRankHistory?.change(previousRank,mine);if(ev)mascotToast(ev.title,ev.text,ev.mascot);}
-  previousRank=mine;
+  if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites){rankSnapshotReady=true;window.ArenaRankHistory?.observe(ranked('alltime'));rememberOwnRank();const leader=ranked('weekly',true).find(x=>x.people>=2);celebrateAchievements(profile,!!(rankEligible({...profile,isAdmin:admins})&&leader?.name===profile?.outlet));}const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
+  if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites&&previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=mine===1?'champion':previousRank===1?'dethroned':risen?'up':'down';const ev=window.ArenaRankHistory?.change(previousRank,mine);if(ev)mascotToast(ev.title,ev.text,ev.mascot);}
+  if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites)previousRank=mine;
   if(boardOpen&&!root.hidden)board();
   if(root.hidden&&!$('#quiz')?.classList.contains('active'))monthly();
  },err=>console.warn('Leaderboard listener',err));
@@ -445,18 +445,18 @@ async function profilePanel(){
  const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
  syncStatus.append(status,syncButton);
  // Load a ranking snapshot when the card opens before the leaderboard has been visited.
- // Keep it one-shot, rather than an always-on listener, to conserve mobile resources.
- if(!rankSnapshotReady&&navigator.onLine){
+ // Use the existing shared listener whenever it is available.
+ if(!rankSnapshotReady&&!unsubscribe&&navigator.onLine){
    try{
      const snapshot=await F.getDocs(F.collection(db,'publicRanks'));
      users=snapshot.docs.map(doc=>doc.data()).filter(rankEligible);if(!snapshot.metadata?.fromCache&&!snapshot.metadata?.hasPendingWrites){rankSnapshotReady=true;window.ArenaRankHistory?.observe(ranked('alltime'));rememberOwnRank();}
    }catch(e){console.info('Outlet crown information will refresh when the leaderboard opens.');}
  }
- if(!box.isConnected)return;
+ if(!box.isConnected||!user||!profile)return;
  const rankRow=document.createElement('div');rankRow.className='arena-personal-ranks';
  const currentRank=rankEligible({...profile,isAdmin:admins})?ranked('alltime').find(r=>r.uid===user.uid)?.rank:null;
  const bestRank=currentRank?readBest(user.uid):null;
- for(const [label,value] of [['Current all-time rank',currentRank?'#'+currentRank:'Unranked'],['Best observed rank',bestRank?'#'+bestRank:'Not recorded']]){const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=value;small.textContent=label;tile.append(strong,small);rankRow.append(tile);}body.insertBefore(rankRow,actions);if(currentRank){const uid=user.uid;loadBest(uid).then(()=>{if(rankRow.isConnected){const n=readBest(uid);rankRow.lastElementChild.firstElementChild.textContent=n?'#'+n:'Not recorded';}});}
+ for(const [label,value] of [['Current all-time rank',currentRank?'#'+currentRank:rankSnapshotReady?'Unranked':'Not available'],['Best observed rank',bestRank?'#'+bestRank:'Not recorded']]){const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=value;small.textContent=label;tile.append(strong,small);rankRow.append(tile);}body.insertBefore(rankRow,actions);if(currentRank){const uid=user.uid;loadBest(uid).then(()=>{if(rankRow.isConnected){const n=readBest(uid);rankRow.lastElementChild.firstElementChild.textContent=n?'#'+n:'Not recorded';}});}
  const rewards=window.BTRewards;
  if(rewards){
    const eligible=rankEligible({...profile,isAdmin:admins});
