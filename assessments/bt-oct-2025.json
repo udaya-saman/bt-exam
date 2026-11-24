@@ -1,0 +1,290 @@
+{
+  "schema": 1,
+  "id": "bt-oct-2025",
+  "title": "Buddy Trainer Assessment · October 2025",
+  "description": "27 questions transcribed from the supplied assessment pages. Review mode; no ranking points.",
+  "sourceImages": [
+    "IMG-20261008-WA0022.jpg",
+    "IMG-20261008-WA0018.jpg",
+    "IMG-20261008-WA0013.jpg"
+  ],
+  "questions": [
+    {
+      "n": 1,
+      "q": "What is the correct definition of our company values RIIT?",
+      "options": [
+        "Respect / Intelligence / Innerve / Team Word",
+        "Respect / Integrity / Innovation / Team Work",
+        "Review / Insane / Inauguration / Tender",
+        "Resilience / Intermediate / Interim / Tension"
+      ],
+      "key": "riit"
+    },
+    {
+      "n": 2,
+      "q": "Which of the following are the five steps of service of a delivery rider?",
+      "options": [
+        "Smile, greet & verify",
+        "Introduce yourself and company",
+        "Repeat the order",
+        "State the amount & give the balance",
+        "All of the above"
+      ],
+      "key": "delivery-five"
+    },
+    {
+      "n": 3,
+      "q": "When was Pizza Hut established?",
+      "options": [
+        "1958",
+        "1993",
+        "1948",
+        "1959"
+      ],
+      "key": "pizza-founded"
+    },
+    {
+      "n": 4,
+      "q": "Which of the following is a problem handling principle?",
+      "options": [
+        "BLAHT",
+        "BLAST",
+        "BJAST",
+        "BLBST"
+      ],
+      "key": "blast"
+    },
+    {
+      "n": 5,
+      "q": "What does H2OP mean?",
+      "options": [
+        "Hustle and Hospitality / Own the grid / Perfect for product",
+        "Husky and Hospitality / Own the zone / Passion for product",
+        "Hustle and Hospitality / Own the zone / Passion for product",
+        "Hustle and Hospitality / Owner the lone / Passion for Produce"
+      ],
+      "key": "h2op"
+    },
+    {
+      "n": 6,
+      "q": "What are the brands of YUM International?",
+      "options": [
+        "KFC / Taco Bell / The Habit Burger Grill / Pizza Hut",
+        "KFC / Taco Bell / Burger King / Pizza Hut",
+        "KFC / Pizza Hut / Taco Bell",
+        "Pizza Hut / Taco Bell"
+      ],
+      "key": "yum-brands"
+    },
+    {
+      "n": 7,
+      "q": "What does ACE stand for?",
+      "options": [
+        "Assure Customer Experience",
+        "Assure Champs Expert",
+        "Assure Customer Expert",
+        "Account Customer Experience"
+      ],
+      "key": "ace"
+    },
+    {
+      "n": 8,
+      "q": "What are the three elements that cause fire?",
+      "options": [
+        "Oxygen / Heat / Fire",
+        "Oxygen / Fuel / Water",
+        "Heat / Fuel / Oxygen",
+        "Water / Powder / CO2"
+      ],
+      "key": "fire-triangle"
+    },
+    {
+      "n": 9,
+      "q": "What is the process of using fire extinguishers?",
+      "options": [
+        "PUSS",
+        "PASS",
+        "PEST",
+        "POST"
+      ],
+      "key": "pass"
+    },
+    {
+      "n": 10,
+      "q": "What are the three Ps of first aid?",
+      "options": [
+        "Preserve Life",
+        "Prevent Injury",
+        "Promote Recovery",
+        "Promote Love"
+      ],
+      "key": "firstaid-3ps"
+    },
+    {
+      "n": 11,
+      "q": "How many pieces of Crispy Chicken Strips are served for a portion?",
+      "options": [
+        "3 pieces",
+        "16 pieces",
+        "5 pieces",
+        "4 pieces"
+      ]
+    },
+    {
+      "n": 12,
+      "q": "What is the thawing process for Garlic Butter?",
+      "options": [
+        "One overnight in cool room",
+        "24 hours in cool room",
+        "One overnight at room temperature",
+        "One hour at room temperature"
+      ]
+    },
+    {
+      "n": 13,
+      "q": "What is the portion size of Potato Wedges?",
+      "options": [
+        "175 g",
+        "250 g",
+        "150 g",
+        "225 g"
+      ]
+    },
+    {
+      "n": 14,
+      "q": "What is the thawing process for meat items?",
+      "options": [
+        "2 Day Ready / 1 Day Discard",
+        "2 Day Ready / 2 Day Discard",
+        "1 Day Ready / 1 Day Discard",
+        "2 Day Ready / 3 Day Discard"
+      ]
+    },
+    {
+      "n": 15,
+      "q": "Which ingredient and amount is used for one batch of Sugar Glaze?",
+      "options": [
+        "Icing Sugar 200 g",
+        "Cream Cheese 90 g",
+        "Cream Cheese 200 g",
+        "Icing Sugar 90 g"
+      ]
+    },
+    {
+      "n": 16,
+      "q": "What is the thawing process for Butter Masala Gravy?",
+      "options": [
+        "2 Day Ready / 1 Day Discard",
+        "2 Day Ready / 2 Day Discard",
+        "1 Day Ready / 1 Day Discard",
+        "2 Day Ready / 3 Day Discard"
+      ]
+    },
+    {
+      "n": 17,
+      "q": "What ingredients are used to make Cheesy Kottchi Sauce?",
+      "options": [
+        "Nacho Cheese 600 g / Kottchi Sauce 400 g",
+        "Nacho Cheese 400 g / Kottchi Sauce 600 g",
+        "Nacho Cheese 500 g / Kottchi Sauce 500 g",
+        "Nacho Cheese 600 g / Cream Cheese 400 g"
+      ]
+    },
+    {
+      "n": 18,
+      "q": "How much cooked rice is used for a Bake Rice portion?",
+      "options": [
+        "3 Regular Cups",
+        "2 Regular Cups",
+        "1 Regular Cup",
+        "4 Regular Cups"
+      ]
+    },
+    {
+      "n": 19,
+      "q": "How much Elbow Pasta is served for a portion?",
+      "options": [
+        "1 Purple Cup of Elbow",
+        "2 Purple Cups of Elbow",
+        "3 Purple Cups of Elbow",
+        "4 Purple Cups of Elbow"
+      ]
+    },
+    {
+      "n": 20,
+      "q": "How much Spaghetti is served for a portion of Spaghetti Bolognaise pasta?",
+      "options": [
+        "150 g",
+        "175 g",
+        "170 g",
+        "200 g"
+      ]
+    },
+    {
+      "n": 21,
+      "q": "What is the Buddy Trainer training process?",
+      "options": [
+        "Prepare / Show and Tell / Guide and Practice / Follow Up",
+        "Practice / Teach / Guide / Follow Up",
+        "Prepare / On the Job / Guide and Practice / Follow Up",
+        "Prepare / Road Map / On the Job / Expert"
+      ],
+      "key": "buddy-training"
+    },
+    {
+      "n": 22,
+      "q": "Always we must follow 5 smile in Pizza Hut.",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 23,
+      "q": "Main meal has to be served within 14 min (17.5 min).",
+      "options": [
+        "True",
+        "False"
+      ]
+    },
+    {
+      "n": 24,
+      "q": "Which is NOT a Team of Two process?",
+      "options": [
+        "Apologize and Show Concern",
+        "Offer a Pizza",
+        "Tell your manager immediately",
+        "Check back on satisfaction"
+      ],
+      "key": "team-two-negative"
+    },
+    {
+      "n": 25,
+      "q": "Which is NOT a problem handling principle?",
+      "options": [
+        "Never let a customer leave unhappy",
+        "Solve the problem before it becomes a complaint",
+        "Treat the customer like you want to be treated",
+        "Never argue with the crew member"
+      ],
+      "key": "problem-principles-negative"
+    },
+    {
+      "n": 26,
+      "q": "What does CHAMPS stand for? (C, H, A, M, P, S)",
+      "options": [],
+      "key": "champs"
+    },
+    {
+      "n": 27,
+      "q": "What does CARE stand for?",
+      "options": [
+        "Courtesy / Attentiveness / Respect / Enthusiasm",
+        "Cash / Accuracy / Respect / Energy",
+        "Customer / Accuracy / Rice / Experience",
+        "Customer / Attentiveness / Respect / Energy"
+      ],
+      "key": "care"
+    }
+  ]
+}
