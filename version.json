@@ -1,5 +1,5 @@
 {
-  "version": "4.7.0-arena",
+  "version": "4.7.1-arena",
   "releaseDate": "2026-11-24",
-  "notes": "Added 2025–2026 assessment review bank: 97 scanned question entries consolidated into 88 unique questions; partial and missing scans flagged. Ranked quiz scoring unchanged."
+  "notes": "Leaderboard: removed redundant intro and hero, kept top three only in podium, made #4+ standings scroll separately and fixed equal-width My Profile / Close actions. Quiz scoring and profile UI unchanged."
 }
