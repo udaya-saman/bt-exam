@@ -4,7 +4,6 @@
  const FILES=['training.json','values.json','handbook.json'];
  const BASE='./study/content/';
  const KEY='pizza-arena-study-done-v2';
- const assets={mascot:'./images/arena/mascot-champion.png'};
  const categories={
    training:{title:'Operations & Training',label:'Key Standards & Information',icon:'🍕',description:'Service, food safety, products, times and procedures'},
    values:{title:'Gamma Values & Policies',label:'RIIT & Company Policies',icon:'🏅',description:'Values, ethics, teamwork and workplace policies'},
