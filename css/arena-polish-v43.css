@@ -81,3 +81,35 @@ body #home .arena-header-actions>button.arena-header-icon>.arena-header-symbol{d
 #bt-spark-root .arena-player-podium strong,#bt-spark-root .arena-player-podium small{max-width:100%}
 body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions button:first-child{gap:4px!important;letter-spacing:normal!important;justify-content:center!important}
 body #bt-spark-root.arena-profile-mode .arena-board-trophy{width:28px!important;height:28px!important;flex:0 0 28px!important;object-fit:contain;margin:0!important}
+
+/* Leaderboard only: non-scrolling podium/footer, independently scrolling places #4+. */
+body #bt-spark-root.arena-leaderboard-layout .panel{
+ display:flex!important;flex-direction:column!important;
+ height:calc(100dvh - 24px)!important;max-height:calc(100dvh - 24px)!important;
+ min-height:0!important;overflow:hidden!important;
+ padding-bottom:max(20px,calc(12px + env(safe-area-inset-bottom,0px)))!important;
+}
+body #bt-spark-root.arena-leaderboard-layout .panel>h2{flex:0 0 auto}
+body #bt-spark-root.arena-leaderboard-layout #bt-spark-content{
+ display:flex;flex-direction:column;flex:1 1 auto;min-height:0;
+}
+body #bt-spark-root.arena-leaderboard-layout .pg-nav,
+body #bt-spark-root.arena-leaderboard-layout .pg-podium,
+body #bt-spark-root.arena-leaderboard-layout .pg-section{flex-shrink:0}
+body #bt-spark-root.arena-leaderboard-layout .pg-section{margin:10px 0 8px}
+body #bt-spark-root.arena-leaderboard-layout .pg-standings-scroll{
+ flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;
+ overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 3px 2px 0;
+}
+body #bt-spark-root.arena-leaderboard-layout .pg-board-footer{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;width:100%;flex:0 0 auto;margin-top:11px;
+}
+body #bt-spark-root.arena-leaderboard-layout .pg-board-footer>button{
+ width:100%!important;min-width:0!important;margin:0!important;box-sizing:border-box;
+}
+@media(max-height:600px){
+ body #bt-spark-root.arena-leaderboard-layout .panel{padding-top:12px!important;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))!important}
+ body #bt-spark-root.arena-leaderboard-layout .pg-nav{margin:9px 0}
+ body #bt-spark-root.arena-leaderboard-layout .pg-podium{margin:7px 0}
+}
