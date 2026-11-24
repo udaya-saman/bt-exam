@@ -66,6 +66,8 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
  await expect(page.locator('.pa-study-source')).toHaveCount(0);
  await expect(page.locator('.pa-study-memory')).not.toHaveCount(0);
+ await expect(page.locator('.pa-study-illustration').first()).toBeVisible();
+ await expect.poll(()=>page.locator('.pa-study-illustration').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
  await page.getByRole('button',{name:'Quick revision'}).click();
  await expect(page.locator('.pa-revision-card')).toBeVisible();
  await page.getByRole('button',{name:'Reveal learning point'}).click();
