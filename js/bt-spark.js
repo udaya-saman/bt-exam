@@ -266,7 +266,7 @@ async function rememberOwnRank(){
  const uid=user.uid,currentRank=ranked('alltime').find(r=>r.uid===uid)?.rank;if(!currentRank||rankWrites.has(uid))return;
  const observed=window.ArenaRankHistory?.get(uid);const rank=Number.isInteger(observed)&&observed>0?Math.min(currentRank,observed):currentRank;
  const old=cloudRank.get(uid);if(old&&old<=rank)return;
- rankWrites.add(uid);
+ rankWrites.add(uid);let committed=false;
  try{
   const best=await F.runTransaction(db,async tx=>{
    const ref=F.doc(db,'rankHistory',uid),snap=await tx.get(ref);
@@ -274,9 +274,9 @@ async function rememberOwnRank(){
    if(Number.isInteger(before)&&before<=rank)return before;
    tx.set(ref,{uid,bestRank:rank,updatedAt:F.serverTimestamp()});return rank;
   });
-  cloudRank.set(uid,best);
+  if(user?.uid===uid){cloudRank.set(uid,best);committed=true;}
  }catch(e){if(e.code==='permission-denied')rankCloudUnavailable=true;}
- finally{rankWrites.delete(uid);if(user?.uid===uid&&!rankCloudUnavailable&&navigator.onLine){const observed=window.ArenaRankHistory?.get(uid);if(observed&&cloudRank.has(uid)&&observed<cloudRank.get(uid))rememberOwnRank();}}
+ finally{rankWrites.delete(uid);if(committed&&user?.uid===uid&&!rankCloudUnavailable&&navigator.onLine){const observed=window.ArenaRankHistory?.get(uid);if(observed&&cloudRank.has(uid)&&observed<cloudRank.get(uid))rememberOwnRank();}}
 }
 function mascotToast(title,caption,file){
  const old=document.querySelector('.arena-event-toast');if(old)old.remove();
