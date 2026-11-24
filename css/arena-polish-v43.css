@@ -6,7 +6,7 @@
 #home .arena-person-icon{position:relative!important;display:block!important;width:20px!important;height:10px!important;border-radius:10px 10px 3px 3px!important;background:white!important;margin-top:10px!important}
 #home .arena-person-icon:before{content:"";position:absolute;top:-12px;left:5px;width:10px;height:10px;border-radius:50%;background:white}
 body #bt-spark-root.arena-board-mode .panel,body #bt-spark-root.arena-profile-mode .panel{position:relative;isolation:isolate}
-body #bt-spark-root.arena-board-mode .panel:after,body #bt-spark-root.arena-profile-mode .panel:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.20;background:url("../images/arena/chalk-food.png") repeat;background-size:320px 320px;}
+body #bt-spark-root.arena-board-mode .panel:after,body #bt-spark-root.arena-profile-mode .panel:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.20;background:url("../images/arena/chalk-food-v45.png") repeat;background-size:320px 320px;}
 #bt-spark-root .arena-board-mode .pg-leader-card{margin:8px 0}
 #bt-spark-root.arena-board-mode .pg-leader-card{margin:8px 0!important;padding:12px 10px!important;border-radius:17px!important}
 #bt-spark-root.arena-board-mode .pg-leader-card.arena-rank-1{padding:19px 13px!important;margin:18px 0 12px!important}
@@ -64,3 +64,5 @@ body #bt-spark-root.arena-profile-mode .arena-board-trophy{width:70px!important;
 .arena-event-toast span{font-size:13px;line-height:1.4}
 @media(prefers-reduced-motion:no-preference){.arena-event-toast{animation:arenaToastIn .22s ease-out}}
 @keyframes arenaToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+body #bt-spark-root.arena-profile-mode .arena-stat{flex-direction:column!important;gap:4px!important;text-align:center} .arena-stat-art{width:clamp(48px,16vw,88px);height:auto;aspect-ratio:1;object-fit:contain;max-width:100%} body #bt-spark-root.arena-profile-mode .arena-board-trophy{width:26px!important;height:26px!important;flex:0 0 26px!important} body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions button:first-child{gap:4px!important;font-size:clamp(11px,3vw,16px)!important;padding-inline:5px!important;white-space:nowrap} .pg-podium-item.arena-rank-1{border:2px solid #ffd45b!important;box-shadow:0 0 12px #ffc83d80;animation:arenaPodiumGold 2s ease-in-out infinite alternate}.pg-podium-item.arena-rank-2{border:2px solid #c9d4df!important}.pg-podium-item.arena-rank-3{border:2px solid #bd8050!important}@keyframes arenaPodiumGold{to{box-shadow:0 0 19px #ffd45bb0}}@media(prefers-reduced-motion:reduce){.pg-podium-item.arena-rank-1{animation:none!important}}
