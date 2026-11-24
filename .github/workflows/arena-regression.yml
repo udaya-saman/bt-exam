@@ -12,4 +12,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify question bank, scoring, account settings and UI contracts
-        run: node tests/arena-v40.test.cjs
+        run: |
+          node tests/arena-v40.test.cjs
+          node tests/assessment-bank.test.cjs
+          node tests/two-screen.test.cjs
