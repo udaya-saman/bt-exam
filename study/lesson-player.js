@@ -155,21 +155,27 @@
    navBar(root);titleCard(root);metric(root);controls(root);
    listNode=make('div','pa-study-library');root.append(listNode);renderCards();
  }
+ function topicPicture(section,art){
+   // Render a sharp PNG diagram from the actual lesson text, not a celebration mascot.
+   const points=section.keyPoints.length?section.keyPoints:[section.body];
+   const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+   const W=960, margin=36, lineHeight=34;
+   function wrap(value,width){const lines=[];let line='';for(const word of String(value).split(/\s+/)){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>width){lines.push(line);line=word;}else line=next;}if(line)lines.push(line);return lines;}
+   ctx.font='600 27px system-ui,sans-serif';
+   const rows=points.map(p=>wrap(p,790));
+   const title=wrap(section.heading,880);
+   canvas.width=W;canvas.height=100+title.length*lineHeight+rows.reduce((n,a)=>n+Math.max(76,a.length*lineHeight+28),0)+margin;
+   ctx.fillStyle='#fff5e5';ctx.fillRect(0,0,W,canvas.height);
+   ctx.fillStyle='#a90921';ctx.fillRect(0,0,W,80+title.length*lineHeight);
+   ctx.font='bold 24px system-ui,sans-serif';ctx.fillStyle='#ffdb91';ctx.fillText('VISUAL STUDY MAP',margin,34);
+   ctx.font='bold 27px system-ui,sans-serif';ctx.fillStyle='#fff';title.forEach((t,i)=>ctx.fillText(t,margin,70+i*lineHeight));
+   let y=100+title.length*lineHeight;
+   rows.forEach((lines,i)=>{const h=Math.max(76,lines.length*lineHeight+28);ctx.fillStyle=i%2?'#ffe8cf':'#fffaf1';ctx.fillRect(margin,y,W-2*margin,h-10);ctx.fillStyle='#b5172d';ctx.beginPath();ctx.arc(75,y+32,23,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 24px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText(String(i+1),75,y+40);ctx.textAlign='left';ctx.font='600 27px system-ui,sans-serif';ctx.fillStyle='#34231f';lines.forEach((t,j)=>ctx.fillText(t,116,y+32+j*lineHeight));y+=h;});
+   const image=make('img','pa-topic-picture');image.src=canvas.toDataURL('image/png');image.alt=section.heading+': '+points.join('; ');image.width=W;image.height=canvas.height;image.decoding='async';return image;
+ }
  function mnemonic(section,art){
-   if(!section.keyPoints.length)return null;
    const box=make('div','pa-study-memory');
-   const caption=make('span','pa-study-memory-title','VISUAL RECALL');
-   const guide=make('img','pa-study-guide');guide.src='./images/mascot/'+({safety:'pizza-correct.png',service:'pizza-welcome.png',values:'pizza-champ.png',riit:'pizza-welcome.png',policy:'pizza-private.png',time:'pizza-timer.png',food:'pizza-correct.png',temperature:'pizza-challenge.png',history:'pizza-crown.png'}[art]||'pizza-welcome.png');guide.alt='';guide.loading='lazy';guide.decoding='async';box.append(guide);
-   box.append(caption);
-   const flow=make('div','pa-study-visual-flow');
-   section.keyPoints.forEach((point,i)=>{
-     const item=make('div','pa-study-visual-step');
-     const head=point.replace(/^\d+\.\s*/,'').trim();
-     append(item,make('span','pa-study-visual-number',String(i+1)),
-       make('span','pa-study-visual-text',head));
-     flow.append(item);
-   });
-   box.append(flow);return box;
+   box.append(topicPicture(section,art));return box;
  }
  function renderSection(section,art,index){
    const block=make('section','pa-study-section');
@@ -208,7 +214,7 @@
  function render(){
   card.replaceChildren();
   const item=cards[index];
-  const mascot=make('img','pa-study-guide');mascot.src='./images/mascot/pizza-challenge.png';mascot.alt='';mascot.decoding='async';
+  const mascot=make('div','pa-study-step-id','RECALL');
   const progress=make('small','pa-study-step-id',(index+1)+' / '+cards.length);
   const heading=make('h3','',item.heading);
   const hint=make('p','pa-study-copy','Recall one learning point for this topic.');
@@ -232,10 +238,7 @@
      make('h1','',lesson.title),
      make('p','',lesson.summary));
    const art=make('div','pa-study-lesson-art');
-   const image=make('img','pa-study-lesson-mascot');
-   image.src=assets.mascot;image.loading='lazy';image.decoding='async';
-   image.alt='Animated Pizza Arena mascot';image.width=140;image.height=145;
-   append(art,image,make('span','pa-study-art-icon',iconFor(lesson.art)));
+   art.append(make('span','pa-study-art-icon',iconFor(lesson.art)));
    append(hero,text,art);root.append(hero);
    const sections=make('div','pa-study-reader');
    lesson.sections.forEach((section,i)=>sections.append(renderSection(section,lesson.art,i)));

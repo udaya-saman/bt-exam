@@ -1,5 +1,5 @@
 {
-  "version": "4.4.0-arena",
+  "version": "4.5.0-arena",
   "releaseDate": "2026-11-24",
-  "notes": "Compact player standings, outlet-only medal frames, chalk food artwork, larger player icons and admin user creation."
+  "notes": "Podium frames, independent player artwork and chalk background."
 }

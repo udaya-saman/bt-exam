@@ -22,6 +22,17 @@ for(const width of widths){
   await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
   await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;});
   await expect(page.locator('.arena-hero h1')).toBeVisible();
+  const heroControls=page.locator('#home .arena-header-actions > button.arena-header-icon');
+  await expect(heroControls).toHaveCount(2);
+  await expect(heroControls.nth(0)).toHaveAttribute('aria-label','Notifications');
+  await expect(heroControls.nth(1)).toHaveAttribute('aria-label','My Player Card');
+  for(const control of await heroControls.all()){
+    const d=await control.evaluate(el=>({w:el.offsetWidth,h:el.offsetHeight,r:getComputedStyle(el).borderTopLeftRadius}));
+    expect(d.w).toBe(d.h);expect(d.r).toBe('50%');
+    await expect.poll(()=>control.locator('img').evaluate(el=>el.complete&&el.naturalWidth===96)).toBe(true);
+  }
+  noOverlap(await dimensions(page,'#home .arena-header-icon'),width,'Hero controls');
+
   const heroBefore=await page.locator('.arena-hero').evaluate(el=>el.getBoundingClientRect().height);
   await page.evaluate(()=>{document.getElementById('resume-banner').style.display='flex';});
   const heroAfter=await page.locator('.arena-hero').evaluate(el=>el.getBoundingClientRect().height);

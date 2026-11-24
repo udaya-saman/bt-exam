@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.4.0-arena';let latestUpdate=null;
+const APP_VERSION='4.5.0-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -314,7 +314,7 @@ function board(){
  
  const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
-  const cell=document.createElement('div');cell.className='pg-podium-item '+(outletView?'arena-rank-'+r.rank:'arena-player-standing');if(!outletView)attachPlayerDetails(cell,r);const badge=document.createElement('div');badge.textContent=outletView?(({1:'🥇',2:'🥈',3:'🥉'})[r.rank]||'#'+r.rank):'#'+r.rank;badge.style.fontSize='23px';cell.append(badge);
+  const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+r.rank;if(!outletView)attachPlayerDetails(cell,r);const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[r.rank]||'';badge.style.fontSize='23px';cell.append(badge);
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
@@ -428,12 +428,12 @@ async function profilePanel(){
  const stats=document.createElement('div');stats.className='arena-stats-grid';
  for(const [glyph,count,word] of [['🏆',totals.points,'Points'],['🎯',totals.correct,'Correct'],['📘',totals.answered,'Answered']]){
    const item=document.createElement('div');item.className='arena-stat';
-   const icon=document.createElement('span');icon.className='arena-stat-icon';icon.textContent=glyph;
+   const icon=document.createElement('img');icon.className='arena-stat-art';icon.src='./images/arena/stat-'+word.toLowerCase()+'.png';icon.alt='';icon.decoding='async';
    const detail=document.createElement('div');const number=document.createElement('strong');number.textContent=Number(count).toLocaleString();
    const label=document.createElement('span');label.textContent=word;detail.append(number,label);item.append(icon,detail);stats.append(item);
  }body.append(stats);
  const actions=document.createElement('div');actions.className='arena-actions';
- const boardButton=btn('Leaderboard',board);const trophy=document.createElement('span');trophy.className='arena-png-icon arena-board-trophy';trophy.style.setProperty('--arena-icon-x','66.6666666667%');trophy.style.setProperty('--arena-icon-y','50%');trophy.setAttribute('aria-hidden','true');boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
+ const boardButton=btn('Leaderboard',board);const trophy=document.createElement('img');trophy.className='arena-board-trophy';trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='';boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
  const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.add('pg-btn-red');
  const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
  actions.append(boardButton,signoutButton,closeAction);body.append(actions);
