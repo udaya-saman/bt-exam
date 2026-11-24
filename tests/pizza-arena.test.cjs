@@ -55,5 +55,5 @@ assert.match(rules,/match \/publicRanks\/\{uid\}/,'Public score collection');
 assert.match(rules,/allow read: if mine\(uid\) \|\| admin\(\)/,'Private user score security');
 assert.match(rules,/outlet != 'Other'/,'Other excluded by Firestore public score rules');
 assert.ok(html.includes('css/pizza-game.css'),'Theme loaded');
-assert.ok(js.includes('images/mascot/pizza-welcome.png') && js.includes('images/mascot/pizza-crown.png'),'Matching mascots referenced');
+assert.ok(!js.includes("className='pg-hero'") && js.includes("className='pg-podium'"),'Redundant leaderboard hero removed while the podium remains');
 console.log('Pizza Arena privacy/ranking tests passed (15 key expectations).');
