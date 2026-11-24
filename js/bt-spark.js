@@ -433,7 +433,7 @@ async function profilePanel(){
    const label=document.createElement('span');label.textContent=word;detail.append(number,label);item.append(icon,detail);stats.append(item);
  }body.append(stats);
  const actions=document.createElement('div');actions.className='arena-actions';
- const boardButton=btn('Leaderboard',board);const trophy=document.createElement('img');trophy.className='arena-board-trophy';trophy.src='./images/arena/stat-points.png';trophy.alt='';boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
+ const boardButton=btn('Leaderboard',board);const trophy=document.createElement('img');trophy.className='arena-board-trophy';trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='';boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
  const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.add('pg-btn-red');
  const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
  actions.append(boardButton,signoutButton,closeAction);body.append(actions);
