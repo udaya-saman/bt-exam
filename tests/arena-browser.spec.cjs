@@ -104,3 +104,27 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
  expect(await page.locator('.arena-reward-item').count()).toBe(6);
  await page.screenshot({path:'tests/screenshot-player-card.png',fullPage:true});
 });
+
+test('Imported 2025–26 assessments are grouped without duplicates on phones',async({page})=>{
+ await page.setViewportSize({width:375,height:820});
+ await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;openQuestions();});
+ await expect(page.locator('#paper-select .pa-assessment-entry')).toBeVisible();
+ await page.locator('#paper-select .pa-assessment-entry').click();
+ await expect(page.locator('#assessment-library.active')).toBeVisible();
+ await expect(page.locator('.pa-assessment-summary strong')).toHaveText('88 distinct questions');
+ await expect(page.locator('.pa-assessment-card')).toHaveCount(15);
+ await page.locator('.pa-assessment-search').fill('Cheesy Kottchi Sauce');
+ await expect(page.locator('.pa-assessment-card')).toHaveCount(1);
+ await expect(page.locator('.pa-assessment-card').first()).toContainText('600 g');
+ await page.locator('.pa-assessment-search').fill('RIIT');
+ await expect(page.locator('.pa-assessment-card')).toHaveCount(1);
+ await expect(page.locator('.pa-assessment-card').first().locator('.pa-assessment-source')).toHaveCount(2);
+ await page.locator('.pa-assessment-tab').filter({hasText:'LAS · Jan 2026'}).click();
+ await expect(page.locator('.pa-assessment-missing')).toContainText('17–19');
+ await page.locator('.pa-assessment-search').fill('PPM strength');
+ await expect(page.locator('.pa-assessment-card')).toHaveCount(1);
+ const overflow=await page.evaluate(()=>({w:document.documentElement.scrollWidth,viewport:innerWidth}));
+ expect(overflow.w).toBeLessThanOrEqual(overflow.viewport+2);
+});

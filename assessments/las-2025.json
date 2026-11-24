@@ -1,0 +1,313 @@
+{
+  "schema": 1,
+  "id": "las-2025",
+  "title": "LAS Assessment · 2025",
+  "description": "30 questions from the supplied LAS 2025 screenshots. Review mode; no ranking points.",
+  "sourceImages": [
+    "IMG-20261008-WA0020.jpg",
+    "IMG-20261008-WA0015.jpg",
+    "IMG-20261008-WA0017.jpg",
+    "IMG-20261008-WA0014.jpg"
+  ],
+  "questions": [
+    {
+      "n": 1,
+      "q": "What is the abbreviation of Balance Score Card?",
+      "options": [
+        "BHC",
+        "BSC",
+        "BCC",
+        "BRC"
+      ],
+      "key": "bsc-abbrev"
+    },
+    {
+      "n": 2,
+      "q": "What is the correct definition of our company values?",
+      "options": [
+        "Respect / Intelligence / Innerve / Team Word",
+        "Resilience / Intermediate / Interim / Tension",
+        "Respect / Integrity / Innovation / Team Work",
+        "Review / Insane / Inauguration / Tender"
+      ],
+      "key": "riit"
+    },
+    {
+      "n": 3,
+      "q": "How many spoodles do you fill for Marinara & Kochchi Nacho dip cup?",
+      "options": [
+        "1¼",
+        "2½",
+        "1¾",
+        "1½"
+      ]
+    },
+    {
+      "n": 4,
+      "q": "Which of the following are the five steps of service of delivery riders?",
+      "options": [
+        "Smile, greet & verify",
+        "Introduce yourself and company",
+        "Repeat the order",
+        "State the amount & give the balance",
+        "All of the above"
+      ],
+      "key": "delivery-five"
+    },
+    {
+      "n": 5,
+      "q": "When was Pizza Hut established?",
+      "options": [
+        "1958",
+        "1956",
+        "1858",
+        "1458"
+      ],
+      "key": "pizza-founded"
+    },
+    {
+      "n": 6,
+      "q": "Which of the following is used in problem handling?",
+      "options": [
+        "BLAHT",
+        "BLAST",
+        "BJAST",
+        "BLBST"
+      ],
+      "key": "blast"
+    },
+    {
+      "n": 7,
+      "q": "What is the shelf life of stretched MELTS dough?",
+      "options": [
+        "16 Hours",
+        "24 Hours",
+        "End of day",
+        "8 Hours"
+      ]
+    },
+    {
+      "n": 8,
+      "q": "What is the shelf life of an opened pack of Cinnamon Swirls?",
+      "options": [
+        "7 Days",
+        "15 Days",
+        "MFEX",
+        "30 Days"
+      ]
+    },
+    {
+      "n": 9,
+      "q": "What does H2OP mean?",
+      "options": [
+        "Hustle / Hospitality / Own the grid / Perfect for product",
+        "Husky / Hospitality / Own the zone / Passion for product",
+        "Hustle / Hospitality / Own the zone / Passion for product",
+        "Hustle / Hospitality / Owner the lone / Passion for Produce"
+      ],
+      "key": "h2op"
+    },
+    {
+      "n": 10,
+      "q": "What is the correct timing of pasta boiling?",
+      "options": [
+        "15 minutes",
+        "12 minutes",
+        "9 minutes",
+        "6 minutes"
+      ]
+    },
+    {
+      "n": 11,
+      "q": "What are the correct boiling times for Carrot, Potato, Cabbage and Onion (boiled vegetables)?",
+      "options": [
+        "6 / 6 / 2 / 2",
+        "4 / 4 / 2 / 3",
+        "4 / 6 / 2 / 4",
+        "4 / 4 / 2 / 2"
+      ]
+    },
+    {
+      "n": 12,
+      "q": "How much gap should be kept between the ring and sauce when applying pan sauce?",
+      "options": [
+        "0.25 cm",
+        "1 inch",
+        "One finger gap",
+        "0.5 cm"
+      ]
+    },
+    {
+      "n": 13,
+      "q": "What are the standard dough weights of Small, Regular and Large?",
+      "options": [
+        "150 g / 250 g / 450 g",
+        "150 g / 250 g / 350 g",
+        "140 g / 250 g / 450 g",
+        "140 g / 240 g / 340 g"
+      ],
+      "key": "dough-weights"
+    },
+    {
+      "n": 14,
+      "q": "What is the shelf life of Cheddar cheese after opening (cool room)?",
+      "options": [
+        "2 Days",
+        "5 Days",
+        "4 Days",
+        "EOD"
+      ]
+    },
+    {
+      "n": 15,
+      "q": "Within how many days should a new team member complete food safety training on HU?",
+      "options": [
+        "15 Days",
+        "15 Weeks",
+        "14 Days",
+        "40 Days"
+      ],
+      "key": "hu-food-safety"
+    },
+    {
+      "n": 16,
+      "q": "How many varieties of Pan Pizzas are currently in the Delight Range?",
+      "options": [
+        "06",
+        "07",
+        "08",
+        "05"
+      ]
+    },
+    {
+      "n": 17,
+      "q": "What is PPM?",
+      "options": [
+        "Pan pizza medium",
+        "Pan per module",
+        "Parts per million",
+        "Parts pizza medi…"
+      ],
+      "key": "ppm-abbrev",
+      "note": "The last option is cut off in the supplied image."
+    },
+    {
+      "n": 18,
+      "q": "Within how many days must a new team member be added to HU after joining?",
+      "options": [
+        "2 Days",
+        "2 Weeks",
+        "2 Hours",
+        "1 Week"
+      ]
+    },
+    {
+      "n": 19,
+      "q": "Which of the following are the audits done by an AC?",
+      "options": [
+        "Self-ACE, Taste audit & Speed Audit",
+        "Self-ACE, Tasty sweet & Speed service",
+        "Self-ACE, TMTS, Smell audit & Sweet Audit",
+        "Self-Ache, Taste audit & Speed audit"
+      ]
+    },
+    {
+      "n": 20,
+      "q": "How much grilled onion cheese sauce mix is used to make macaroni & cheese?",
+      "options": [
+        "3 Heap Regular Spoodle",
+        "3 Level Large Spoodle",
+        "3 Level Large Spoon",
+        "3 Level Regular Spoodle"
+      ]
+    },
+    {
+      "n": 21,
+      "q": "Select the four accident-prevention rules.",
+      "options": [
+        "Wash your hands",
+        "Respect the equipment",
+        "Use items as they were intended",
+        "Lift heavy items properly",
+        "Clean up after yourself (Clean as you go)"
+      ],
+      "key": "four-accident"
+    },
+    {
+      "n": 22,
+      "q": "When vegetable sanitizing, how long is required to sanitize, soak, chill and drain?",
+      "options": [
+        "5 min / 10 min / 10 min",
+        "3 min / 5 min / 10 min",
+        "10 min / 5 min / 9 min",
+        "3 min / 9 min / 10 min"
+      ],
+      "key": "veg-sanitize"
+    },
+    {
+      "n": 23,
+      "q": "What is the MRD of all toppings in the make table?",
+      "options": [
+        "4 Hours",
+        "12 Hours",
+        "Next day EOD",
+        "EOD"
+      ],
+      "key": "make-table-mrd"
+    },
+    {
+      "n": 24,
+      "q": "What are the Pizza Hut outlet concepts in Sri Lanka?",
+      "options": [
+        "Restaurant Based Delivery / Red Roof / Delivery-Carryout / Fast Casual Delco",
+        "Restaurant Based Delivery / Red Roof / Delivery-Carryout / Restaurant Support…",
+        "Delivery-Carryout / Fast Casual Delco / Red Roof / Restaurant Support Center",
+        "Fast Casual Delco / Restaurant Based Delivery / Delivery-Carryout / Red fast…"
+      ],
+      "key": "outlet-types",
+      "note": "Options 2 and 4 are cut off on the right side of the image."
+    },
+    {
+      "n": 25,
+      "q": "Which of the following are delivery accident-prevention rules?",
+      "options": [
+        "Plan your order",
+        "Always check your bike for brakes",
+        "Obey the traffic rules",
+        "Never overtake from the left side",
+        "Do not stay in the blind spot of long vehicles for too long",
+        "Drive carefully yourself and watch out for other people's driving"
+      ],
+      "key": "delivery-prevention"
+    },
+    {
+      "n": 26,
+      "q": "Write down the restaurant emergencies / closure decision.",
+      "options": [],
+      "key": "restaurant-emergencies"
+    },
+    {
+      "n": 27,
+      "q": "Write down the four steps of the training process.",
+      "options": [],
+      "key": "buddy-training"
+    },
+    {
+      "n": 28,
+      "q": "Complete the following abbreviations: ADS, SSTG, CCP, TTCS, YTD.",
+      "options": [],
+      "key": "abbrev-las2025"
+    },
+    {
+      "n": 29,
+      "q": "What are the standard temperatures for (1) 20-minutes-pouched pizza, (2) minimum cooked pizza temperature, (3) BOH ambient air temperature, (4) hand-wash sink water?",
+      "options": [],
+      "key": "las2025-temperatures"
+    },
+    {
+      "n": 30,
+      "q": "Write down the two newly added Pan Pizzas in the menu.",
+      "options": []
+    }
+  ]
+}
