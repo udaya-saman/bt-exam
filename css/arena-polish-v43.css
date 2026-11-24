@@ -56,3 +56,11 @@ body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-last-updated{fon
 body #bt-spark-root.arena-profile-mode .arena-stat-icon.arena-png-icon{width:clamp(68px,20vw,120px)!important;height:clamp(68px,20vw,120px)!important;max-width:100%!important;flex-shrink:0!important}
 body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions button:first-child{display:flex!important;align-items:center;justify-content:center;gap:8px}
 body #bt-spark-root.arena-profile-mode .arena-board-trophy{width:70px!important;height:70px!important;flex:0 0 70px!important}
+
+.arena-event-toast{position:fixed;z-index:2147483646;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(92vw,420px);display:flex;align-items:center;gap:12px;padding:12px 15px;color:#fff;background:#291923;border:1px solid #e8b85e;border-radius:18px;box-shadow:0 8px 24px #0008;pointer-events:none}
+.arena-event-toast img{width:72px;height:82px;object-fit:contain}
+.arena-event-toast div{display:grid;gap:6px;min-width:0}
+.arena-event-toast strong{color:#ffd77d;font-size:14px}
+.arena-event-toast span{font-size:13px;line-height:1.4}
+@media(prefers-reduced-motion:no-preference){.arena-event-toast{animation:arenaToastIn .22s ease-out}}
+@keyframes arenaToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
