@@ -17,7 +17,7 @@
    if(document.getElementById('custom-modal')?.classList.contains('open')){w.closeModal?.();return;}
    if(stack.length<2)return;
    stack.pop();replaying=true;
-   try{stack[stack.length-1].restore();}finally{replaying=false;}
+   try{const target=stack[stack.length-1];if(!target.key.startsWith('panel:'))w.BTExamUI?.dismissForNavigation?.();target.restore();}finally{replaying=false;}
   },
   removePanels(){if(!replaying)while(stack.at(-1)?.key.startsWith('panel:'))stack.pop();},
   isReplaying:()=>replaying
