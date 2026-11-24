@@ -279,6 +279,7 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./css/player-card-v42.css?v=4.2.0">
 <link rel="stylesheet" href="./study/lesson-player.css?v=4.1.0">
 <link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.6.0">
+<link rel="stylesheet" href="./css/assessment-bank.css?v=4.7.0">
 </head>
 <body>
 
@@ -348,6 +349,15 @@ button { outline: none; border: none; font-family: inherit; }
   <div class="arena-library-wrap">
     <header class="arena-library-head"><button type="button" class="arena-library-back" onclick="showScreen('home')">← Back</button><span>🏆 PIZZA ARENA</span></header>
     <h1>Choose Your Questions</h1><p>Select an exam paper to begin. Each paper keeps its existing questions and scoring rules.</p>
+    <button type="button" class="pa-assessment-entry" onclick="window.BTAssessmentBank?.open()" aria-label="Open 2025 to 2026 assessment question bank">
+      <img class="pa-assessment-entry-art" src="./images/arena/stat-answered.png" width="52" height="52" alt="">
+      <span class="pa-assessment-entry-text">
+        <strong>2025–2026 Assessment Bank</strong>
+        <small>Buddy Trainer Oct 2025 · LAS 2025 · LAS Jan 2026</small>
+        <small>75 distinct questions · 84 scanned entries · Review only</small>
+      </span>
+      <span class="pa-assessment-entry-arrow" aria-hidden="true">›</span>
+    </button>
     <div class="paper-grid paper-selection-grid" id="all-question-papers">
       <!-- Row 1 (New Past Paper) -->
       <div class="paper-card" onclick="startPaper('past2024')">
@@ -438,6 +448,16 @@ button { outline: none; border: none; font-family: inherit; }
 
   </div>
 </div>
+<!-- Assessment review is deliberately separate from ranked Firebase papers. -->
+<div id="assessment-library" class="screen">
+  <main class="pa-assessment-shell">
+    <header class="arena-library-head"><button type="button" class="arena-library-back" onclick="showScreen('paper-select')">← Questions</button><span>PIZZA ARENA</span></header>
+    <h1>Assessment Questions · 2025–2026</h1>
+    <p class="pa-assessment-intro">Review the questions and answer choices from the uploaded assessment sheets. Repeated questions are combined, with alternative versions available in the same card. Official answer keys were not supplied, so this section does not grade answers or award ranking points.</p>
+    <div id="assessment-bank-root" aria-live="polite"></div>
+  </main>
+</div>
+
 <!-- STUDY ACADEMY — verified handbook, booklet and policy lessons -->
 <div id="study-select" class="screen">
  <div id="study-app" aria-label="Pizza Arena Study Academy" aria-live="polite"></div>
@@ -1791,5 +1811,6 @@ function confirmModal() {
 <script defer src="./js/pizza-reference.js?v=4.0.0"></script>
 <script defer src="./study/lesson-art.js?v=4.6.0"></script>
 <script defer src="./study/lesson-player.js?v=4.6.0"></script>
+<script defer src="./js/assessment-bank.js?v=4.7.0"></script>
 </body>
 </html>
