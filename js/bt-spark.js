@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.2.0-profile';let latestUpdate=null;
+const APP_VERSION='4.3.0-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -40,8 +40,8 @@ function syncDetail(err){
    return 'No internet. Your answers are safe. Try again later.';
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub){root.classList.remove('arena-profile-mode','arena-account-mode');root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
+function open(title,sub,restore){root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode');root.innerHTML='';boardOpen=false;rankNotice='';if(unsubscribe){unsubscribe();unsubscribe=null;}}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -251,7 +251,7 @@ let period='weekly',outletView=false;
 function board(){
  boardOpen=true;
  if(!unsubscribe)listen();
- const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut-inspired competition · Asia/Colombo');
+ const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','Pizza Hut competition · Asia/Colombo',board);root.classList.add('arena-board-mode');
  const hero=document.createElement('div');hero.className='pg-hero';
  const mascot=document.createElement('img');mascot.className='pg-mascot';mascot.src=outletView?'./images/mascot/pizza-crown.png':rankNotice==='up'?'./images/mascot/pizza-rank-up.png':rankNotice==='down'?'./images/mascot/pizza-overtaken.png':'./images/mascot/pizza-welcome.png';mascot.alt='Pizza mascot celebrating competition';hero.append(mascot);
  const text=document.createElement('div');text.className='pg-hero-copy';
@@ -264,9 +264,9 @@ function board(){
  const buttons=document.createElement('div');buttons.className='pg-nav';
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
  
- const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
+ window.ArenaRankHistory?.observe(ranked('alltime'));const records=ranked(period,outletView);const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
  if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
-  const cell=document.createElement('div');cell.className='pg-podium-item';const badge=document.createElement('div');badge.textContent=['🥇','🥈','🥉'][i];badge.style.fontSize='23px';cell.append(badge);
+  const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+r.rank;if(!outletView)attachPlayerDetails(cell,r);const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[r.rank]||'#'+r.rank;badge.style.fontSize='23px';cell.append(badge);
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
@@ -277,7 +277,7 @@ function board(){
  const own=records.find(r=>r.uid===user?.uid);
  if(!outletView&&!showAllPlayers&&own&&!shown.some(r=>r.uid===own.uid))shown.push(own);
  for(const r of shown){
-  const card=document.createElement('div');card.className='pg-leader-card';if(r.uid===user?.uid)card.classList.add('pg-you');
+  const card=document.createElement('div');card.className='pg-leader-card arena-rank-'+r.rank;if(!outletView)attachPlayerDetails(card,r);if(r.uid===user?.uid)card.classList.add('pg-you');
   const place=document.createElement('span');place.className='pg-place';place.textContent=r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':'#'+r.rank;card.append(place);
   if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.png';card.append(pic);}
   const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
@@ -293,9 +293,30 @@ function board(){
  
  box.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));
 }
-function showRankMascot(risen,rank){
- const box=open(risen?'🚀 RANK UP!':'⚔️ RANK CHALLENGE',risen?'Great work! You climbed the leaderboard.':'Another player overtook you. Practice and reclaim your position!');
- const pic=document.createElement('img');pic.className='pg-celebration';pic.src=risen?'./images/mascot/pizza-rank-up.png':'./images/mascot/pizza-overtaken.png';pic.alt='Pizza mascot reacting to leaderboard change';box.prepend(pic);
+function attachPlayerDetails(node,r){
+ node.setAttribute('role','button');node.tabIndex=0;
+ node.setAttribute('aria-label','View '+r.name+' player details');
+ node.onclick=()=>playerDetails(r.uid);
+ node.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}};
+}
+function playerDetails(uid){
+ const r=ranked('alltime').find(x=>x.uid===uid);if(!r)return;
+ boardOpen=false;
+ const box=open('PLAYER DETAILS','',()=>playerDetails(uid));root.classList.add('arena-board-mode');
+ const panel=document.createElement('div');panel.className='arena-player-detail arena-rank-'+r.rank;
+ const avatar=document.createElement('img');avatar.src=r.avatar?.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png';avatar.alt='';avatar.onerror=()=>{avatar.onerror=null;avatar.src='./images/default-avatar.png';};
+ const name=document.createElement('h3');name.textContent=r.name;
+ const outlet=document.createElement('p');outlet.textContent=r.outlet;
+ const stats=document.createElement('div');stats.className='arena-detail-stats';
+ const best=window.ArenaRankHistory?.get(uid);
+ for(const [label,value] of [['Level',window.BTRewards?.level(r.lifetimePoints)?.number||1],['Points',r.lifetimePoints.toLocaleString()],['Current all-time rank','#'+r.rank],['Best observed rank (this device)',best?'#'+best:'Not recorded']]){
+ const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=value;small.textContent=label;tile.append(strong,small);stats.append(tile);}
+ panel.append(avatar,name,outlet,stats);box.append(panel,btn('Back to leaderboard',()=>window.ArenaNav?.back(),true));
+}
+function showRankMascot(before,rank){
+ const event=window.ArenaRankHistory?.change(before,rank);if(!event)return;
+ const box=open(event.title,event.text,()=>showRankMascot(before,rank));
+ const pic=document.createElement('img');pic.className='pg-celebration';pic.src='./images/mascot/'+event.mascot;pic.alt=event.title;box.prepend(pic);
  const msg=document.createElement('div');msg.className='pg-private';msg.textContent='CURRENT WEEKLY RANK · #'+rank;box.append(msg,btn('LET’S GO!',close));
 }
 function monthly(){
@@ -309,8 +330,8 @@ function listen(){
  if(unsubscribe)return;
  unsubscribe=F.onSnapshot(F.collection(db,'publicRanks'),snap=>{
   users=snap.docs.map(d=>d.data()).filter(rankEligible);
-  const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
-  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=risen?'up':'down';note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(risen,mine);}
+  if(!snap.metadata?.fromCache)window.ArenaRankHistory?.observe(ranked('alltime'));const mine=ranked().find(x=>x.uid===user?.uid)?.rank||null;
+  if(previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=risen?'up':'down';note(risen?'🏆 RANK UP! · #'+mine:'Rank challenge · #'+mine);if(!$('#quiz')?.classList.contains('active')&&root.hidden)showRankMascot(previousRank,mine);}
   previousRank=mine;
   if(boardOpen&&!root.hidden)board();
   monthly();
@@ -319,7 +340,7 @@ function listen(){
 async function profilePanel(){
  if(!user||!profile){gate();return;}
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
- const box=open('MY PLAYER CARD','');
+ const box=open('MY PLAYER CARD','',profilePanel);
  root.classList.add('arena-profile-mode');
  const bar=document.createElement('div');bar.className='arena-page-top';
  const title=document.createElement('span');title.textContent='PIZZA ARENA · PLAYER HQ';
@@ -335,7 +356,7 @@ async function profilePanel(){
  explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
  status.classList.add(pending?'has-pending':'is-synced');
  statusCopy.append(heading,explanation);
- const statusMascot=document.createElement('img');statusMascot.src='./images/arena/mascot-avatar.png';statusMascot.decoding='async';statusMascot.alt='';
+ const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-update.png':'./images/mascot/pizza-correct.png';statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
  const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='🏆  MY PLAYER CARD';card.append(cardHeader);
@@ -382,9 +403,14 @@ async function profilePanel(){
  if(!users.length&&navigator.onLine){
    try{
      const snapshot=await F.getDocs(F.collection(db,'publicRanks'));
-     users=snapshot.docs.map(doc=>doc.data()).filter(rankEligible);
+     users=snapshot.docs.map(doc=>doc.data()).filter(rankEligible);if(!snapshot.metadata?.fromCache)window.ArenaRankHistory?.observe(ranked('alltime'));
    }catch(e){console.info('Outlet crown information will refresh when the leaderboard opens.');}
  }
+ if(!box.isConnected)return;
+ const rankRow=document.createElement('div');rankRow.className='arena-personal-ranks';
+ const currentRank=rankEligible({...profile,isAdmin:admins})?ranked('alltime').find(r=>r.uid===user.uid)?.rank:null;
+ const bestRank=currentRank?window.ArenaRankHistory?.get(user.uid):null;
+ for(const [label,value] of [['Current all-time rank',currentRank?'#'+currentRank:'Unranked'],['Best observed rank (this device)',bestRank?'#'+bestRank:'Not recorded']]){const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=value;small.textContent=label;tile.append(strong,small);rankRow.append(tile);}body.insertBefore(rankRow,actions);
  const rewards=window.BTRewards;
  if(rewards){
    const eligible=rankEligible({...profile,isAdmin:admins});
@@ -404,12 +430,12 @@ async function profilePanel(){
      showAll=expand;grid.replaceChildren();viewAll.textContent=showAll?'Show Less':'View All ›';
      const display=showAll?sorted:sorted.slice(0,6);
      for(const item of display){
-       const tile=document.createElement('div');tile.className='arena-reward-item'+(item.unlocked?'':' is-locked');
+       const tile=document.createElement('div');tile.className='arena-reward-item'+(item.unlocked?' is-earned':' is-locked');
        const icon=document.createElement('span');icon.className='arena-reward-icon';icon.textContent=item.icon;
        const name=document.createElement('strong');name.textContent=item.label;
        const requirement=document.createElement('small');
        const suffix=['rising-star','legend','first-slice'].includes(item.id)?' pts':['sharp-mind','super-student','centurion'].includes(item.id)?' correct':item.id==='weekly-50'?' weekly pts':item.id==='outlet-drive'?' answers':'';
-       requirement.textContent=Math.max(0,Number(item.current)||0).toLocaleString()+' / '+item.target.toLocaleString()+suffix+(item.unlocked?' · Earned':'');
+       requirement.textContent=Math.max(0,Number(item.current)||0).toLocaleString()+' / '+item.target.toLocaleString()+suffix;
        const track=document.createElement('div');track.className='arena-reward-track';
        const progress=document.createElement('span');progress.style.width=item.percent+'%';track.append(progress);
        tile.append(icon,name,requirement,track);grid.append(tile);
@@ -417,7 +443,7 @@ async function profilePanel(){
    }
    renderRewards(false);
  }
- const utilities=document.createElement('div');utilities.className='arena-actions';
+ const utilities=document.createElement('div');utilities.className='arena-actions'+(admins?'':' arena-account-only');
  utilities.append(btn('Account',accountSettings));
  if(admins)utilities.append(btn('Manage',adminPanel));
  utilities.querySelectorAll('button').forEach(b=>b.classList.add('pg-btn-green'));
@@ -431,7 +457,7 @@ async function profilePanel(){
 }
 function changeOutlet(){
  if(!profile)return;
- const box=open('CHANGE OUTLET','Choose your new outlet.');
+ const box=open('CHANGE OUTLET','Choose your new outlet.',changeOutlet);
  const fieldSelect=sel(box,'Outlet');fieldSelect.value=profile.outlet;
  const controls=document.createElement('div');controls.className='arena-actions';
  const back=btn('Close',profilePanel);
@@ -450,7 +476,7 @@ function changeOutlet(){
 }
 async function accountSettings(){
  if(!user||!profile)return;
- const box=open('ACCOUNT SETTINGS','Update your player picture, username or password.');
+ const box=open('ACCOUNT SETTINGS','Update your player picture, username or password.',accountSettings);
  box.classList.add('arena-settings-dialog');
  root.classList.add('arena-account-mode');
  const intro=document.createElement('div');intro.className='arena-account-intro';
@@ -541,7 +567,7 @@ async function accountSettings(){
 }
 function viewSyncHealth(){
  if(!admins){profilePanel();return;}
- const box=open('CHECK SAVED ANSWERS','Check answers saved on this phone.');
+ const box=open('CHECK SAVED ANSWERS','Check answers saved on this phone.',viewSyncHealth);
  const pending=getQueue().filter(e=>e.uid===user?.uid);
  const rows=[
   ['Answers waiting',String(pending.length)],
@@ -561,7 +587,7 @@ function viewSyncHealth(){
 }
 function openNotifications(){
  if(!user||!profile){gate();return;}
- const box=open('NOTIFICATIONS','Your latest updates.');
+ const box=open('NOTIFICATIONS','Your latest updates.',openNotifications);
  const content=document.createElement('div');content.className='pg-private';
  if(admins&&requests.length){content.textContent=requests.length+' outlet '+(requests.length===1?'request needs':'requests need')+' your attention.';}
  else if(getQueue().length){content.textContent=pendingDescription();}
@@ -574,10 +600,11 @@ function openNotifications(){
 window.BTExamUI={
  openProfile:()=>show('profile'),
  openBoard:()=>show('board'),
- openNotifications
+ openNotifications,
+ dismissForNavigation:()=>{if(user&&profile)close();}
 };
 function adminPanel(){
- const box=open('Manage','Review outlet changes and manage accounts.');box.classList.add('arena-admin-panel');
+ const box=open('Manage','Review outlet changes and manage accounts.',adminPanel);box.classList.add('arena-admin-panel');
  const pending=requests.filter(r=>r.status==='pending');if(!pending.length)box.append(document.createTextNode('No pending requests.'));
  for(const r of pending){const p=document.createElement('p');p.textContent=r.from+' → '+r.to;box.append(p);box.append(btn('Approve',()=>decide(r,true)),btn('Reject',()=>decide(r,false),true));}
  box.append(btn('Manage users',manageUsers,true));
@@ -586,7 +613,7 @@ function adminPanel(){
 }
 async function manageUsers(){
  if(!admins)return;
- const box=open('MANAGE USERS','Remove an account with two confirmations.');
+ const box=open('MANAGE USERS','Remove an account with two confirmations.',manageUsers);
  const status=document.createElement('p');status.className='pg-muted';status.textContent='Loading users…';box.append(status);
  const search=field(box,'Search username or outlet');search.required=false;
  const list=document.createElement('div');box.append(list);
