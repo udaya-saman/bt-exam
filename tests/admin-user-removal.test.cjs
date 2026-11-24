@@ -25,6 +25,6 @@ assert.match(rules,/!exists\(\/databases\/\$\(database\)\/documents\/admins\/\$\
 assert.match(rules,/allow update, delete: if false/,'No deletion of account block');
 assert.match(rules,/getAfter\(blockPath\(uid\)\)\.data\.uid == uid/,'User delete requires atomic block');
 assert.match(rules,/getAfter\(blockPath\(resource\.data\.uid\)\)\.data\.uid == resource\.data\.uid/,'Username deletion requires atomic block');
-assert.match(sw,/const CACHE = 'bt-exam-arena-v45-20261124'/,'Current offline cache version must be used');
+assert.match(sw,/const CACHE = 'bt-exam-arena-v46-20261124'/,'Current offline cache version must be used');
 assert.match(sw,/study\/content\/training\.json/,'Study library must work offline');
 console.log('Safe user-removal safeguards passed (21 expectations).');
