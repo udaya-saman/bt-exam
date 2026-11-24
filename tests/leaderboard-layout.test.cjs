@@ -21,7 +21,7 @@ assert.ok(sw.includes('arena-polish-v43.css?v=4.7.1'));
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
  const classes=new Set();
- return {tag,children:[],className:'',classList:{add:(...n)=>n.forEach(x=>classes.add(x)),remove:(...n)=>n.forEach(x=>classes.delete(x)),contains:n=>classes.has(n)},
+ return {tag,children:[],className:'',style:{},classList:{add:(...n)=>n.forEach(x=>classes.add(x)),remove:(...n)=>n.forEach(x=>classes.delete(x)),contains:n=>classes.has(n)},
   append(...n){this.children.push(...n)},setAttribute(k,v){this[k]=v},scrollTop:0};
 }
 const root=el();root.hidden=false;
