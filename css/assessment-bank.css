@@ -40,3 +40,5 @@
 #assessment-library .pa-assessment-loading,#assessment-library .pa-assessment-error,#assessment-library .pa-assessment-empty{color:#f8dccd;font-size:14px;padding:18px 0}
 @media(max-width:390px){#paper-select .pa-assessment-entry{padding:13px 11px;gap:8px}#assessment-library .pa-assessment-shell{padding:12px 10px 24px}#assessment-library .pa-assessment-card{padding:13px}#assessment-library .pa-assessment-tab{font-size:11px;padding:9px}}
 @media(prefers-reduced-motion:no-preference){#assessment-library .pa-assessment-card{animation:paAssessmentIn .22s ease-out}}@keyframes paAssessmentIn{from{opacity:.5;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+#paper-select .pa-assessment-entry img.pa-assessment-entry-art{width:52px;height:52px;max-width:52px;object-fit:contain;flex:0 0 52px}
