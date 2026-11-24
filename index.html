@@ -278,6 +278,7 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./css/pizza-arena-v40.css?v=4.0.1">
 <link rel="stylesheet" href="./css/player-card-v42.css?v=4.2.0">
 <link rel="stylesheet" href="./study/lesson-player.css?v=4.1.0">
+<link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.3.0">
 </head>
 <body>
 
@@ -292,7 +293,7 @@ button { outline: none; border: none; font-family: inherit; }
           <span class="arena-brand-name"><strong>PIZZA <em>ARENA</em></strong><small>BT TRAINING</small></span>
         </div>
         <div class="arena-header-actions">
-          <button type="button" class="arena-header-icon" aria-label="Notifications" title="Notifications" onclick="window.BTExamUI?.openNotifications?.()"><span class="arena-bell" aria-hidden="true">♟</span></button>
+          <button type="button" class="arena-header-icon" aria-label="Notifications" title="Notifications" onclick="window.BTExamUI?.openNotifications?.()"><span class="arena-bell" aria-hidden="true"></span></button>
           <button type="button" class="arena-header-icon" aria-label="My Player Card" title="My Player Card" onclick="window.BTExamUI?.openProfile?.()"><span class="arena-person-icon" aria-hidden="true"></span></button>
         </div>
       </div>
@@ -1386,6 +1387,8 @@ function openStudy(){
  else {const root=document.getElementById('study-app');if(root)root.textContent='Loading lessons…';}
 }
 function showScreen(id) {
+  if(!document.getElementById(id))return;
+  window.ArenaNav?.visit('screen:'+id,()=>{window.BTExamUI?.dismissForNavigation?.();if(document.getElementById('quiz').classList.contains('active')&&id!=='quiz')clearTimer();showScreen(id);});
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
@@ -1769,18 +1772,6 @@ function confirmModal() {
   if (cb) cb();
 }
 
-history.pushState(null, document.title, location.href);
-window.addEventListener('popstate', function() {
-  history.pushState(null, document.title, location.href); 
-  
-  if (document.getElementById('results').classList.contains('active')) {
-    goHome();
-  } else if (document.getElementById('review').classList.contains('active')) {
-    showScreen('results');
-  } else if (document.getElementById('quiz').classList.contains('active')) {
-    goHome();
-  }
-});
 </script>
 <script>
   if ('serviceWorker' in navigator) {
@@ -1793,10 +1784,11 @@ window.addEventListener('popstate', function() {
 </script>
 <!-- BT-SPARK-INTEGRATION-v3 -->
 <script src="./js/bt-rewards.js"></script>
+<script src="./js/arena-navigation-ranks.js?v=4.3.0"></script>
 <script src="./firebase-config.js"></script>
 <script defer src="./js/account-profile-save.js?v=4.2.0"></script>
 <script type="module" src="./js/bt-spark.js"></script>
 <script defer src="./js/pizza-reference.js?v=4.0.0"></script>
-<script defer src="./study/lesson-player.js?v=4.1.0"></script>
+<script defer src="./study/lesson-player.js?v=4.3.0"></script>
 </body>
 </html>
