@@ -1,5 +1,5 @@
 {
-  "version": "4.3.0-arena",
+  "version": "4.4.0-arena",
   "releaseDate": "2026-11-24",
-  "notes": "Arena polish, rank history and mascot reactions, player details, achievement celebrations, Study revision, navigation and offline improvements."
+  "notes": "Compact player standings, outlet-only medal frames, chalk food artwork, larger player icons and admin user creation."
 }
