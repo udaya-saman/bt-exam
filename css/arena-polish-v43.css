@@ -6,7 +6,7 @@
 #home .arena-person-icon{position:relative!important;display:block!important;width:20px!important;height:10px!important;border-radius:10px 10px 3px 3px!important;background:white!important;margin-top:10px!important}
 #home .arena-person-icon:before{content:"";position:absolute;top:-12px;left:5px;width:10px;height:10px;border-radius:50%;background:white}
 body #bt-spark-root.arena-board-mode .panel,body #bt-spark-root.arena-profile-mode .panel{position:relative;isolation:isolate}
-body #bt-spark-root.arena-board-mode .panel:after,body #bt-spark-root.arena-profile-mode .panel:after{content:"🍕　　　 🍅　　　 🍕";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.17;font-size:72px;line-height:3.8;overflow:hidden;word-spacing:40px;white-space:normal;background:repeating-linear-gradient(135deg,transparent 0 140px,#e8b19c12 141px 142px,transparent 143px 280px)}
+body #bt-spark-root.arena-board-mode .panel:after,body #bt-spark-root.arena-profile-mode .panel:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.20;background:url("../images/arena/chalk-food.png") repeat;background-size:320px 320px;}
 #bt-spark-root .arena-board-mode .pg-leader-card{margin:8px 0}
 #bt-spark-root.arena-board-mode .pg-leader-card{margin:8px 0!important;padding:12px 10px!important;border-radius:17px!important}
 #bt-spark-root.arena-board-mode .pg-leader-card.arena-rank-1{padding:19px 13px!important;margin:18px 0 12px!important}
@@ -46,3 +46,21 @@ body #bt-spark-root.arena-profile-mode .arena-rewards-grid{gap:clamp(8px,2vw,17p
 #study-select .pa-study-visual-step{min-width:0;padding:12px 8px}
 #study-select .pa-study-visual-text{font-size:13px;line-height:1.45}
 @media(max-width:390px){body #bt-spark-root.arena-profile-mode .arena-reward-item{min-height:155px!important}body #bt-spark-root.arena-profile-mode .arena-rewards-grid{gap:8px!important}#paper-select .paper-card{padding:14px!important}}
+
+#bt-spark-root.arena-board-mode .pg-leader-card.arena-player-standing{padding:10px 10px!important;min-height:0!important;margin:7px 0!important}
+#bt-spark-root.arena-board-mode .arena-player-standing .pg-avatar{width:36px!important;height:36px!important}
+#bt-spark-root.arena-board-mode .pg-podium-item.arena-player-standing{padding:10px 7px!important;border:1px solid #ffffff22!important;box-shadow:none!important}
+body #bt-spark-root.arena-profile-mode #bt-spark-content{gap:22px!important}
+body #bt-spark-root.arena-profile-mode .arena-actions,body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions,body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-actions{gap:7px!important}
+body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-last-updated{font-size:7.2px!important}
+body #bt-spark-root.arena-profile-mode .arena-stat-icon.arena-png-icon{width:clamp(68px,20vw,120px)!important;height:clamp(68px,20vw,120px)!important;max-width:100%!important;flex-shrink:0!important}
+body #bt-spark-root.arena-profile-mode .arena-card-body>.arena-actions button:first-child{display:flex!important;align-items:center;justify-content:center;gap:8px}
+body #bt-spark-root.arena-profile-mode .arena-board-trophy{width:70px!important;height:70px!important;flex:0 0 70px!important}
+
+.arena-event-toast{position:fixed;z-index:2147483646;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(92vw,420px);display:flex;align-items:center;gap:12px;padding:12px 15px;color:#fff;background:#291923;border:1px solid #e8b85e;border-radius:18px;box-shadow:0 8px 24px #0008;pointer-events:none}
+.arena-event-toast img{width:72px;height:82px;object-fit:contain}
+.arena-event-toast div{display:grid;gap:6px;min-width:0}
+.arena-event-toast strong{color:#ffd77d;font-size:14px}
+.arena-event-toast span{font-size:13px;line-height:1.4}
+@media(prefers-reduced-motion:no-preference){.arena-event-toast{animation:arenaToastIn .22s ease-out}}
+@keyframes arenaToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
