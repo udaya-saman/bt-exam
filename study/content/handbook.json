@@ -107,8 +107,8 @@
           "memoryTip": "RIIT is the shared values mnemonic."
         },
         {
-          "heading": "Nine policy headings",
-          "body": "The handbook's policy table includes:",
+          "heading": "Eight key Gamma policies",
+          "body": "Gamma policies guide decision-making and actions consistently, transparently and accountably.",
           "keyPoints": [
             "Gamma Way of Working",
             "Ethical Behavior",
@@ -660,7 +660,7 @@
       "sections": [
         {
           "heading": "Five rules",
-          "body": "Pages 52 and 54–56 explain core food-safety responsibilities.",
+          "body": "Follow the five food safety rules.",
           "keyPoints": [
             "Wash hands often.",
             "Sanitize food-contact areas.",
@@ -672,24 +672,24 @@
         },
         {
           "heading": "Six handwashing steps",
-          "body": "The handbook's sequence includes:",
+          "body": "Six easy steps to wash your hands.",
           "keyPoints": [
-            "1. Wet hands thoroughly.",
-            "2. Apply antibacterial soap.",
-            "3. Lather hands and elbows for 20 seconds.",
+            "1. Wet your hands till elbow with warm water.",
+            "2. Apply antibacterial soap (Clean & Soft AB).",
+            "3. Lather hands till elbows for 20 seconds.",
             "4. Wash soap away.",
-            "5. Dry with a disposable towel.",
-            "6. Apply approved hand sanitizer."
+            "5. Dry hands using a disposable towel.",
+            "6. Apply hand sanitizer (P3 Manodes)."
           ],
           "memoryTip": "20-second lather is the centerpiece of the illustrated procedure."
         },
         {
           "heading": "Temperature and rotation diagram",
-          "body": "The diagram on page 55 shows the 5°C–65°C danger zone and reminds team members to use FIFO and discard expired food.",
+          "body": "Keep food out of the danger zone between 5°C and 65°C. Date, rotate and eliminate.",
           "keyPoints": [
-            "Cold food below 5°C, according to this edition.",
-            "Hot food above 65°C, according to this edition.",
-            "Date all food, follow FIFO, and discard items out of shelf life."
+            "Always keep cold food below 5°C.",
+            "Always keep hot food above 65°C.",
+            "Date all food, follow first in first out (FIFO), and discard items out of shelf life."
           ],
           "memoryTip": "Temperature limits are transcribed from the source; use the current food-safety SOP in live operations."
         }
