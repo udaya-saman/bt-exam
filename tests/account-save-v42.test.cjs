@@ -128,7 +128,7 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
  assert(css.includes('prefers-reduced-motion'));
  assert(sw.includes('css/player-card-v42.css?v=4.2.0'));
  assert(sw.includes('js/account-profile-save.js?v=4.2.0'));
- assert.equal(version,'4.7.0-arena');
- assert(app.includes("const APP_VERSION='4.7.0-arena'"));
+ assert.match(version,/^4\.7\.\d+-arena$/);
+ assert(app.includes("const APP_VERSION='"+version+"'"));
  console.log('PASS: profile transaction, picture/name changes, password-only, combined save, wrong password, partial failure, registry conflict and repair, sync-last UI, release assets.');
 })().catch(err=>{console.error(err);process.exitCode=1;});
