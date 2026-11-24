@@ -53,7 +53,14 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await expect(page.locator('.pa-study-hero h1')).toContainText('Learn. Remember. Grow.');
  await page.locator('.pa-study-card').first().click();
  await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
- await expect(page.locator('.pa-study-source')).toContainText('PDF pages');
+ await expect(page.locator('.pa-study-source')).toHaveCount(0);
+ await expect(page.locator('.pa-study-memory')).not.toHaveCount(0);
+ await page.getByRole('button',{name:'Quick revision'}).click();
+ await expect(page.locator('.pa-revision-card')).toBeVisible();
+ await page.getByRole('button',{name:'Reveal learning point'}).click();
+ await expect(page.locator('.pa-revision-card p').last()).toBeVisible();
+ await page.getByRole('button',{name:'← Lesson'}).click();
+ await expect(page.locator('.pa-study-lesson-hero')).toBeVisible();
  await expect(page.locator('.pa-study-bullets li').first()).toBeVisible();
  await page.locator('.pa-study-mark').click();
  await expect(page.locator('.pa-study-mark')).toContainText('Lesson completed');
