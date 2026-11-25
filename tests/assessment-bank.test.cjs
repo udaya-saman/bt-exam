@@ -96,7 +96,7 @@ vm.runInNewContext(practice,sandbox,{filename:'assessment-practice.js'});
  assert.deepEqual(['past2024','questions','paper1','paper2','paper3'].map(k=>papers[k].qs.length),[29,40,50,50,45]);
  assert(!Object.keys(papers).some(k=>k.includes('assessment')),'New proposals are never published as scored paper keys');
  const version=json('version.json').version;
- assert.equal(version,'4.7.12-arena');
+ assert.equal(version,'4.7.13-arena');
  assert(app.includes("const APP_VERSION='"+version+"'"));
  console.log('PASS: 97 source entries, 9 within-source duplicates and 2 existing-paper overlaps -> 86 bilingual practice cards; 86 provisional answer keys; 214 original ranked questions unchanged.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
