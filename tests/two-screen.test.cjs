@@ -23,6 +23,10 @@ assert.match(profileSource,/arena-stat-correct/,'Correct statistic uses professi
 assert.ok(profileSource.includes("btn('✕ Close',close)"),'Working Close control retained');
 assert.ok(fs.readFileSync('css/arena-polish-v43.css','utf8').includes('.arena-actions button.arena-signout-action'),'Orange Sign Out styling loaded');
 assert.match(app,/className='arena-stats-grid'/,'Stats cards present');
+assert.ok(app.includes("nextGoal.textContent=lvl.current.toLocaleString()+' / '+lvl.required.toLocaleString()+' pts'"),'Player Card shows current-tier progress and required points');
+assert.ok(app.includes("progress.setAttribute('aria-valuemax',String(lvl.required))"),'Accessible level progress uses the current tier requirement');
+assert.ok(app.includes("nextGoal.title=lvl.remaining.toLocaleString()"),'Remaining points are exposed on the Player Card');
+
 assert.match(app,/className='arena-rewards-grid'/,'Reward grid present');
 assert.match(app,/function changeOutlet\(\)/,'Outlet request panel present');
 assert.match(app,/request\.disabled=true/,'Outlet button disabled until outlet changes');

@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.4-arena';let latestUpdate=null;
+const APP_VERSION='4.7.5-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -416,11 +416,14 @@ async function profilePanel(){
  const outletLabel=document.createElement('span');outletLabel.className='arena-outlet-pill';outletLabel.textContent=profile.outlet;
  person.append(personName,outletLabel);
  const levels=document.createElement('div');levels.className='arena-level-wrap';
- const lvl=window.BTRewards?.level(Number(totals.points||0))||{number:1,percent:0,next:500,points:0};
+ const lvl=window.BTRewards?.level(Number(totals.points||0))||{number:1,percent:0,next:500,points:0,current:0,required:500,remaining:500};
  const levelBadge=document.createElement('span');levelBadge.className='arena-level-badge';levelBadge.textContent='Lv. '+lvl.number;
  const progress=document.createElement('div');progress.className='arena-level-track';
+ progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','Progress to level '+(lvl.number+1));
+ progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax',String(lvl.required));progress.setAttribute('aria-valuenow',String(lvl.current));
  const progressFill=document.createElement('span');progressFill.className='arena-level-fill';progressFill.style.width=lvl.percent+'%';progress.append(progressFill);
- const nextGoal=document.createElement('small');nextGoal.textContent=totals.points.toLocaleString()+' / '+lvl.next.toLocaleString()+' pts';
+ const nextGoal=document.createElement('small');nextGoal.textContent=lvl.current.toLocaleString()+' / '+lvl.required.toLocaleString()+' pts';
+ nextGoal.title=lvl.remaining.toLocaleString()+' points remaining to level '+(lvl.number+1);
  levels.append(levelBadge,progress,nextGoal);profileRow.append(avatar,person,levels);body.append(profileRow);
  const stats=document.createElement('div');stats.className='arena-stats-grid';
  for(const [glyph,count,word] of [['🏆',totals.points,'Points'],['🎯',totals.correct,'Correct'],['📘',totals.answered,'Answered']]){

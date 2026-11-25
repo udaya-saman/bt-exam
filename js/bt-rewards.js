@@ -43,10 +43,42 @@
         percent:unlocked?100:Math.min(99,Math.max(0,Math.round(100*current/target)))};
     });
   }
+  // Each requirement applies to the transition FROM the current level.
+  // 1–9: 500; 10–24: 1,000; 25–49: 1,500; 50–99: 2,000.
+  // From 100: fifty-level bands, starting at 2,500 and increasing 500 per band.
+  // Levels are derived from lifetime points; no stored scores or records are changed.
   function level(points){
-    const score=Math.max(0,Number(points||0));
-    const number=Math.floor(score/500)+1;
-    return {number,points:score,next:(number*500),current:score%500,percent:Math.round((score%500)/5)};
+    const raw=Number(points);
+    const score=Number.isFinite(raw)?Math.min(Number.MAX_SAFE_INTEGER,Math.max(0,Math.floor(raw))):0;
+    let number=1, start=0;
+
+    function result(required){
+      const current=score-start;
+      const next=start+required;
+      // Rounded display cannot report 100% before crossing the next level.
+      const percent=Math.min(99,Math.max(0,Math.round(current/required*100)));
+      return {number,points:score,next,current,percent,required,remaining:required-current,start};
+    }
+
+    for(const [end,required] of [[10,500],[25,1000],[50,1500],[100,2000]]){
+      const bandCost=(end-number)*required;
+      if(score-start<bandCost){
+        const completed=Math.floor((score-start)/required);
+        number+=completed;start+=completed*required;
+        return result(required);
+      }
+      start+=bandCost;number=end;
+    }
+
+    let end=150,required=2500;
+    // Whole-band arithmetic avoids looping through individual levels.
+    while(score-start>=(end-number)*required){
+      start+=(end-number)*required;number=end;
+      end+=50;required+=500;
+    }
+    const completed=Math.floor((score-start)/required);
+    number+=completed;start+=completed*required;
+    return result(required);
   }
   function season(date){
     const iso=toDay(date);if(!iso)return null;

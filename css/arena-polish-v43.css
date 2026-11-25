@@ -608,3 +608,19 @@ body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-actions button.a
 body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-actions button.arena-manage-action:focus-visible{
  outline:3px solid #ffe39d!important;outline-offset:3px!important;
 }
+
+/* 4.7.5: level-up progress measures points within the current tier, not lifetime total. */
+body #bt-spark-root.arena-profile-mode .arena-level-wrap small{
+ white-space:normal!important;line-height:1.25!important;
+ min-width:0!important;max-width:150px!important;
+ text-align:right!important;overflow-wrap:normal!important;
+ font-variant-numeric:tabular-nums!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-track[role=progressbar]{
+ min-width:28px!important;
+}
+@media(max-width:350px){
+ body #bt-spark-root.arena-profile-mode .arena-level-wrap small{
+  max-width:105px!important;font-size:10px!important;
+ }
+}

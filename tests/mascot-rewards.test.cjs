@@ -18,6 +18,58 @@ assert.equal(rw.streak({},'2026-11-13'),0);
 assert.equal(rw.level(0).number,1);
 assert.equal(rw.level(500).number,2);
 assert.equal(rw.level(549).percent,10);
+
+/* Tiered levels: exact transitions, per-level progress and all 50-level bands. */
+const exactLevelCases=[
+ [0,1,500,0,500,500],
+ [4499,9,500,499,1,4500],
+ [4500,10,1000,0,1000,5500],
+ [5499,10,1000,999,1,5500],
+ [5500,11,1000,0,1000,6500],
+ [19499,24,1000,999,1,19500],
+ [19500,25,1500,0,1500,21000],
+ [56999,49,1500,1499,1,57000],
+ [57000,50,2000,0,2000,59000],
+ [156999,99,2000,1999,1,157000],
+ [157000,100,2500,0,2500,159500],
+ [281999,149,2500,2499,1,282000],
+ [282000,150,3000,0,3000,285000],
+ [431999,199,3000,2999,1,432000],
+ [432000,200,3500,0,3500,435500],
+ [606999,249,3500,3499,1,607000],
+ [607000,250,4000,0,4000,611000]
+];
+for(const [points,number,required,current,remaining,next] of exactLevelCases){
+ const result=rw.level(points);
+ assert.equal(result.number,number,'Level at '+points+' lifetime points');
+ assert.equal(result.required,required,'Cost of next level at '+points);
+ assert.equal(result.current,current,'Current-level points at '+points);
+ assert.equal(result.remaining,remaining,'Remaining points at '+points);
+ assert.equal(result.next,next,'Cumulative next milestone at '+points);
+ assert.equal(result.start,points-current,'Cumulative start at '+points);
+ assert.ok(result.percent>=0&&result.percent<100,'Progress should not be complete before leveling at '+points);
+}
+// Independent boundary walk validates every level, not just selected checkpoints.
+let levelStart=0;
+for(let number=1;number<=350;number++){
+ const required=number<10?500:number<25?1000:number<50?1500:number<100?2000:2500+500*Math.floor((number-100)/50);
+ const at=rw.level(levelStart),almost=rw.level(levelStart+required-1),up=rw.level(levelStart+required);
+ assert.equal(at.number,number,'Boundary: start of level '+number);
+ assert.equal(at.required,required,'Boundary: requirement at '+number);
+ assert.equal(at.current,0,'Boundary: zero progress at level '+number);
+ assert.equal(at.percent,0,'Boundary: reset progress at '+number);
+ assert.equal(at.next,levelStart+required,'Boundary: cumulative target at '+number);
+ assert.equal(almost.number,number,'Boundary: do not level early at '+number);
+ assert.equal(almost.remaining,1,'Boundary: one point left at '+number);
+ assert.ok(almost.percent<100,'Boundary: no false 100% at '+number);
+ assert.equal(up.number,number+1,'Boundary: advance at exactly target from '+number);
+ assert.equal(up.current,0,'Boundary: reset point progress at '+number);
+ levelStart+=required;
+}
+assert.equal(rw.level(-50).number,1);
+assert.equal(rw.level(Number.NaN).number,1);
+assert.equal(rw.level(Number.POSITIVE_INFINITY).number,1);
+
 assert.deepEqual(JSON.parse(JSON.stringify(rw.season('2026-11-13'))),{start:'2026-11-09',end:'2026-11-15',daysRemaining:3});
 const progress={outlet:'Matara',totalPoints:6500,correctAnswers:160,dailyActivity:daily,
 outletWeeklyAnswers:{'2026-11-09__Matara':225},weeklyPoints:{'2026-11-09':225}};
