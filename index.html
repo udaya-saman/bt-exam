@@ -279,7 +279,7 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./css/player-card-v42.css?v=4.2.0">
 <link rel="stylesheet" href="./study/lesson-player.css?v=4.1.0">
 <link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.7.5">
-<link rel="stylesheet" href="./css/assessment-practice.css?v=4.7.8">
+<link rel="stylesheet" href="./css/assessment-practice.css?v=4.7.10">
 <link rel="stylesheet" href="./css/questions-v477.css?v=4.7.9">
 <link rel="stylesheet" href="./css/press-feedback-v477.css?v=4.7.7">
 </head>
@@ -472,23 +472,43 @@ button { outline: none; border: none; font-family: inherit; }
 </div>
 <!-- Bilingual assessment practice; suggested answers are not credited to rank. -->
 <div id="assessment-practice" class="screen">
-  <main class="aq-shell">
-    <header class="arena-library-head aq-topbar">
-      <button type="button" class="arena-library-back" onclick="showScreen('paper-select')">← Questions</button>
-      <span>PIZZA ARENA · PRACTICE</span>
-    </header>
-    <section class="aq-hero">
-      <div>
-        <span class="aq-eyebrow">TRAIN • PRACTICE • REMEMBER</span>
-        <h1>Assessment Practice</h1>
-        <p>86 unique questions from the 2025–2026 assessments, with English, සිංහල and suggested answers.</p>
-        <div class="aq-hero-pills"><span>77 multiple choice</span><span>9 written answers</span><span>1 answer-choice issue</span></div>
+  <div class="quiz-bar">
+    <div class="quiz-top">
+      <div class="quiz-info">
+        <div class="quiz-paper-label" id="aq-quiz-paper-label">Assessment Practice · No ranking points</div>
+        <div class="quiz-q-info" id="aq-quiz-q-info">Question 1 of 86</div>
       </div>
-      <img src="./images/arena/mascot-avatar.png" width="116" height="130" alt="" decoding="async">
-    </section>
-    <p class="aq-disclaimer">Study practice only — no ranking points. Answers are proposals and some outlet-specific details require confirmation against the latest approved SOP.</p>
-    <div id="assessment-practice-root" aria-live="polite"></div>
-  </main>
+      <div class="score-pill">
+        <span class="sp-num" id="aq-score-display">0%</span>
+        <span class="sp-lbl">Score</span>
+      </div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="aq-prog-fill" style="width:0%"></div></div>
+    <div class="timer-bar"><div class="timer-fill ok" id="aq-timer-fill" style="width:100%"></div></div>
+  </div>
+
+  <div class="quiz-body" id="assessment-practice-root">
+    <div class="q-header-row">
+      <div class="q-badge" id="aq-q-badge">Q1 · Assessment Practice</div>
+      <button class="translate-btn" id="aq-translate-btn" onclick="BTAssessmentPractice.translate()">🇱🇰 සිංහල</button>
+    </div>
+    
+    <div class="q-text" id="aq-q-text">Loading...</div>
+    
+    <div class="timer-row">
+      <span class="timer-icon">⏱️</span>
+      <span class="timer-val ok" id="aq-timer-val">1:00</span>
+    </div>
+    <div class="opts" id="aq-opts"></div>
+    <div id="aq-result-area"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="home-btn" onclick="BTAssessmentPractice.home()">🏠 Home</button>
+    <button class="reset-btn" onclick="BTAssessmentPractice.reset()">↺ Reset</button>
+    
+    <button class="next-btn" id="aq-next-btn" onclick="BTAssessmentPractice.next()">ඊළඟ ප්‍රශ්නය →</button>
+  </div>
 </div>
 
 <!-- STUDY ACADEMY — verified handbook, booklet and policy lessons -->
@@ -1446,6 +1466,7 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
   checkSavedSession();
+  window.BTAssessmentPractice?.onScreenChange(id);
   window.BTExamBridge?.onScreenChange?.();
 }
 
@@ -1492,7 +1513,7 @@ function renderQuestion() {
   
   answered = false;
   btTimerWarned = false;
-  document.querySelector('.bt-timer-warning')?.remove();
+  document.querySelector('#quiz .bt-timer-warning')?.remove();
   isTranslated = false;
   
   const q = questions[qIndex];
@@ -1540,7 +1561,7 @@ function toggleTranslate() {
   
   if (isTranslated) {
     document.getElementById('q-text').textContent = q.si_q || q.q;
-    document.querySelectorAll('.opt-text').forEach((el, i) => {
+    document.querySelectorAll('#quiz .opt-text').forEach((el, i) => {
       const origIdx = _trShuffled[i];
       el.textContent = (q.si_opts && q.si_opts[origIdx]) ? q.si_opts[origIdx] : q.opts[origIdx];
     });
@@ -1548,7 +1569,7 @@ function toggleTranslate() {
     btn.innerHTML = '🔄 English';
   } else {
     document.getElementById('q-text').textContent = q.q;
-    document.querySelectorAll('.opt-text').forEach((el, i) => {
+    document.querySelectorAll('#quiz .opt-text').forEach((el, i) => {
       const origIdx = _trShuffled[i];
       el.textContent = q.opts[origIdx];
     });
@@ -1567,7 +1588,7 @@ function selectAnswer(selectedIdx, correctIdx, origIdx, q) {
   answered = true;
   clearTimer();
   
-  const btns = document.querySelectorAll('.opt-btn');
+  const btns = document.querySelectorAll('#quiz .opt-btn');
   btns.forEach((btn, i) => {
     btn.disabled = true;
     if (i === correctIdx) btn.classList.add('correct');
@@ -1598,7 +1619,7 @@ function timeoutQ() {
   skipped++;
   const q = questions[qIndex];
   
-  document.querySelectorAll('.opt-btn').forEach((btn, i) => {
+  document.querySelectorAll('#quiz .opt-btn').forEach((btn, i) => {
     btn.disabled = true;
     if (i === currentCorrectIdx) btn.classList.add('correct');
   });
@@ -1640,14 +1661,14 @@ function showExplanation(isCorrect, isTimeout, q) {
   area.querySelector('.result-card')?.append(mascot);
   
   setTimeout(() => {
-    document.querySelector('.quiz-body').scrollTo({ top: document.querySelector('.quiz-body').scrollHeight, behavior: 'smooth' });
+    document.querySelector('#quiz .quiz-body').scrollTo({ top: document.querySelector('#quiz .quiz-body').scrollHeight, behavior: 'smooth' });
   }, 100);
 }
 
 function nextQuestion() {
   qHistory.push({qIndex, correct, wrong, skipped});
   qIndex++;
-  const qBody = document.querySelector('.quiz-body');
+  const qBody = document.querySelector('#quiz .quiz-body');
   if(qBody) qBody.scrollTop = 0;
   renderQuestion();
 }
@@ -1668,13 +1689,13 @@ function startTimer() {
 
 function clearTimer() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-  document.querySelector('.bt-timer-warning')?.remove();
+  document.querySelector('#quiz .bt-timer-warning')?.remove();
 }
 
 function showTimeWarning() {
   if (btTimerWarned || answered || timeLeft <= 0 || timeLeft > 15) return;
   btTimerWarned = true;
-  const holder = document.querySelector('.timer-row');
+  const holder = document.querySelector('#quiz .timer-row');
   if (!holder) return;
   const chip = document.createElement('span');
   chip.className = 'bt-timer-warning';
@@ -1844,7 +1865,7 @@ function confirmModal() {
 <script defer src="./js/pizza-reference.js?v=4.0.0"></script>
 <script defer src="./study/lesson-art.js?v=4.6.0"></script>
 <script defer src="./study/lesson-player.js?v=4.6.0"></script>
-<script defer src="./js/assessment-practice.js?v=4.7.8"></script>
+<script defer src="./js/assessment-practice.js?v=4.7.10"></script>
 <script defer src="./js/press-feedback-v477.js?v=4.7.7"></script>
 </body>
 </html>
