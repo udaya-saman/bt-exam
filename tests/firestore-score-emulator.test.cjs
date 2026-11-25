@@ -15,67 +15,79 @@ function initial(uid,username,outlet){
  dailyActivity:{},rapidCorrectStreak:0,reviewSuggested:false,lastEventId:'',
  createdAt:Timestamp.now(),updatedAt:Timestamp.now()};
 }
+const canonical=(paper,index)=>paper==='questions'&&index===14?'past2024_22':paper==='paper1'&&index===9?'questions_7':paper+'_'+index;
 async function run(){
  const env=await initializeTestEnvironment({projectId:'demo-bt-exam',firestore:{rules:fs.readFileSync('firestore.rules','utf8')}});
  try{
-  const now=new Date(),at=Timestamp.fromDate(now),dayKey=day(now),weekKey=week(now),monthKey=dayKey.slice(0,7);
-  for(const [uid,username,outlet,publicRank] of [
-    ['test-udaya-private','udaya','Other',false],
-    ['test-matara-player','tester','Matara',true]
-  ]){
-   await env.withSecurityRulesDisabled(async ctx=>{
-    const db=ctx.firestore();
-    await Promise.all([
-     setDoc(doc(db,'users',uid),initial(uid,username,outlet)),
-     setDoc(doc(db,'answerKeys','paper1_0'),{paper:'paper1',index:0,answer:0})
-    ]);
-   });
+  const now=new Date(),yesterday=new Date(now.getTime()-86400000);
+  const profiles=[['test-udaya-private','udaya','Other',false],['test-matara-player','tester','Matara',true],['test-second-player','tester2','Matara',true]];
+  await env.withSecurityRulesDisabled(async ctx=>{
+   const db=ctx.firestore();
+   for(const [uid,username,outlet] of profiles)await setDoc(doc(db,'users',uid),initial(uid,username,outlet));
+   for(const [paper,index,answer] of [['paper1',0,0],['paper1',1,0],['paper1',2,0],['paper1',9,0],['questions',7,0],['past2024',22,2],['questions',14,2]])await setDoc(doc(db,'answerKeys',paper+'_'+index),{paper,index,answer});
+  });
+  const write=async(uid,paper,index,selected,date,attemptId='attempt1234567890',force=false,overrideId=null)=>{
+   const [_,username,outlet,publicRank]=profiles.find(p=>p[0]===uid);
    const db=env.authenticatedContext(uid,{email:'bt-fake@users.bt-exam.example.com'}).firestore();
-   const attemptId='attempt1234567890',eid=uid+'_'+attemptId+'_paper1_0',claimId=uid+'_'+dayKey+'_paper1';
-   const e={uid,paper:'paper1',index:0,selected:0,remaining:15,points:25,
-    attemptId,dayKey,weekKey,monthKey,outlet,outletWeekKey:weekKey+'__'+outlet,
-    outletMonthKey:monthKey+'__'+outlet,activityDay:dayKey,earnedAt:at,claimId};
+   const at=Timestamp.fromDate(date),dayKey=day(date),weekKey=week(date),monthKey=dayKey.slice(0,7);
+   const eid=overrideId||uid+'_q_'+dayKey+'_'+canonical(paper,index);
+   const right=selected===(paper==='past2024'||index===14?2:0),points=right?25:0;
+   const e={uid,paper,index,selected,remaining:right?15:0,points,attemptId,dayKey,weekKey,monthKey,outlet,outletWeekKey:weekKey+'__'+outlet,
+    outletMonthKey:monthKey+'__'+outlet,activityDay:dayKey,earnedAt:at};
    const inc=(m,k,n)=>({...m,[k]:Number(m[k]||0)+n});
-   const result=await runTransaction(db,async tx=>{
-    const userRef=doc(db,'users',uid),eventRef=doc(db,'scoreEvents',eid),
-      claimRef=doc(db,'rankedClaims',claimId),pubRef=doc(db,'publicRanks',uid),
-      adminRef=doc(db,'admins',uid);
-    const [claim,existing,profile,pub,admin]=await Promise.all([
-      tx.get(claimRef),tx.get(eventRef),tx.get(userRef),tx.get(pubRef),tx.get(adminRef)]);
-    assert.equal(existing.exists(),false);
-    assert.equal(claim.exists(),false);
-    assert.equal(admin.exists(),false);
-    const u=profile.data(),wk=e.weekKey+'__'+outlet,mk=e.monthKey+'__'+outlet;
+   return runTransaction(db,async tx=>{
+    const userRef=doc(db,'users',uid),eventRef=doc(db,'scoreEvents',eid),pubRef=doc(db,'publicRanks',uid);
+    const [existing,profile,pub]=await Promise.all([tx.get(eventRef),tx.get(userRef),tx.get(pubRef)]);
+    if(existing.exists()&&!force)return 'duplicate';
+    const u=profile.data(),wk=e.outletWeekKey,mk=e.outletMonthKey;
     tx.set(eventRef,e);
-    tx.set(claimRef,{uid,paper:'paper1',dayKey,attemptId,startedAt:at});
-    const up={lastEventId:eid,totalPoints:u.totalPoints+25,totalAnswers:u.totalAnswers+1,
-      correctAnswers:u.correctAnswers+1,dailyActivity:inc(u.dailyActivity,dayKey,1),
+    const up={lastEventId:eid,totalPoints:u.totalPoints+points,totalAnswers:u.totalAnswers+1,
+      correctAnswers:u.correctAnswers+(right?1:0),dailyActivity:inc(u.dailyActivity,dayKey,1),
       rapidCorrectStreak:0,reviewSuggested:false,
-      weeklyPoints:inc(u.weeklyPoints,weekKey,25),monthlyPoints:inc(u.monthlyPoints,monthKey,25),
-      outletPoints:inc(u.outletPoints,outlet,25),outletWeeklyPoints:inc(u.outletWeeklyPoints,wk,25),
-      outletMonthlyPoints:inc(u.outletMonthlyPoints,mk,25),outletAnswers:inc(u.outletAnswers,outlet,1),
-      outletWeeklyAnswers:inc(u.outletWeeklyAnswers,wk,1),outletMonthlyAnswers:inc(u.outletMonthlyAnswers,mk,1),
-      updatedAt:at};
+      weeklyPoints:inc(u.weeklyPoints,weekKey,points),monthlyPoints:inc(u.monthlyPoints,monthKey,points),
+      outletPoints:inc(u.outletPoints,outlet,points),outletWeeklyPoints:inc(u.outletWeeklyPoints,wk,points),
+      outletMonthlyPoints:inc(u.outletMonthlyPoints,mk,points),outletAnswers:inc(u.outletAnswers,outlet,1),
+      outletWeeklyAnswers:inc(u.outletWeeklyAnswers,wk,1),outletMonthlyAnswers:inc(u.outletMonthlyAnswers,mk,1),updatedAt:at};
     tx.update(userRef,up);
     if(publicRank){
       const b=pub.exists()?pub.data():{};
-      tx.set(pubRef,{uid,name:username,outlet,avatar:'',lastEventId:eid,totalPoints:25,correctAnswers:1,
-       dailyActivity:inc(b.dailyActivity||{},dayKey,1),weeklyPoints:inc(b.weeklyPoints||{},weekKey,25),
-       monthlyPoints:inc(b.monthlyPoints||{},monthKey,25),outletPoints:inc(b.outletPoints||{},outlet,25),
-       outletWeeklyPoints:inc(b.outletWeeklyPoints||{},wk,25),outletMonthlyPoints:inc(b.outletMonthlyPoints||{},mk,25),
-       outletAnswers:inc(b.outletAnswers||{},outlet,1),
-       outletWeeklyAnswers:inc(b.outletWeeklyAnswers||{},wk,1),
+      tx.set(pubRef,{uid,name:username,outlet,avatar:'',lastEventId:eid,totalPoints:Number(b.totalPoints||0)+points,correctAnswers:Number(b.correctAnswers||0)+(right?1:0),
+       dailyActivity:inc(b.dailyActivity||{},dayKey,1),weeklyPoints:inc(b.weeklyPoints||{},weekKey,points),
+       monthlyPoints:inc(b.monthlyPoints||{},monthKey,points),outletPoints:inc(b.outletPoints||{},outlet,points),
+       outletWeeklyPoints:inc(b.outletWeeklyPoints||{},wk,points),outletMonthlyPoints:inc(b.outletMonthlyPoints||{},mk,points),
+       outletAnswers:inc(b.outletAnswers||{},outlet,1),outletWeeklyAnswers:inc(b.outletWeeklyAnswers||{},wk,1),
        outletMonthlyAnswers:inc(b.outletMonthlyAnswers||{},mk,1),updatedAt:at});
     }
-    return true;
+    return 'saved';
    });
-   assert.equal(result,true);
-   const updated=await getDoc(doc(db,'users',uid));assert.equal(updated.data().totalPoints,25);
-   assert.equal(updated.data().totalAnswers,1);
-   assert.equal(updated.data().correctAnswers,1);
-   const rank=await getDoc(doc(db,'publicRanks',uid));assert.equal(rank.exists(),publicRank);
-   console.log('Score event accepted for '+username+' ('+outlet+')');
+  };
+  for(const [uid,username,outlet,publicRank] of profiles){
+   assert.equal(await write(uid,'paper1',0,0,now),'saved');
+   assert.equal(await write(uid,'paper1',1,0,now,'attempt2222222222'),'saved','Unanswered question counts on a restarted paper');
+   assert.equal(await write(uid,'paper1',0,0,now,'attempt3333333333'),'duplicate','Exact repeat has no score');
+   await assert.rejects(()=>write(uid,'paper1',0,0,now,'attempt3333333333',true),/permission-denied|PERMISSION_DENIED/,'Cannot overwrite a daily score event');
+   assert.equal(await write(uid,'paper1',2,1,now),'saved','Wrong first answer is recorded');
+   assert.equal(await write(uid,'paper1',2,0,now,'attempt3333333333'),'duplicate','Correct retry after wrong is not scored');
+   assert.equal(await write(uid,'paper1',0,0,yesterday),'saved','Different Sri Lankan day earns points');
+   assert.equal(await write(uid,'questions',7,0,now),'saved');
+   assert.equal(await write(uid,'paper1',9,0,now),'duplicate','Same stem across papers uses one event');
+   await assert.rejects(()=>write(uid,'paper1',9,0,now,'attempt3333333333',false,uid+'_q_'+day(now)+'_paper1_9'),/permission-denied|PERMISSION_DENIED/,'Canonical alias enforced by rules');
+   const db=env.authenticatedContext(uid).firestore();
+   const updated=await getDoc(doc(db,'users',uid));assert.equal(updated.data().totalPoints,100);assert.equal(updated.data().totalAnswers,5);assert.equal(updated.data().correctAnswers,4);
+   const rank=await getDoc(doc(db,'publicRanks',uid));assert.equal(rank.exists(),publicRank);if(publicRank)assert.equal(rank.data().totalPoints,100);
+   console.log('Daily question scoring accepted for '+username+' ('+outlet+'); restarts, wrong first, cross-paper alias, separate day and separate users verified.');
   }
+  // Existing same-day legacy paper events cannot be credited again.
+  const uid='test-matara-player',d=day(now),attemptId='legacy1234567890';
+  await env.withSecurityRulesDisabled(async ctx=>{
+   const db=ctx.firestore();
+   await setDoc(doc(db,'rankedClaims',uid+'_'+d+'_past2024'),{uid,paper:'past2024',dayKey:d,attemptId,startedAt:Timestamp.fromDate(now)});
+   await setDoc(doc(db,'scoreEvents',uid+'_'+attemptId+'_past2024_22'),{uid,activityDay:d,points:25});
+  });
+  await assert.rejects(()=>write(uid,'questions',14,2,now),/permission-denied|PERMISSION_DENIED/,'Legacy alias answer cannot be credited again');
+  const otherDb=env.authenticatedContext('test-second-player').firestore();
+  await assert.rejects(()=>setDoc(doc(otherDb,'rankedClaims','test-second-player_'+d+'_paper1'),{uid:'test-second-player',paper:'paper1',dayKey:d,attemptId,startedAt:Timestamp.fromDate(now)}),/permission-denied|PERMISSION_DENIED/,'Old clients cannot create whole-paper claims');
+  console.log('Legacy same-day migration and obsolete paper claims verified.');
   // Only Udaya's administrator account may add or replace answer keys.
   await env.withSecurityRulesDisabled(async ctx=>{
    const db=ctx.firestore();
