@@ -139,7 +139,7 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');
    root.hidden=false;root.className='arena-board-mode arena-leaderboard-layout';
-   root.innerHTML='<div class="panel"><h2>🏆 LEADERBOARD</h2><div id="bt-spark-content"><div class="pg-nav"><button>THIS WEEK</button><button>ALL TIME</button><button>OUTLETS</button></div><div class="pg-podium">'+[1,2,3].map(i=>'<div class="pg-podium-item arena-player-podium arena-rank-'+i+'"><div>🏅</div><strong>Player '+i+'</strong><small>100 PTS</small></div>').join('')+'</div><div class="pg-section">PLAYER STANDINGS</div><div class="pg-standings-scroll">'+Array.from({length:30},(_,i)=>'<div class="pg-leader-card arena-player-standing"><span class="pg-place">#'+(i+4)+'</span><img class="pg-avatar" src="./images/default-avatar.png"><div class="pg-person"><strong>Player '+(i+4)+'</strong><small>Matara</small></div><span class="pg-score">20 PTS</span></div>').join('')+'</div><div class="pg-board-footer"><button class="pg-btn-green">👤 MY PROFILE</button><button class="pg-btn-red">CLOSE</button></div></div></div>';
+   root.innerHTML='<div class="panel"><h2>🏆 LEADERBOARD</h2><div id="bt-spark-content"><div class="pg-nav"><button>THIS WEEK</button><button>ALL TIME</button><button>OUTLETS</button></div><div class="pg-podium">'+[1,2,3].map(i=>'<div class="pg-podium-item arena-player-podium arena-rank-'+i+'">'+(i===1?'<span class="arena-first-rank">1</span>':'')+'<div>🏅</div><strong>Player '+i+'</strong><small>100 PTS</small></div>').join('')+'</div><div class="pg-section">PLAYER STANDINGS</div><div class="pg-standings-scroll">'+Array.from({length:30},(_,i)=>'<div class="pg-leader-card arena-player-standing"><span class="pg-place">'+(i+4)+'</span><img class="pg-avatar" src="./images/default-avatar.png"><div class="pg-person"><strong>Player '+(i+4)+'</strong><small>Matara</small></div><span class="pg-score">20 PTS</span></div>').join('')+'</div><div class="pg-board-footer"><button class="pg-btn-green">👤 MY PROFILE</button><button class="pg-btn-red">CLOSE</button></div></div></div>';
   });
   await expect(page.locator('.pg-standings-scroll .pg-leader-card')).toHaveCount(30);
   const before=await page.evaluate(()=>{
@@ -153,11 +153,15 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
     scrollOverflow:getComputedStyle(rows).overflowY,
     maxScroll:rows.scrollHeight-rows.clientHeight,
     panelClient:panel.clientWidth,panelScroll:panel.scrollWidth,
-    buttons:[...footer.querySelectorAll('button')].map(rect)};
+    buttons:[...footer.querySelectorAll('button')].map(rect),scrollbarWidth:getComputedStyle(rows).scrollbarWidth,webkitScrollbar:getComputedStyle(rows,'::-webkit-scrollbar').display,firstAnimation:getComputedStyle(document.querySelector('.pg-podium-item.arena-rank-1')).animationName};
   });
   expect(before.panelOverflow).toBe('hidden');
   expect(before.scrollOverflow).toBe('auto');
   expect(before.maxScroll).toBeGreaterThan(0);
+  expect(before.scrollbarWidth).toBe('none');
+  expect(before.webkitScrollbar).toBe('none');
+  expect(before.firstAnimation).toContain('arenaFirstGlow');
+  await expect(page.locator('.pg-standings-scroll .pg-place').first()).toHaveText('4');
   expect(before.panelScroll).toBeLessThanOrEqual(before.panelClient+2);
   expect(before.footer.bottom).toBeLessThanOrEqual(740);
   expect(before.buttons).toHaveLength(2);
@@ -174,5 +178,36 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
   expect(after.scrollTop).toBeGreaterThan(0);
   expect(Math.abs(after.footerTop-before.footer.top)).toBeLessThan(1);
   expect(Math.abs(after.podiumTop-before.podium.top)).toBeLessThan(1);
+ }
+});
+
+test('Player details have right-aligned return and invisible functional scrollbars',async({page})=>{
+ await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+ for(const width of [320,375,430,768]){
+  await page.setViewportSize({width,height:680});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.waitForTimeout(250);
+  await page.evaluate(()=>{
+   const root=document.getElementById('bt-spark-root');
+   root.hidden=false;root.className='arena-board-mode arena-player-details-mode';
+   root.innerHTML='<div class="panel"><h2>PLAYER DETAILS</h2><div id="bt-spark-content"><div class="arena-player-detail"><div class="arena-detail-ribbon">✦ PIZZA ARENA PLAYER</div><img src="./images/default-avatar.png" alt=""><h3>Sample Player</h3><p>Matara</p><div class="arena-detail-stats">'+['Level','Points','Current weekly rank','Best all-time rank observed'].map((label,i)=>'<div><strong>'+[7,'1,200',4,2][i]+'</strong><small>'+label+'</small></div>').join('')+'</div></div><div class="arena-detail-actions"><button class="arena-detail-back">Back to leaderboard</button></div></div></div>';
+  });
+  const geometry=await page.evaluate(()=>{
+   const panel=document.querySelector('#bt-spark-root .panel'),button=document.querySelector('.arena-detail-back'),actions=document.querySelector('.arena-detail-actions');
+   return {rightGap:actions.getBoundingClientRect().right-button.getBoundingClientRect().right,
+    panelRight:panel.getBoundingClientRect().right,scrollbarWidth:getComputedStyle(panel).scrollbarWidth,
+    scrollbarDisplay:getComputedStyle(panel,'::-webkit-scrollbar').display};
+  });
+  expect(geometry.rightGap).toBeLessThanOrEqual(2);
+  expect(geometry.scrollbarWidth).toBe('none');
+  expect(geometry.scrollbarDisplay).toBe('none');
+  expect(geometry.panelRight).toBeLessThanOrEqual(width);
+  await page.evaluate(()=>{const p=document.querySelector('#bt-spark-root .panel');p.style.maxHeight='300px';p.style.height='300px';});
+  const scrolled=await page.evaluate(()=>{
+   const p=document.querySelector('#bt-spark-root .panel');p.scrollTop=160;
+   return {scrollTop:p.scrollTop,range:p.scrollHeight-p.clientHeight};
+  });
+  expect(scrolled.range).toBeGreaterThan(0);
+  expect(scrolled.scrollTop).toBeGreaterThan(0);
  }
 });
