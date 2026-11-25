@@ -48,19 +48,89 @@ for(const width of widths){
   expect(source.width).toBeGreaterThanOrEqual(200);
   await page.screenshot({path:'tests/screenshot-home-'+width+'.png',fullPage:true});
   await page.evaluate(()=>openQuestions());
+  await expect(page.locator('#paper-select.active')).toBeVisible();
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
+  await expect(page.locator('#paper-select #questions-title')).toContainText('Your next challenge');
+  await expect(page.locator('#paper-select .questions-quick-stats')).toContainText('214');
+  await expect(page.locator('#paper-select .pa-assessment-entry')).toHaveCount(1);
   await expect(page.locator('#paper-select.active .paper-card')).toHaveCount(5);
+  await expect(page.locator('#paper-select .questions-paper')).toHaveCount(5);
+  const ids=await page.locator('#paper-select .questions-paper').evaluateAll(cards=>cards.map(card=>card.dataset.paper));
+  expect(ids).toEqual(['past2024','questions','paper1','paper2','paper3']);
+  const questions=await page.locator('#paper-select .questions-paper-count').allTextContents();
+  expect(questions).toEqual(['29 QUESTIONS','40 QUESTIONS','50 QUESTIONS','50 QUESTIONS','45 QUESTIONS']);
+  await expect.poll(()=>page.locator('#paper-select .questions-paper-icon img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
+  await expect.poll(()=>page.locator('#paper-select .questions-intro-art').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+  const columns=await page.locator('#all-question-papers').evaluate(grid=>getComputedStyle(grid).gridTemplateColumns.split(' ').length);
+  expect(columns).toBe(width<=680?1:2);
   const papers=await dimensions(page,'#paper-select .paper-card');
   noOverlap(papers,width,'Question paper cards');
-  const overflow=await page.evaluate(()=>({document:document.documentElement.scrollWidth,viewport:innerWidth}));
+  const overflow=await page.evaluate(()=>({
+   document:document.documentElement.scrollWidth,viewport:innerWidth,
+   selector:document.getElementById('paper-select').scrollWidth
+  }));
   expect(overflow.document).toBeLessThanOrEqual(width+2);
+  expect(overflow.selector).toBeLessThanOrEqual(width+2);
   await page.screenshot({path:'tests/screenshot-papers-'+width+'.png',fullPage:true});
+  // Original quiz behavior remains accessible from the redesigned native buttons.
+  const model=page.locator('#paper-select button[data-paper="paper1"]');
+  await expect(model).toHaveAttribute('aria-label','Start Model Paper 1, 50 questions');
+  await model.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#quiz.active')).toBeVisible();
+  await expect(page.locator('#quiz-paper-label')).toContainText('Intermediate');
+  await expect(page.locator('#quiz-q-info')).toHaveText('Question 1 of 50');
+  await expect(page.locator('#quiz .opt-btn')).toHaveCount(4);
+  await expect(page.locator('#quiz .questions-question-panel')).toBeVisible();
+  const quizBounds=await page.locator('#quiz .questions-question-panel').evaluate(el=>({
+   left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right
+  }));
+  expect(quizBounds.left).toBeGreaterThanOrEqual(-1);
+  expect(quizBounds.right).toBeLessThanOrEqual(width+1);
+  noOverlap(await dimensions(page,'#quiz .opt-btn'),width,'Quiz answer choices');
+  await page.locator('#quiz .opt-btn').first().click();
+  await expect(page.locator('#quiz .opt-btn.correct')).toHaveCount(1);
+  await expect(page.locator('#quiz #next-btn.show')).toBeVisible();
+  await page.screenshot({path:'tests/screenshot-quiz-'+width+'.png',fullPage:true});
  });
 }
+test('Buttons visibly press and rebound on touch, keyboard and generated Study controls',async({page})=>{
+ await page.setViewportSize({width:375,height:820});
+ await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
+ await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;});
+ const control=page.locator('#sound-toggle');
+ await expect(control).toBeVisible();
+ await control.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,isPrimary:true})));
+ await expect(control).toHaveClass(/arena-pressing/);
+ const during=await control.evaluate(el=>({transform:getComputedStyle(el).transform,filter:getComputedStyle(el).filter}));
+ expect(during.transform).not.toBe('none');
+ expect(during.filter).toContain('brightness');
+ await control.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,button:0,isPrimary:true})));
+ await expect(control).toHaveClass(/arena-pressed/);
+ await expect.poll(()=>control.evaluate(el=>el.classList.contains('arena-pressed'))).toBe(false);
+ await control.focus();
+ await page.keyboard.down('Space');
+ await expect(control).toHaveClass(/arena-pressing/);
+ await page.keyboard.up('Space');
+ await expect(control).toHaveClass(/arena-pressed/);
+ await expect.poll(()=>control.evaluate(el=>el.classList.contains('arena-pressed'))).toBe(false);
+ await page.evaluate(()=>openStudy());
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
+ const studyButton=page.locator('.pa-study-filter').first();
+ await expect(studyButton).toBeVisible();
+ await studyButton.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,isPrimary:true})));
+ await expect(studyButton).toHaveClass(/arena-pressing/);
+ await studyButton.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,button:0,isPrimary:true})));
+ await expect(studyButton).toHaveClass(/arena-pressed/);
+});
 test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})=>{
  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
  await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
  await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;openStudy();});
  await expect(page.locator('#study-select.active .pa-study-card')).toHaveCount(57,{timeout:12000});
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
  await expect(page.locator('.pa-study-hero h1')).toContainText('Learn. Remember. Grow.');
  await page.locator('.pa-study-card').first().click();
  await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
@@ -148,6 +218,7 @@ test('Imported 2025–26 assessments are grouped without duplicates on phones',a
  await expect(page.locator('#paper-select .pa-assessment-entry')).toBeVisible();
  await page.locator('#paper-select .pa-assessment-entry').click();
  await expect(page.locator('#assessment-library.active')).toBeVisible();
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
  await expect(page.locator('.pa-assessment-summary strong')).toHaveText('88 distinct questions');
  await expect(page.locator('.pa-assessment-card')).toHaveCount(15);
  await page.locator('.pa-assessment-search').fill('Cheesy Kottchi Sauce');

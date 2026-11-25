@@ -1,5 +1,5 @@
 {
-  "version": "4.7.6-arena",
+  "version": "4.7.7-arena",
   "released": "2026-11-25",
-  "notes": "Remove the empty Outlet Arena crown-waiting panel. Remember and prefill the last successful username; restore a previously authenticated Firebase session and cached profile without mobile data, then revalidate when reconnected. A new password sign-in after sign-out still requires online Firebase verification. Explain that users should turn on mobile data or connect to Wi-Fi when manually syncing offline; keep all pending answers saved. Pre-cache Firebase SDK modules for offline reopen. Scoring, ranking and saved progress are unchanged."
+  "notes": "Modern responsive Pizza Arena Questions experience: brand-red challenge hero, readable five-paper PNG card library with accessible buttons, distinct 2025–2026 assessment review card, improved quiz question and answer layout, timer and progress presentation, responsive mobile/tablet/desktop styling. All five original paper identifiers, their 214 questions, quiz/answer/translation/timer/points/resume logic, Firestore and offline progress remain unchanged. New CSS is cached offline. Hide the redundant floating Leaderboard dock on Questions, Study and Assessment Review. Apply responsive button press/release feedback to all native and role-based buttons, supporting pointer/touch, keyboard and reduced-motion preferences without altering their actions. All new visual assets are in the offline cache."
 }

@@ -280,6 +280,8 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./study/lesson-player.css?v=4.1.0">
 <link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.7.5">
 <link rel="stylesheet" href="./css/assessment-bank.css?v=4.7.0">
+<link rel="stylesheet" href="./css/questions-v477.css?v=4.7.7">
+<link rel="stylesheet" href="./css/press-feedback-v477.css?v=4.7.7">
 </head>
 <body>
 
@@ -344,109 +346,129 @@ button { outline: none; border: none; font-family: inherit; }
   </div>
 </div>
 
-<!-- QUESTIONS LIBRARY: the original five papers are kept intact -->
+<!-- QUESTIONS LIBRARY: original five papers and scoring remain intact. -->
 <div id="paper-select" class="screen">
-  <div class="arena-library-wrap">
-    <header class="arena-library-head"><button type="button" class="arena-library-back" onclick="showScreen('home')">← Back</button><span>🏆 PIZZA ARENA</span></header>
-    <h1>Choose Your Questions</h1><p>Select an exam paper to begin. Each paper keeps its existing questions and scoring rules.</p>
-    <button type="button" class="pa-assessment-entry" onclick="window.BTAssessmentBank?.open()" aria-label="Open 2025 to 2026 assessment question bank">
-      <img class="pa-assessment-entry-art" src="./images/arena/stat-answered.png" width="52" height="52" alt="">
-      <span class="pa-assessment-entry-text">
-        <strong>2025–2026 Assessment Bank</strong>
-        <small>Buddy Trainer Oct 2025 · LAS 2025 · LAS Jan 2026</small>
-        <small>88 distinct questions · 97 scanned entries · Review only</small>
-      </span>
-      <span class="pa-assessment-entry-arrow" aria-hidden="true">›</span>
-    </button>
-    <div class="paper-grid paper-selection-grid" id="all-question-papers">
-      <!-- Row 1 (New Past Paper) -->
-      <div class="paper-card" onclick="startPaper('past2024')">
-        <div class="pc-strip" style="background: #E11D48;"></div>
-        <div class="pc-icon-wrap"><span class="pc-icon-big">🆕</span></div>
-        <div class="pc-meta">
-          <div class="pc-title-row">
-            <div class="pc-title">Past Paper 2024</div>
-            <div class="pc-tag" style="background: rgba(225, 29, 72, 0.1); color: #BE123C;">29 Qs</div>
-          </div>
-          <div class="pc-desc">Buddy Trainer Mock Questions 2024.</div>
-          <div class="pc-bottom-row">
-            <div class="pc-subtitle">Past Paper</div>
-            <div class="pc-diff">⭐⭐⭐⭐ Expert</div>
-          </div>
+  <main class="arena-library-wrap questions-library">
+    <header class="arena-library-head questions-library-nav">
+      <button type="button" class="arena-library-back questions-library-back" onclick="showScreen('home')" aria-label="Back to home"><span aria-hidden="true">←</span> Back</button>
+      <span class="questions-nav-brand"><img src="./images/arena/leaderboard-trophy.png" width="30" height="30" alt=""> PIZZA ARENA</span>
+    </header>
+    <section class="questions-intro" aria-labelledby="questions-title">
+      <div class="questions-intro-copy">
+        <span class="questions-eyebrow"><span class="questions-eyebrow-dot" aria-hidden="true"></span> THE QUESTION ARENA</span>
+        <h1 id="questions-title">Your next challenge <span>starts here.</span></h1>
+        <p>Choose a paper, put your knowledge to the test, and keep leveling up.</p>
+        <div class="questions-quick-stats" aria-label="Exam library overview">
+          <span><strong>5</strong> exam papers</span>
+          <span><strong>214</strong> questions</span>
+          <span><strong>60s</strong> per question</span>
         </div>
       </div>
-
-      <!-- Row 2 -->
-      <div class="paper-card" onclick="startPaper('questions')">
-        <div class="pc-strip red"></div>
-        <div class="pc-icon-wrap"><span class="pc-icon-big">📋</span></div>
-        <div class="pc-meta">
-          <div class="pc-title-row">
-            <div class="pc-title">Past Papers</div>
-            <div class="pc-tag blue-tag">40 Qs</div>
-          </div>
-          <div class="pc-desc">BT Assessment 2021 &amp; 2022 exam papers.</div>
-          <div class="pc-bottom-row">
-            <div class="pc-subtitle">Past Paper</div>
-            <div class="pc-diff">⭐ Foundation</div>
-          </div>
-        </div>
+      <img class="questions-intro-art" src="./images/arena/mascot-champion.png" width="238" height="258" alt="" decoding="async">
+    </section>
+    <section class="questions-review-section" aria-labelledby="questions-review-title">
+      <div class="questions-section-head">
+        <div><span class="questions-section-eyebrow">REFERENCE LIBRARY</span><h2 id="questions-review-title">Assessment questions</h2><p>Explore questions from previous assessments.</p></div>
+        <span class="questions-section-count">REVIEW ONLY</span>
       </div>
-
-      <!-- Row 3 -->
-      <div class="paper-card" onclick="startPaper('paper1')">
-        <div class="pc-strip gold"></div>
-        <div class="pc-icon-wrap"><span class="pc-icon-big">📝</span></div>
-        <div class="pc-meta">
-          <div class="pc-title-row">
-            <div class="pc-title">Model Paper 1</div>
-            <div class="pc-tag gold-tag">50 Qs</div>
-          </div>
-          <div class="pc-desc">Based on BT Special PSM 2024 standards.</div>
-          <div class="pc-bottom-row">
-            <div class="pc-subtitle">PSM 2024</div>
-            <div class="pc-diff">⭐⭐ Intermediate</div>
-          </div>
-        </div>
+      <button type="button" class="pa-assessment-entry questions-review-card" onclick="window.BTAssessmentBank?.open()" aria-label="Open 2025 to 2026 assessment question bank">
+        <span class="questions-review-art"><img class="pa-assessment-entry-art" src="./images/arena/stat-answered.png" width="60" height="60" alt=""></span>
+        <span class="pa-assessment-entry-text">
+          <strong>2025–2026 Assessment Bank</strong>
+          <small>Buddy Trainer Oct 2025 · LAS 2025 · LAS Jan 2026</small>
+          <span class="questions-review-foot">88 distinct questions <span aria-hidden="true">·</span> 97 scanned entries <span aria-hidden="true">·</span> No scoring</span>
+        </span>
+        <span class="pa-assessment-entry-arrow" aria-hidden="true">→</span>
+      </button>
+    </section>
+    <section class="questions-papers-section" aria-labelledby="questions-papers-title">
+      <div class="questions-section-head">
+        <div><span class="questions-section-eyebrow">CHOOSE YOUR CHALLENGE</span><h2 id="questions-papers-title">Exam papers</h2><p>Five organized question sets, ready to play.</p></div>
+        <span class="questions-section-count">5 PAPERS</span>
       </div>
+      <div class="paper-grid paper-selection-grid" id="all-question-papers">
+        <button type="button" class="paper-card questions-paper" data-paper="past2024" onclick="startPaper('past2024')" aria-label="Start Past Paper 2024, 29 questions">
+          <span class="questions-paper-top">
+            <span class="questions-paper-icon"><img src="./images/arena/stat-answered.png" width="58" height="58" alt=""></span>
+            <span class="questions-paper-count">29 QUESTIONS</span>
+          </span>
+          <span class="questions-paper-content">
+            <span class="questions-paper-kind">PAST ASSESSMENT · 2024</span>
+            <strong class="pc-title">Past Paper 2024</strong>
+            <span class="pc-desc">Buddy Trainer Mock Questions 2024.</span>
+          </span>
+          <span class="questions-paper-footer">
+            <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Expert</span>
+            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
 
-      <!-- Row 4 -->
-      <div class="paper-card" onclick="startPaper('paper2')">
-        <div class="pc-strip green"></div>
-        <div class="pc-icon-wrap"><span class="pc-icon-big">🎯</span></div>
-        <div class="pc-meta">
-          <div class="pc-title-row">
-            <div class="pc-title">Model Paper 2</div>
-            <div class="pc-tag green-tag">50 Qs</div>
-          </div>
-          <div class="pc-desc">Food safety, CHAMPS, and delivery grids.</div>
-          <div class="pc-bottom-row">
-            <div class="pc-subtitle">Operations</div>
-            <div class="pc-diff">⭐⭐⭐ Advanced</div>
-          </div>
-        </div>
+        <button type="button" class="paper-card questions-paper" data-paper="questions" onclick="startPaper('questions')" aria-label="Start Past Papers, 40 questions">
+          <span class="questions-paper-top">
+            <span class="questions-paper-icon"><img src="./images/arena/stat-points.png" width="58" height="58" alt=""></span>
+            <span class="questions-paper-count">40 QUESTIONS</span>
+          </span>
+          <span class="questions-paper-content">
+            <span class="questions-paper-kind">PAST ASSESSMENT · 2021–2022</span>
+            <strong class="pc-title">Past Papers</strong>
+            <span class="pc-desc">BT Assessment 2021 &amp; 2022 exam papers.</span>
+          </span>
+          <span class="questions-paper-footer">
+            <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Foundation</span>
+            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
+
+        <button type="button" class="paper-card questions-paper" data-paper="paper1" onclick="startPaper('paper1')" aria-label="Start Model Paper 1, 50 questions">
+          <span class="questions-paper-top">
+            <span class="questions-paper-icon"><img src="./images/arena/stat-correct.png" width="58" height="58" alt=""></span>
+            <span class="questions-paper-count">50 QUESTIONS</span>
+          </span>
+          <span class="questions-paper-content">
+            <span class="questions-paper-kind">MODEL ASSESSMENT · PSM 2024</span>
+            <strong class="pc-title">Model Paper 1</strong>
+            <span class="pc-desc">Based on BT Special PSM 2024 standards.</span>
+          </span>
+          <span class="questions-paper-footer">
+            <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Intermediate</span>
+            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
+
+        <button type="button" class="paper-card questions-paper" data-paper="paper2" onclick="startPaper('paper2')" aria-label="Start Model Paper 2, 50 questions">
+          <span class="questions-paper-top">
+            <span class="questions-paper-icon"><img src="./images/arena/leaderboard-trophy.png" width="58" height="58" alt=""></span>
+            <span class="questions-paper-count">50 QUESTIONS</span>
+          </span>
+          <span class="questions-paper-content">
+            <span class="questions-paper-kind">MODEL ASSESSMENT · OPERATIONS</span>
+            <strong class="pc-title">Model Paper 2</strong>
+            <span class="pc-desc">Food safety, CHAMPS, and delivery grids.</span>
+          </span>
+          <span class="questions-paper-footer">
+            <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Advanced</span>
+            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
+
+        <button type="button" class="paper-card questions-paper" data-paper="paper3" onclick="startPaper('paper3')" aria-label="Start Model Paper 3, 45 questions">
+          <span class="questions-paper-top">
+            <span class="questions-paper-icon"><img src="./images/arena/mascot-avatar.png" width="58" height="58" alt=""></span>
+            <span class="questions-paper-count">45 QUESTIONS</span>
+          </span>
+          <span class="questions-paper-content">
+            <span class="questions-paper-kind">MODEL ASSESSMENT · CHALLENGE</span>
+            <strong class="pc-title">Model Paper 3</strong>
+            <span class="pc-desc">Expert randomized questions.</span>
+          </span>
+          <span class="questions-paper-footer">
+            <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Expert</span>
+            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
       </div>
-
-      <!-- Row 5 -->
-      <div class="paper-card" onclick="startPaper('paper3')">
-        <div class="pc-strip purple"></div>
-        <div class="pc-icon-wrap"><span class="pc-icon-big">🚀</span></div>
-        <div class="pc-meta">
-          <div class="pc-title-row">
-            <div class="pc-title">Model Paper 3</div>
-            <div class="pc-tag purple-tag">45 Qs</div>
-          </div>
-          <div class="pc-desc">Expert randomized questions.</div>
-          <div class="pc-bottom-row">
-            <div class="pc-subtitle">Randomized questions</div>
-            <div class="pc-diff">⭐⭐⭐⭐ Expert</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-  </div>
+    </section>
+  </main>
 </div>
 <!-- Assessment review is deliberately separate from ranked Firebase papers. -->
 <div id="assessment-library" class="screen">
@@ -480,21 +502,23 @@ button { outline: none; border: none; font-family: inherit; }
     <div class="timer-bar"><div class="timer-fill ok" id="timer-fill" style="width:100%"></div></div>
   </div>
 
-  <div class="quiz-body">
-    <div class="q-header-row">
-      <div class="q-badge" id="q-badge">Q1 · Questions</div>
-      <button class="translate-btn" id="translate-btn" onclick="toggleTranslate()">🇱🇰 සිංහල</button>
-    </div>
-    
-    <div class="q-text" id="q-text">Loading...</div>
-    
-    <div class="timer-row">
-      <span class="timer-icon">⏱️</span>
-      <span class="timer-val ok" id="timer-val">1:00</span>
-    </div>
+  <main class="quiz-body">
+    <section class="questions-question-panel" aria-label="Current question">
+      <div class="q-header-row">
+        <div class="q-badge" id="q-badge">Q1 · Questions</div>
+        <button type="button" class="translate-btn" id="translate-btn" onclick="toggleTranslate()">🇱🇰 සිංහල</button>
+      </div>
+      <div class="q-text" id="q-text">Loading...</div>
+      <div class="timer-row">
+        <span class="timer-icon" aria-hidden="true">⏱️</span>
+        <span class="timer-val ok" id="timer-val">1:00</span>
+        <span class="questions-timer-hint">TIME REMAINING</span>
+      </div>
+    </section>
+    <div class="questions-answers-head"><strong>Choose your answer</strong><span>Select one option</span></div>
     <div class="opts" id="opts"></div>
-    <div id="result-area"></div>
-  </div>
+    <div id="result-area" aria-live="polite"></div>
+  </main>
 
   <div class="bottom-bar">
     <button class="home-btn" onclick="goHome()">🏠 Home</button>
@@ -1812,5 +1836,6 @@ function confirmModal() {
 <script defer src="./study/lesson-art.js?v=4.6.0"></script>
 <script defer src="./study/lesson-player.js?v=4.6.0"></script>
 <script defer src="./js/assessment-bank.js?v=4.7.0"></script>
+<script defer src="./js/press-feedback-v477.js?v=4.7.7"></script>
 </body>
 </html>

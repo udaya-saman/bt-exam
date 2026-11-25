@@ -1,0 +1,35 @@
+/* Pizza Arena v4.7.7 — unobtrusive, consistent tap/click response across screens.
+   Buttons keep their existing color, callback and layout; this only adds momentary feedback. */
+
+/* The Home page already has a dedicated Leaderboard action. Do not overlay
+   the Questions library, the assessment review, or the Study Academy. */
+body:has(#paper-select.active) #bt-spark-dock,
+body:has(#assessment-library.active) #bt-spark-dock,
+body:has(#study-select.active) #bt-spark-dock {
+  display:none!important;
+}
+
+/* Native active state works even if the interaction-enhancement script is unavailable.
+   The transient classes also support touch and keyboard release feedback. */
+@media (prefers-reduced-motion:no-preference) {
+  body button:not(:disabled):is(:active,.arena-pressing,.arena-pressed),
+  body [role="button"]:not([aria-disabled="true"]):is(:active,.arena-pressing,.arena-pressed) {
+    transform:translateY(2px) scale(.975)!important;
+    filter:brightness(.93)!important;
+    box-shadow:inset 0 2px 9px #00000020,0 1px 2px #00000012!important;
+    transition:transform 90ms ease-out,filter 90ms ease-out,box-shadow 90ms ease-out!important;
+  }
+  body button:not(:disabled):not(.arena-pressing):not(.arena-pressed),
+  body [role="button"]:not([aria-disabled="true"]):not(.arena-pressing):not(.arena-pressed) {
+    transition-property:transform,filter,box-shadow;
+    transition-duration:150ms;
+    transition-timing-function:cubic-bezier(.2,.75,.3,1);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  body button:not(:disabled):is(:active,.arena-pressing,.arena-pressed),
+  body [role="button"]:not([aria-disabled="true"]):is(:active,.arena-pressing,.arena-pressed) {
+    filter:brightness(.86)!important;
+    transition:none!important;
+  }
+}
