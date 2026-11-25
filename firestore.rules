@@ -124,7 +124,8 @@ service cloud.firestore {
   }
   function publicIncrement(prev, uid) {
     let e=publicEvent(uid);
-    return request.resource.data.totalPoints == prev.totalPoints + e.points
+    return !exists(eventPath(request.resource.data.lastEventId))
+      && request.resource.data.totalPoints == prev.totalPoints + e.points
       && request.resource.data.correctAnswers == prev.get('correctAnswers',0) + (e.points > 0 ? 1 : 0)
       && request.resource.data.dailyActivity.diff(prev.get('dailyActivity',{})).affectedKeys().hasOnly([e.activityDay])
       && request.resource.data.dailyActivity[e.activityDay] == prev.get('dailyActivity',{}).get(e.activityDay,0) + 1
@@ -227,7 +228,11 @@ service cloud.firestore {
   }
   function legacyEvent(uid,date,paper,index) {
     let c = claimPath(uid + '_' + date + '_' + paper);
-    return exists(c) && exists(eventPath(uid + '_' + get(c).data.attemptId + '_' + paper + '_' + string(index)));
+    return exists(c) && legacyEventDay(uid,get(c).data.attemptId,paper,index,date);
+  }
+  function legacyEventDay(uid,attempt,paper,index,date) {
+    let e = eventPath(uid + '_' + attempt + '_' + paper + '_' + string(index));
+    return exists(e) && get(e).data.activityDay == date;
   }
   function legacyRepeat(uid,date,paper,index) {
     let k = questionKey(paper,index);
