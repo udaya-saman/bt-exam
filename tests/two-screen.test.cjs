@@ -20,7 +20,7 @@ const profileSource=app.slice(app.indexOf('async function profilePanel()'),app.i
 assert.doesNotMatch(profileSource,/PIZZA ARENA · PLAYER HQ|className='arena-page-top'/,'Redundant Player HQ top banner removed');
 assert.match(profileSource,/arena-signout-action/,'Dedicated orange Sign Out class present');
 assert.match(profileSource,/arena-stat-correct/,'Correct statistic uses professional icon treatment');
-assert.match(profileSource,/btn\\('✕ Close',close\\)/,'Working Close control retained');
+assert.ok(profileSource.includes("btn('✕ Close',close)"),'Working Close control retained');
 assert.match(fs.readFileSync('css/arena-polish-v43.css','utf8'),/\\.arena-actions button\\.arena-signout-action/,'Orange Sign Out styling loaded');
 assert.match(app,/className='arena-stats-grid'/,'Stats cards present');
 assert.match(app,/className='arena-rewards-grid'/,'Reward grid present');
