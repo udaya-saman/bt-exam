@@ -1,5 +1,5 @@
 {
-  "version": "4.7.8-arena",
+  "version": "4.7.9-arena",
   "released": "2026-11-25",
-  "notes": "Integrate the 2025–2026 assessment workbook into Questions as bilingual Assessment Practice cards; remove the former standalone Assessment Bank section. Import all 97 entries, deduplicate nine repeated assessment questions and two already present among five scored papers, and present 86 unique new questions with Sinhala translations, original English choices and explicitly proposed answers (77 multiple-choice, including one flawed scan, and nine written questions). Preserve 214 scored questions and Firebase answer-key/points rules; the new provisional practice section does not award leaderboard points. Mark incomplete scans and SOP-specific assumptions as needing review. All new question data and UI are offline-cached, mobile responsive, and accessible."
+  "notes": "Restore the original scored-question quiz layout and styling from 4.7.6 without changing the Questions library, Study, 86 bilingual practice questions, original 214 scored questions, scoring, translations, timer logic, player data or app-wide button feedback. Refresh the offline cache."
 }

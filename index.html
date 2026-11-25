@@ -280,7 +280,7 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./study/lesson-player.css?v=4.1.0">
 <link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.7.5">
 <link rel="stylesheet" href="./css/assessment-practice.css?v=4.7.8">
-<link rel="stylesheet" href="./css/questions-v477.css?v=4.7.7">
+<link rel="stylesheet" href="./css/questions-v477.css?v=4.7.9">
 <link rel="stylesheet" href="./css/press-feedback-v477.css?v=4.7.7">
 </head>
 <body>
@@ -513,23 +513,21 @@ button { outline: none; border: none; font-family: inherit; }
     <div class="timer-bar"><div class="timer-fill ok" id="timer-fill" style="width:100%"></div></div>
   </div>
 
-  <main class="quiz-body">
-    <section class="questions-question-panel" aria-label="Current question">
-      <div class="q-header-row">
-        <div class="q-badge" id="q-badge">Q1 · Questions</div>
-        <button type="button" class="translate-btn" id="translate-btn" onclick="toggleTranslate()">🇱🇰 සිංහල</button>
-      </div>
-      <div class="q-text" id="q-text">Loading...</div>
-      <div class="timer-row">
-        <span class="timer-icon" aria-hidden="true">⏱️</span>
-        <span class="timer-val ok" id="timer-val">1:00</span>
-        <span class="questions-timer-hint">TIME REMAINING</span>
-      </div>
-    </section>
-    <div class="questions-answers-head"><strong>Choose your answer</strong><span>Select one option</span></div>
+  <div class="quiz-body">
+    <div class="q-header-row">
+      <div class="q-badge" id="q-badge">Q1 · Questions</div>
+      <button class="translate-btn" id="translate-btn" onclick="toggleTranslate()">🇱🇰 සිංහල</button>
+    </div>
+    
+    <div class="q-text" id="q-text">Loading...</div>
+    
+    <div class="timer-row">
+      <span class="timer-icon">⏱️</span>
+      <span class="timer-val ok" id="timer-val">1:00</span>
+    </div>
     <div class="opts" id="opts"></div>
-    <div id="result-area" aria-live="polite"></div>
-  </main>
+    <div id="result-area"></div>
+  </div>
 
   <div class="bottom-bar">
     <button class="home-btn" onclick="goHome()">🏠 Home</button>

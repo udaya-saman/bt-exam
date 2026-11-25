@@ -82,8 +82,11 @@ for(const width of widths){
   await expect(page.locator('#quiz-paper-label')).toContainText('Intermediate');
   await expect(page.locator('#quiz-q-info')).toHaveText('Question 1 of 50');
   await expect(page.locator('#quiz .opt-btn')).toHaveCount(4);
-  await expect(page.locator('#quiz .questions-question-panel')).toBeVisible();
-  const quizBounds=await page.locator('#quiz .questions-question-panel').evaluate(el=>({
+  await expect(page.locator('#quiz .questions-question-panel, #quiz .questions-answers-head, #quiz .questions-timer-hint')).toHaveCount(0);
+  await expect(page.locator('#quiz .quiz-body > #q-text')).toBeVisible();
+  await expect(page.locator('#quiz .quiz-body > .timer-row')).toBeVisible();
+  await expect(page.locator('#quiz .quiz-body > #opts')).toBeVisible();
+  const quizBounds=await page.locator('#quiz .quiz-body > #q-text').evaluate(el=>({
    left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right
   }));
   expect(quizBounds.left).toBeGreaterThanOrEqual(-1);
