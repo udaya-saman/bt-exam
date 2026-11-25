@@ -155,6 +155,12 @@ function modeBadge(repeated=false){
  if(!label){label=document.createElement('span');label.id='bt-exam-mode';label.className='pg-mode-label';document.getElementById('quiz-paper-label')?.after(label);}
  if(label)label.textContent=repeated?'📚 REPEAT · NO RANK POINTS':'🏅 FIRST ANSWER EACH DAY EARNS POINTS';
 }
+function onQuestion(a){
+ if(!user||!active)return;
+ const index=Number(a.originalQuestionIndex);if(!Number.isInteger(index)||index<0)return;
+ const uid=user.uid,date=day(),key=questionKey(a.paperId,index),id=dailyEventId(uid,date,a.paperId,index);
+ modeBadge(seenQuestion(uid,date,key)||getQueue().some(e=>e.uid===uid&&dailyEventId(uid,eventDay(e),e.paper,e.index)===id));
+}
 function onStart(paper){
  if(!user)return;
  active={id:rand(),paper,dayKey:day(),startedAt:Date.now(),ranked:true};
@@ -206,7 +212,7 @@ async function oldDailyEvent(tx,e){
  }
  return false;
 }
-window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>promptUpdate()};
+window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onQuestion,onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>promptUpdate()};
 let cloudTimer=null, pendingCloudSnapshot=null;
 function saveCloudSession(snapshot){
  if(!user||!navigator.onLine)return;
@@ -249,7 +255,7 @@ async function sync(){
    handled.add(queued.id);
    const answerDay=eventDay(queued),e={...queued,id:dailyEventId(uid,answerDay,queued.paper,queued.index),dayKey:answerDay,activityDay:answerDay,weekKey:week(new Date(queued.earnedAt)),monthKey:answerDay.slice(0,7)};
    if(Date.now()-e.earnedAt>72*3600000){syncIssue='Some older answers need help from an administrator.';continue;}
-   if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='An answer could not be matched. Please ask an administrator for help.';continue;}
+   if(!maximum[e.paper]||!Number.isInteger(e.index)||e.index<0||e.index>=maximum[e.paper]){syncIssue='An answer could not be matched. Please ask an administrator for help.';continue;}
    const er=F.doc(db,'scoreEvents',e.id),ur=F.doc(db,'users',uid);
    try{
     const outcome=await F.runTransaction(db,async tx=>{
@@ -258,6 +264,7 @@ async function sync(){
      const [event,u,publicScore,role]=await Promise.all([tx.get(er),tx.get(ur),tx.get(pr),tx.get(ad)]);
      if(event.exists())return 'duplicate';
      if(await oldDailyEvent(tx,e))return 'duplicate';
+     if(user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
      if(!u.exists()||u.data().outlet!==e.outlet)throw Error('OUTLET_CHANGED');
      const p=u.data(),change=(m,k,v)=>Object.assign({},m||{},{[k]:Number((m||{})[k]||0)+v}),wk=e.weekKey+'__'+e.outlet;
      const rapid=e.points>=68?Number(p.rapidCorrectStreak||0)+1:0;
@@ -284,7 +291,7 @@ async function sync(){
      return 'saved';
     });
     done.push(queued.id);removeEntry(queued.id);markQuestion(uid,e.activityDay,questionKey(e.paper,e.index));
-    if(outcome==='duplicate'&&user?.uid===uid&&active?.id===e.attemptId)modeBadge(true);
+    if(outcome==='duplicate'&&user?.uid===uid&&active?.id===e.attemptId)note('This question has already been answered today. No extra points were added.');
    }catch(err){
     const message=errorMessage(err);
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
@@ -293,7 +300,7 @@ async function sync(){
   if(done.length&&user?.uid===uid){
     recordLastSync();
     try{
-      const refreshed=await F.getDoc(F.doc(db,'users',user.uid));
+      const refreshed=await F.getDoc(F.doc(db,'users',uid));
       if(user?.uid===uid&&refreshed.exists())profile=refreshed.data();
     }catch(e){console.info('Updated player totals will appear after reconnecting.');}
   }
