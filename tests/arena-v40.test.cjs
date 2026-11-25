@@ -49,7 +49,7 @@ assert.ok(library.includes('88 distinct questions')&&library.includes('No scorin
 assert.ok(html.includes('css/questions-v477.css?v=4.7.7')&&sw.includes('css/questions-v477.css?v=4.7.7'),'Questions styling enabled and cached offline');
 assert.ok(questionsCss.includes('#quiz .opt-btn.correct')&&questionsCss.includes('#quiz .opt-btn.wrong'),'Both quiz answer states styled');
 assert.ok(questionsCss.includes('@media(max-width:350px)')&&questionsCss.includes('prefers-reduced-motion:reduce'),'Small-phone and accessibility styles present');
-assert.doesNotMatch(library+questionsCss,/\\.svg(?:["'?)]|$)|data:image\\/svg|<svg/i,'No SVG graphics added');
+assert.ok(!library.includes('.svg')&&!questionsCss.includes('.svg')&&!library.includes('<svg')&&!questionsCss.includes('<svg'),'No SVG graphics added');
 
 assert.ok(app.includes("people>=2")&&!app.includes("people>=3"));
 assert.ok(app.includes("practice?'PRACTICE · NO RANK POINTS'"));
