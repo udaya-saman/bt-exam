@@ -25,14 +25,14 @@
     const a=[
       ['first-slice','🍕','First Slice',100,points],
       ['rising-star','🌟','Rising Star',1500,points],
-      ['legend','🏆','Pizza Legend',6000,points],
+      ['legend','🏆','Pizza Legend',10000,points],
       ['sharp-mind','🎯','Sharp Mind',50,correct],
-      ['super-student','📘','Super Student',150,correct],
+      ['super-student','📘','Super Student',500,correct],
       ['centurion','💯','100 Correct Club',100,correct],
       ['streak-3','🔥','3-Day Streak',3,currentStreak],
       ['streak-7','⚡','7-Day Streak',7,currentStreak],
       ['streak-14','👑','14-Day Streak',14,currentStreak],
-      ['weekly-50','🚀','Weekly Warrior',200,weeklyPoints],
+      ['weekly-50','🚀','Weekly Warrior',2000,weeklyPoints],
       ['outlet-drive','🍕','Outlet Challenger',25,outletAnswers],
       ['outlet-crown','👑','Crown Squad',1,outletCrown?1:0]
     ];
