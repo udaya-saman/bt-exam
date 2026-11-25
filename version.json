@@ -1,5 +1,5 @@
 {
-  "version": "4.7.3-arena",
+  "version": "4.7.4-arena",
   "released": "2026-11-25",
-  "notes": "Player Card streamlined with no redundant top banner, refined charcoal/gold leaderboard-inspired layout, professional Correct stat icon treatment, and orange Sign Out. Achievement targets: Pizza Legend 10,000 points; Weekly Warrior 2,000 weekly points; Super Student 500 correct answers. Saved player progress and quiz scoring unchanged."
+  "notes": "Fix clipped first-place names with wrap-friendly, balanced podium cards; halve first-place glow and shimmer durations from 3.8 to 1.9 seconds and from 5.4 to 2.7 seconds; change Player Card maroon accents to Pizza Hut brand red (#D41420) and neutral charcoal; color the admin-only Manage action gold. Existing rankings, achievements and Firebase data are preserved."
 }
