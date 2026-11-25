@@ -1,5 +1,5 @@
 {
-  "version": "4.7.4-arena",
+  "version": "4.7.5-arena",
   "released": "2026-11-25",
-  "notes": "Fix clipped first-place names with wrap-friendly, balanced podium cards; halve first-place glow and shimmer durations from 3.8 to 1.9 seconds and from 5.4 to 2.7 seconds; change Player Card maroon accents to Pizza Hut brand red (#D41420) and neutral charcoal; color the admin-only Manage action gold. Existing rankings, achievements and Firebase data are preserved."
+  "notes": "Progressive level-up requirements derived from lifetime points: 500 from levels 1–9; 1,000 from 10–24; 1,500 from 25–49; 2,000 from 50–99; above 100, increase by 500 points every 50 levels (100–149: 2,500; 150–199: 3,000; etc.). Player Card shows points within the current level and accessible progress. Scores, achievements, offline data and ranking logic are unchanged."
 }
