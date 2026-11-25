@@ -26,7 +26,7 @@ function el(tag='div'){
 }
 const root=el();root.hidden=false;
 let box,profileOpened=0,closed=0;
-const records=Array.from({length:25},(_,i)=>({name:'Player '+(i+1),outlet:'Matara',uid:'u'+(i+1),score:500-i,rank:i+1,people:3}));
+const records=Array.from({length:25},(_,i)=>({name:'Player '+(i+1),outlet:'Matara',uid:'u'+(i+1),score:500-i,lifetimePoints:500-i,rank:i+1,people:3}));
 const ctx={root,document:{createElement:el,createTextNode:x=>x},window:{},period:'weekly',outletView:false,
  showAllPlayers:false,profile:{outlet:'Matara'},user:{uid:'u25'},admins:false,boardOpen:false,unsubscribe:()=>{},
  ranked:()=>records,rankEligible:()=>false,listen:()=>{},attachPlayerDetails:()=>{},day:()=>'',week:()=>'',close:()=>closed++,
