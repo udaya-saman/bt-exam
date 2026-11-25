@@ -150,6 +150,7 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
  };
  const offlineCtx={
   navigator:{onLine:false},
+  norm: value=>String(value).trim().toLowerCase(),
   valid:n=>/^[A-Za-z0-9._-]{3,24}$/.test(n),
   localStorage:{getItem:k=>savedNames.get(k)||null,setItem:(k,v)=>savedNames.set(k,v)},
   F:Fsession,db:{},auth:{currentUser:{uid:'u-return'}},
