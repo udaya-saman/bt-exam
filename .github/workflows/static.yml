@@ -36,8 +36,13 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
+          # Per-attempt name avoids duplicate artifacts when a failed run is retried.
+          name: github-pages-${{ github.run_attempt }}
           path: '.'
+      - name: Allow the uploaded artifact to become available
+        run: sleep 8
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
