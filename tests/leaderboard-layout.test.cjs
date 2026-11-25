@@ -161,3 +161,8 @@ console.log('Podium name wrapping, quicker animation, Pizza Hut red, admin-only 
  search.value='';search.input();assert.equal(list.children.length,5);
  console.log('Manage Users: fixed footer actions, search by username/outlet, and existing protection rules verified.');
 })().catch(err=>{console.error(err);process.exitCode=1;});
+
+assert.ok(css.includes('4.7.12 — share the actual leaderboard'));
+assert.ok(css.includes('linear-gradient(180deg,#21191b 0%,#181416 100%)'));
+assert.ok(css.includes('linear-gradient(90deg,#493034,#322629)'));
+assert.ok(css.includes('linear-gradient(90deg,#0b8f32,#2fdb53,#b1ff54)'));
