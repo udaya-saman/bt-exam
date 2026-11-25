@@ -286,7 +286,8 @@ function mascotToast(title,caption,file){
 }
 function celebrateAchievements(p,crown=false){
  if(!user||!p||!window.BTRewards)return;
- const key='bt_achievement_seen_v1:'+user.uid;
+ // A new threshold set needs a fresh celebration record; all earned points remain untouched.
+  const key='bt_achievement_seen_v2:'+user.uid;
  const entries=window.BTRewards.achievements(p,day(),week(),crown).filter(a=>a.unlocked);
  try{
   const raw=localStorage.getItem(key);const seen=new Set(raw?JSON.parse(raw):[]);
