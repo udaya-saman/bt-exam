@@ -215,26 +215,33 @@ service cloud.firestore {
       && request.resource.data.keys().hasOnly(['answer','paper','index'])
       && request.resource.data.answer is int && request.resource.data.answer >= 0 && request.resource.data.answer <= 5;
   }
+  // Legacy paper claims are immutable history; updated clients write daily
+  // question events instead. Keep old reads for safe migration and retries.
   match /rankedClaims/{id} {
-    allow get: if logged();
-    allow list: if false;
-    allow create: if logged()
-      && request.resource.data.keys().hasOnly(['uid','paper','dayKey','attemptId','startedAt'])
-      && request.resource.data.uid == request.auth.uid
-      && request.resource.data.attemptId is string && request.resource.data.attemptId.size() >= 12
-      && request.resource.data.paper in ['past2024','questions','paper1','paper2','paper3']
-      && id == request.resource.data.uid + '_' + request.resource.data.dayKey + '_' + request.resource.data.paper
-      && request.resource.data.startedAt is timestamp
-      && request.resource.data.dayKey == slDate(request.resource.data.startedAt)
-      && request.resource.data.startedAt <= request.time + duration.value(5, 'm')
-      && request.resource.data.startedAt >= request.time - duration.value(72, 'h');
-    allow update, delete: if false;
+    allow get: if logged() && id.matches('^' + request.auth.uid + '_.*');
+    allow list, create, update, delete: if false;
+  }
+  function questionKey(paper,index) {
+    return paper == 'questions' && index == 14 ? 'past2024_22'
+      : paper == 'paper1' && index == 9 ? 'questions_7' : paper + '_' + string(index);
+  }
+  function legacyEvent(uid,date,paper,index) {
+    let c = claimPath(uid + '_' + date + '_' + paper);
+    return exists(c) && exists(eventPath(uid + '_' + get(c).data.attemptId + '_' + paper + '_' + string(index)));
+  }
+  function legacyRepeat(uid,date,paper,index) {
+    let k = questionKey(paper,index);
+    return k == 'past2024_22'
+      ? legacyEvent(uid,date,'past2024',22) || legacyEvent(uid,date,'questions',14)
+      : k == 'questions_7'
+        ? legacyEvent(uid,date,'questions',7) || legacyEvent(uid,date,'paper1',9)
+        : legacyEvent(uid,date,paper,index);
   }
   match /scoreEvents/{id} {
     allow get: if logged() && id.matches('^' + request.auth.uid + '_.*');
     allow list: if false;
     allow create: if logged()
-      && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','outletMonthKey','activityDay','earnedAt','claimId'])
+      && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','outletMonthKey','activityDay','earnedAt'])
       && request.resource.data.uid == request.auth.uid
       && request.resource.data.paper in ['past2024','questions','paper1','paper2','paper3']
       && request.resource.data.index is int && request.resource.data.index >= 0
@@ -251,12 +258,12 @@ service cloud.firestore {
       && request.resource.data.activityDay == slDate(request.resource.data.earnedAt)
       && request.resource.data.earnedAt <= request.time + duration.value(5,'m')
       && request.resource.data.earnedAt >= request.time - duration.value(72,'h')
-      && id == request.resource.data.uid + '_' + request.resource.data.attemptId + '_' + request.resource.data.paper + '_' + string(request.resource.data.index)
+      && request.resource.data.dayKey == request.resource.data.activityDay
+      && request.resource.data.attemptId is string && request.resource.data.attemptId.size() >= 12 && request.resource.data.attemptId.size() <= 100
+      && id == request.resource.data.uid + '_q_' + request.resource.data.activityDay + '_' + questionKey(request.resource.data.paper,request.resource.data.index)
+      && !legacyRepeat(request.auth.uid,request.resource.data.activityDay,request.resource.data.paper,request.resource.data.index)
       && exists(keyPath(request.resource.data.paper + '_' + string(request.resource.data.index)))
       && request.resource.data.points == (request.resource.data.selected == get(keyPath(request.resource.data.paper + '_' + string(request.resource.data.index))).data.answer ? 10 + request.resource.data.remaining : 0)
-      && request.resource.data.claimId == request.resource.data.uid + '_' + request.resource.data.dayKey + '_' + request.resource.data.paper
-      && getAfter(claimPath(request.resource.data.claimId)).data.uid == request.auth.uid
-      && getAfter(claimPath(request.resource.data.claimId)).data.attemptId == request.resource.data.attemptId
       && getAfter(userPath(request.auth.uid)).data.lastEventId == id;
     allow update, delete: if false;
   }
