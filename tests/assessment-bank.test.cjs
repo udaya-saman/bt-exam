@@ -57,13 +57,19 @@ assert.ok(proposals.answers[92].review&&proposals.answers[92].correct.length===0
 assert.ok(!html.includes('id="assessment-library"')&&!html.includes('BTAssessmentBank?.open'),'Redundant assessment bank screen removed');
 assert.ok(html.includes('id="assessment-practice"')&&html.includes('id="assessment-practice-root"'));
 assert.ok(html.includes('window.BTAssessmentPractice?.open()'),'Bilingual practice accessible in Questions');
-assert.ok(html.includes('css/assessment-practice.css?v=4.7.8'));
-assert.ok(html.includes('js/assessment-practice.js?v=4.7.8'));
-for(const file of ['js/assessment-practice.js?v=4.7.8','css/assessment-practice.css?v=4.7.8',
+assert.ok(html.includes('css/assessment-practice.css?v=4.7.10'));
+assert.ok(html.includes('js/assessment-practice.js?v=4.7.10'));
+for(const file of ['js/assessment-practice.js?v=4.7.10','css/assessment-practice.css?v=4.7.10',
  ...[1,2,3,4].map(n=>'assessments/si-part-'+n+'.json'),'assessments/proposed-answers.json']){
  assert(sw.includes(file),'Offline pre-cache includes '+file);
 }
-assert(css.includes('@media(max-width:430px)'),'Mobile question cards remain styled');
+assert(css.includes('#assessment-practice { padding: 0; background: var(--bg-color); }'),'Practice uses original quiz background');
+const practiceMarkup=html.slice(html.indexOf('<div id="assessment-practice" class="screen">'),html.indexOf('<!-- STUDY ACADEMY'));
+for(const cls of ['quiz-bar','quiz-top','score-pill','prog-bar','timer-bar','quiz-body','q-header-row','q-badge','translate-btn','q-text','timer-row','opts','bottom-bar','home-btn','reset-btn','next-btn'])assert(practiceMarkup.includes('class="'+cls+'"')||practiceMarkup.includes('class="'+cls+' '),'Shared quiz class: '+cls);
+assert(!practiceMarkup.includes('aq-hero')&&!practice.includes('aq-question-card'),'One question at a time');
+assert(practice.includes('remaining=60')&&practice.includes('setInterval(tick,250)'),'Same 60-second countdown');
+assert(!practice.includes('localStorage')&&!practice.includes('BTExamBridge'),'Practice cannot overwrite saved ranked progress');
+assert(practice.includes("classList.toggle('correct'")&&practice.includes("classList.toggle('wrong'"),'Shared answer styles');
 assert(!practice.includes('BTExamBridge?.onAnswer')&&!practice.includes('scoreEvents')&&!practice.includes('rankedClaims'),'Provisional practice does not award or submit scores');
 new vm.Script(practice,{filename:'js/assessment-practice.js'});
 // Runtime loader test, including exact source-to-workbook ordinal mapping.
@@ -90,7 +96,7 @@ vm.runInNewContext(practice,sandbox,{filename:'assessment-practice.js'});
  assert.deepEqual(['past2024','questions','paper1','paper2','paper3'].map(k=>papers[k].qs.length),[29,40,50,50,45]);
  assert(!Object.keys(papers).some(k=>k.includes('assessment')),'New proposals are never published as scored paper keys');
  const version=json('version.json').version;
- assert.equal(version,'4.7.9-arena');
+ assert.equal(version,'4.7.10-arena');
  assert(app.includes("const APP_VERSION='"+version+"'"));
  console.log('PASS: 97 source entries, 9 within-source duplicates and 2 existing-paper overlaps -> 86 bilingual practice cards; 86 provisional answer keys; 214 original ranked questions unchanged.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
