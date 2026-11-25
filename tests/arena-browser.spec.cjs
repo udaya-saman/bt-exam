@@ -49,6 +49,7 @@ for(const width of widths){
   await page.screenshot({path:'tests/screenshot-home-'+width+'.png',fullPage:true});
   await page.evaluate(()=>openQuestions());
   await expect(page.locator('#paper-select.active')).toBeVisible();
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
   await expect(page.locator('#paper-select #questions-title')).toContainText('Your next challenge');
   await expect(page.locator('#paper-select .questions-quick-stats')).toContainText('214');
   await expect(page.locator('#paper-select .pa-assessment-entry')).toHaveCount(1);
@@ -93,11 +94,43 @@ for(const width of widths){
   await page.screenshot({path:'tests/screenshot-quiz-'+width+'.png',fullPage:true});
  });
 }
+test('Buttons visibly press and rebound on touch, keyboard and generated Study controls',async({page})=>{
+ await page.setViewportSize({width:375,height:820});
+ await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
+ await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;});
+ const control=page.locator('#sound-toggle');
+ await expect(control).toBeVisible();
+ await control.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,isPrimary:true})));
+ await expect(control).toHaveClass(/arena-pressing/);
+ const during=await control.evaluate(el=>({transform:getComputedStyle(el).transform,filter:getComputedStyle(el).filter}));
+ expect(during.transform).not.toBe('none');
+ expect(during.filter).toContain('brightness');
+ await control.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,button:0,isPrimary:true})));
+ await expect(control).toHaveClass(/arena-pressed/);
+ await expect.poll(()=>control.evaluate(el=>el.classList.contains('arena-pressed'))).toBe(false);
+ await control.focus();
+ await page.keyboard.down('Space');
+ await expect(control).toHaveClass(/arena-pressing/);
+ await page.keyboard.up('Space');
+ await expect(control).toHaveClass(/arena-pressed/);
+ await expect.poll(()=>control.evaluate(el=>el.classList.contains('arena-pressed'))).toBe(false);
+ await page.evaluate(()=>openStudy());
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
+ const studyButton=page.locator('.pa-study-filter').first();
+ await expect(studyButton).toBeVisible();
+ await studyButton.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,isPrimary:true})));
+ await expect(studyButton).toHaveClass(/arena-pressing/);
+ await studyButton.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,button:0,isPrimary:true})));
+ await expect(studyButton).toHaveClass(/arena-pressed/);
+});
 test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})=>{
  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
  await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
  await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;openStudy();});
  await expect(page.locator('#study-select.active .pa-study-card')).toHaveCount(57,{timeout:12000});
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
  await expect(page.locator('.pa-study-hero h1')).toContainText('Learn. Remember. Grow.');
  await page.locator('.pa-study-card').first().click();
  await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
@@ -185,6 +218,7 @@ test('Imported 2025–26 assessments are grouped without duplicates on phones',a
  await expect(page.locator('#paper-select .pa-assessment-entry')).toBeVisible();
  await page.locator('#paper-select .pa-assessment-entry').click();
  await expect(page.locator('#assessment-library.active')).toBeVisible();
+ await expect(page.locator('#bt-spark-dock')).toBeHidden();
  await expect(page.locator('.pa-assessment-summary strong')).toHaveText('88 distinct questions');
  await expect(page.locator('.pa-assessment-card')).toHaveCount(15);
  await page.locator('.pa-assessment-search').fill('Cheesy Kottchi Sauce');
