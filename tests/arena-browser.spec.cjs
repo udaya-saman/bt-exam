@@ -111,6 +111,8 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
  expect(styles.topBar).toBe(0);
  expect(styles.orangeBackground).toContain('rgb(246, 164, 74)');
  expect(styles.correctFilter).not.toBe('none');
+ const brandHeader=await page.locator('#bt-spark-root .arena-card-heading').evaluate(el=>getComputedStyle(el).backgroundImage);
+ expect(brandHeader).toContain('rgb(212, 20, 32)');
  expect(await page.locator('.arena-reward-item').count()).toBe(6);
  for(const width of [320,375,430,768]){
   await page.setViewportSize({width,height:812});
@@ -119,6 +121,18 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
   expect(overflow.body).toBeLessThanOrEqual(width+2);
  }
  await page.setViewportSize({width:375,height:812});
+ await page.evaluate(()=>{
+  const actions=document.createElement('div');actions.className='arena-actions';
+  actions.innerHTML='<button class="pg-btn-green">Account</button><button class="arena-manage-action">Manage</button>';
+  document.getElementById('bt-spark-content').append(actions);
+ });
+ const adminButtons=await page.evaluate(()=>{
+  const actions=document.querySelector('#bt-spark-content>.arena-actions');
+  return {manage:getComputedStyle(actions.querySelector('.arena-manage-action')).backgroundImage,
+    account:getComputedStyle(actions.querySelector('.pg-btn-green')).backgroundImage};
+ });
+ expect(adminButtons.manage).toContain('rgb(255, 226, 154)');
+ expect(adminButtons.account).not.toBe(adminButtons.manage);
  await page.screenshot({path:'tests/screenshot-player-card.png',fullPage:true});
 });
 
@@ -156,7 +170,7 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');
    root.hidden=false;root.className='arena-board-mode arena-leaderboard-layout';
-   root.innerHTML='<div class="panel"><h2>🏆 LEADERBOARD</h2><div id="bt-spark-content"><div class="pg-nav"><button>THIS WEEK</button><button>ALL TIME</button><button>OUTLETS</button></div><div class="pg-podium">'+[1,2,3].map(i=>'<div class="pg-podium-item arena-player-podium arena-rank-'+i+'">'+(i===1?'<span class="arena-first-rank">1</span>':'')+'<div>🏅</div><strong>Player '+i+'</strong><small>100 PTS</small></div>').join('')+'</div><div class="pg-section">PLAYER STANDINGS</div><div class="pg-standings-scroll">'+Array.from({length:30},(_,i)=>'<div class="pg-leader-card arena-player-standing"><span class="pg-place">'+(i+4)+'</span><img class="pg-avatar" src="./images/default-avatar.png"><div class="pg-person"><strong>Player '+(i+4)+'</strong><small>Matara</small></div><span class="pg-score">20 PTS</span></div>').join('')+'</div><div class="pg-board-footer"><button class="pg-btn-green">👤 MY PROFILE</button><button class="pg-btn-red">CLOSE</button></div></div></div>';
+   root.innerHTML='<div class="panel"><h2>🏆 LEADERBOARD</h2><div id="bt-spark-content"><div class="pg-nav"><button>THIS WEEK</button><button>ALL TIME</button><button>OUTLETS</button></div><div class="pg-podium">'+[1,2,3].map(i=>'<div class="pg-podium-item arena-player-podium arena-rank-'+i+'">'+(i===1?'<span class="arena-first-rank">1</span>':'')+'<div>🏅</div><img src="./images/default-avatar.png" alt=""><strong>'+(i===1?'Sandamini Dilrukshi Jayasinghe':'Player '+i)+'</strong><small>100 PTS</small></div>').join('')+'</div><div class="pg-section">PLAYER STANDINGS</div><div class="pg-standings-scroll">'+Array.from({length:30},(_,i)=>'<div class="pg-leader-card arena-player-standing"><span class="pg-place">'+(i+4)+'</span><img class="pg-avatar" src="./images/default-avatar.png"><div class="pg-person"><strong>Player '+(i+4)+'</strong><small>Matara</small></div><span class="pg-score">20 PTS</span></div>').join('')+'</div><div class="pg-board-footer"><button class="pg-btn-green">👤 MY PROFILE</button><button class="pg-btn-red">CLOSE</button></div></div></div>';
   });
   await expect(page.locator('.pg-standings-scroll .pg-leader-card')).toHaveCount(30);
   const before=await page.evaluate(()=>{
@@ -170,7 +184,16 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
     scrollOverflow:getComputedStyle(rows).overflowY,
     maxScroll:rows.scrollHeight-rows.clientHeight,
     panelClient:panel.clientWidth,panelScroll:panel.scrollWidth,
-    buttons:[...footer.querySelectorAll('button')].map(rect),scrollbarWidth:getComputedStyle(rows).scrollbarWidth,webkitScrollbar:getComputedStyle(rows,'::-webkit-scrollbar').display,firstAnimation:getComputedStyle(document.querySelector('.pg-podium-item.arena-rank-1')).animationName};
+    buttons:[...footer.querySelectorAll('button')].map(rect),scrollbarWidth:getComputedStyle(rows).scrollbarWidth,webkitScrollbar:getComputedStyle(rows,'::-webkit-scrollbar').display,firstAnimation:getComputedStyle(document.querySelector('.pg-podium-item.arena-rank-1')).animationName,
+    firstDuration:getComputedStyle(document.querySelector('.pg-podium-item.arena-rank-1')).animationDuration,
+    sweepDuration:getComputedStyle(document.querySelector('.pg-podium-item.arena-rank-1'),'::after').animationDuration,
+    podiumGeometry:[...podium.querySelectorAll('.pg-podium-item')].map(rect),
+    firstName:(()=>{
+     const el=podium.querySelector('.arena-rank-1 strong'),style=getComputedStyle(el);
+     return {text:el.textContent,whiteSpace:style.whiteSpace,overflow:style.overflow,
+       scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,
+       scrollHeight:el.scrollHeight,clientHeight:el.clientHeight};
+    })()};
   });
   expect(before.panelOverflow).toBe('hidden');
   expect(before.scrollOverflow).toBe('auto');
@@ -178,6 +201,16 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
   expect(before.scrollbarWidth).toBe('none');
   expect(before.webkitScrollbar).toBe('none');
   expect(before.firstAnimation).toContain('arenaFirstGlow');
+  expect(before.firstDuration).toBe('1.9s');
+  expect(before.sweepDuration).toBe('2.7s');
+  expect(before.firstName.text).toBe('Sandamini Dilrukshi Jayasinghe');
+  expect(before.firstName.whiteSpace).toBe('normal');
+  expect(before.firstName.overflow).toBe('visible');
+  expect(before.firstName.scrollWidth).toBeLessThanOrEqual(before.firstName.clientWidth+2);
+  expect(before.firstName.scrollHeight).toBeLessThanOrEqual(before.firstName.clientHeight+2);
+  expect(before.podiumGeometry[0].width).toBeGreaterThanOrEqual(before.podiumGeometry[1].width);
+  expect(before.podiumGeometry[0].width).toBeGreaterThanOrEqual(before.podiumGeometry[2].width);
+  expect(before.podiumGeometry[0].height).toBeGreaterThanOrEqual(before.podiumGeometry[1].height-2);
   await expect(page.locator('.pg-standings-scroll .pg-place').first()).toHaveText('4');
   expect(before.panelScroll).toBeLessThanOrEqual(before.panelClient+2);
   expect(before.footer.bottom).toBeLessThanOrEqual(740);
