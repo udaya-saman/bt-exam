@@ -16,6 +16,12 @@ assert.match(index,/css\/pizza-v36\.css/,'New CSS loaded');
 assert.match(app,/async function profilePanel\(\)/,'Player Card present');
 assert.match(app,/root\.classList\.add\('arena-profile-mode'\)/,'Player Card becomes a full screen');
 assert.match(app,/className='arena-profile-top'/,'Player profile area present');
+const profileSource=app.slice(app.indexOf('async function profilePanel()'),app.indexOf('function changeOutlet()'));
+assert.doesNotMatch(profileSource,/PIZZA ARENA · PLAYER HQ|className='arena-page-top'/,'Redundant Player HQ top banner removed');
+assert.match(profileSource,/arena-signout-action/,'Dedicated orange Sign Out class present');
+assert.match(profileSource,/arena-stat-correct/,'Correct statistic uses professional icon treatment');
+assert.match(profileSource,/btn\\('✕ Close',close\\)/,'Working Close control retained');
+assert.match(fs.readFileSync('css/arena-polish-v43.css','utf8'),/\\.arena-actions button\\.arena-signout-action/,'Orange Sign Out styling loaded');
 assert.match(app,/className='arena-stats-grid'/,'Stats cards present');
 assert.match(app,/className='arena-rewards-grid'/,'Reward grid present');
 assert.match(app,/function changeOutlet\(\)/,'Outlet request panel present');
@@ -56,7 +62,7 @@ for(const filename of [
  assert.ok([4,6].includes(buf.readUInt8(25))||buf.includes(Buffer.from('tRNS')),filename+' retains transparency');
 }
 for(const [name,target] of [
- ['Rising Star',1500],['Pizza Legend',6000],['Sharp Mind',50],
- ['Super Student',150],['Weekly Warrior',200],['Outlet Challenger',25]
+ ['Rising Star',1500],['Pizza Legend',10000],['Sharp Mind',50],
+ ['Super Student',500],['Weekly Warrior',2000],['Outlet Challenger',25]
 ])assert.match(rewards,new RegExp(name+"',"+target+","),name+' target unchanged');
 console.log('Pizza Arena redesigned screens, accessible actions, PNG assets and rewards checks passed.');
