@@ -48,12 +48,49 @@ for(const width of widths){
   expect(source.width).toBeGreaterThanOrEqual(200);
   await page.screenshot({path:'tests/screenshot-home-'+width+'.png',fullPage:true});
   await page.evaluate(()=>openQuestions());
+  await expect(page.locator('#paper-select.active')).toBeVisible();
+  await expect(page.locator('#paper-select #questions-title')).toContainText('Your next challenge');
+  await expect(page.locator('#paper-select .questions-quick-stats')).toContainText('214');
+  await expect(page.locator('#paper-select .pa-assessment-entry')).toHaveCount(1);
   await expect(page.locator('#paper-select.active .paper-card')).toHaveCount(5);
+  await expect(page.locator('#paper-select .questions-paper')).toHaveCount(5);
+  const ids=await page.locator('#paper-select .questions-paper').evaluateAll(cards=>cards.map(card=>card.dataset.paper));
+  expect(ids).toEqual(['past2024','questions','paper1','paper2','paper3']);
+  const questions=await page.locator('#paper-select .questions-paper-count').allTextContents();
+  expect(questions).toEqual(['29 QUESTIONS','40 QUESTIONS','50 QUESTIONS','50 QUESTIONS','45 QUESTIONS']);
+  await expect.poll(()=>page.locator('#paper-select .questions-paper-icon img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
+  await expect.poll(()=>page.locator('#paper-select .questions-intro-art').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+  const columns=await page.locator('#all-question-papers').evaluate(grid=>getComputedStyle(grid).gridTemplateColumns.split(' ').length);
+  expect(columns).toBe(width<=680?1:2);
   const papers=await dimensions(page,'#paper-select .paper-card');
   noOverlap(papers,width,'Question paper cards');
-  const overflow=await page.evaluate(()=>({document:document.documentElement.scrollWidth,viewport:innerWidth}));
+  const overflow=await page.evaluate(()=>({
+   document:document.documentElement.scrollWidth,viewport:innerWidth,
+   selector:document.getElementById('paper-select').scrollWidth
+  }));
   expect(overflow.document).toBeLessThanOrEqual(width+2);
+  expect(overflow.selector).toBeLessThanOrEqual(width+2);
   await page.screenshot({path:'tests/screenshot-papers-'+width+'.png',fullPage:true});
+  // Original quiz behavior remains accessible from the redesigned native buttons.
+  const model=page.locator('#paper-select button[data-paper="paper1"]');
+  await expect(model).toHaveAttribute('aria-label','Start Model Paper 1, 50 questions');
+  await model.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#quiz.active')).toBeVisible();
+  await expect(page.locator('#quiz-paper-label')).toContainText('Intermediate');
+  await expect(page.locator('#quiz-q-info')).toHaveText('Question 1 of 50');
+  await expect(page.locator('#quiz .opt-btn')).toHaveCount(4);
+  await expect(page.locator('#quiz .questions-question-panel')).toBeVisible();
+  const quizBounds=await page.locator('#quiz .questions-question-panel').evaluate(el=>({
+   left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right
+  }));
+  expect(quizBounds.left).toBeGreaterThanOrEqual(-1);
+  expect(quizBounds.right).toBeLessThanOrEqual(width+1);
+  noOverlap(await dimensions(page,'#quiz .opt-btn'),width,'Quiz answer choices');
+  await page.locator('#quiz .opt-btn').first().click();
+  await expect(page.locator('#quiz .opt-btn.correct')).toHaveCount(1);
+  await expect(page.locator('#quiz #next-btn.show')).toBeVisible();
+  await page.screenshot({path:'tests/screenshot-quiz-'+width+'.png',fullPage:true});
  });
 }
 test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})=>{
