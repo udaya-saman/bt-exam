@@ -342,6 +342,9 @@ function board(keepScroll=false){
  const buttons=document.createElement('div');buttons.className='pg-nav';
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
  
+ const search=document.createElement('input');search.type='text';search.inputMode='search';search.className='pg-board-search';search.value=searchValue;
+ search.placeholder=outletView?'Search outlet':'Search username or outlet';
+ search.setAttribute('aria-label',search.placeholder);search.autocomplete='off';box.append(search);
  const records=ranked(period,outletView);const places=new Map(records.map((entry,index)=>[entry,index+1]));const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
  let podium=null;
  if(winners.length){const group=document.createElement('div');podium=group;group.className='pg-podium';for(const [i,r] of winners.entries()){
@@ -351,9 +354,7 @@ function board(keepScroll=false){
  }box.append(group);}
  if(outletView){const crown=records.find(v=>v.people>=2);if(crown){const status=document.createElement('div');status.className='pg-private';status.textContent='👑 Crown leader: '+crown.name+' · '+crown.score+' average points';box.append(status);}}
  const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
- const search=document.createElement('input');search.type='text';search.inputMode='search';search.className='pg-board-search';search.value=searchValue;
- search.placeholder=outletView?'Search outlet':'Search username or outlet';
- search.setAttribute('aria-label',search.placeholder);search.autocomplete='off';box.append(search);
+
  const standings=document.createElement('div');standings.className='pg-standings-scroll';
  standings.setAttribute('role','region');standings.setAttribute('aria-label',outletView?'Outlet standings':'Player standings, fourth place onwards');box.append(standings);
  const renderStandings=()=>{
