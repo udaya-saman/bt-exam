@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.10-arena';let latestUpdate=null;
+const APP_VERSION='4.7.11-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -53,8 +53,8 @@ function syncDetail(err){
    return OFFLINE_SYNC_MESSAGE;
  return 'Sync didn’t work. Try again or ask for help.';
 }
-function open(title,sub,restore){boardOpen=false;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
-function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode');root.innerHTML='';boardOpen=false;}
+function open(title,sub,restore){boardOpen=false;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode','arena-manage-users-layout');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
+function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode','arena-manage-users-layout');root.innerHTML='';boardOpen=false;}
 function btn(label,handler,alt=false){const b=document.createElement('button');b.textContent=label;
  const low=String(label).toLowerCase();
  if(/sign out|close|cancel|delete|reject|later/.test(low))b.className='pg-btn-red';
@@ -328,7 +328,12 @@ function celebrateAchievements(p,crown=false){
 
 let period='weekly',outletView=false;
 function board(keepScroll=false){
- const previousScroll=keepScroll&&root.classList.contains('arena-leaderboard-layout')?(root.querySelector('.pg-standings-scroll')?.scrollTop||0):0;
+ const previousLayout=keepScroll&&root.classList.contains('arena-leaderboard-layout');
+ const previousScroll=previousLayout?(root.querySelector('.pg-standings-scroll')?.scrollTop||0):0;
+ const previousSearch=previousLayout?root.querySelector('.pg-board-search'):null;
+ const searchValue=previousSearch?.value||'';
+ const searchFocused=!!previousSearch&&document.activeElement===previousSearch;
+ const selection=searchFocused?[previousSearch.selectionStart,previousSearch.selectionEnd]:null;
  boardOpen=true;
  if(!unsubscribe)listen();
  const box=open(outletView?'👑 OUTLET ARENA':'🏆 LEADERBOARD','',board);boardOpen=true;root.classList.add('arena-board-mode','arena-leaderboard-layout');
@@ -338,20 +343,29 @@ function board(keepScroll=false){
  buttons.append(btn('THIS WEEK',()=>{period='weekly';board()},period!=='weekly'),btn('ALL TIME',()=>{period='alltime';board()},period!=='alltime'),btn(outletView?'PLAYERS':'OUTLETS',()=>{outletView=!outletView;board()},true));box.append(buttons);
  
  const records=ranked(period,outletView);const places=new Map(records.map((entry,index)=>[entry,index+1]));const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
- if(winners.length){const group=document.createElement('div');group.className='pg-podium';for(const [i,r] of winners.entries()){
+ let podium=null;
+ if(winners.length){const group=document.createElement('div');podium=group;group.className='pg-podium';for(const [i,r] of winners.entries()){
   const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+(i+1)+(outletView?'':' arena-player-podium');if(!outletView)attachPlayerDetails(cell,r);if(i===0){const first=document.createElement('span');first.className='arena-first-rank';first.textContent='1';first.setAttribute('aria-hidden','true');cell.append(first);}const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[i+1]||'';badge.style.fontSize='23px';cell.append(badge);
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
  if(outletView){const crown=records.find(v=>v.people>=2);if(crown){const status=document.createElement('div');status.className='pg-private';status.textContent='👑 Crown leader: '+crown.name+' · '+crown.score+' average points';box.append(status);}}
  const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
+ const search=document.createElement('input');search.type='text';search.inputMode='search';search.className='pg-board-search';search.value=searchValue;
+ search.placeholder=outletView?'Search outlet':'Search username or outlet';
+ search.setAttribute('aria-label',search.placeholder);search.autocomplete='off';box.append(search);
  const standings=document.createElement('div');standings.className='pg-standings-scroll';
  standings.setAttribute('role','region');standings.setAttribute('aria-label',outletView?'Outlet standings':'Player standings, fourth place onwards');box.append(standings);
+ const renderStandings=()=>{
+ const query=norm(search.value);
+ standings.replaceChildren();
+ if(podium)podium.hidden=!!query;
+ standings.setAttribute('aria-label',outletView?'Outlet standings':query?'Matching player standings':'Player standings, fourth place onwards');
  if(!records.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='🍕 The first ranked scores will appear here.';standings.append(empty);}
  const remaining=records.filter(r=>!winners.includes(r));
- const shown=(outletView||showAllPlayers)?remaining:remaining.slice(0,Math.max(0,20-winners.length));
+ const shown=query?records.filter(r=>norm(r.name).includes(query)||norm(r.outlet).includes(query)):(outletView||showAllPlayers)?remaining:remaining.slice(0,Math.max(0,20-winners.length));
  const own=records.find(r=>r.uid===user?.uid);
- if(!outletView&&!showAllPlayers&&own&&!winners.includes(own)&&!shown.some(r=>r.uid===own.uid))shown.push(own);
+ if(!query&&!outletView&&!showAllPlayers&&own&&!winners.includes(own)&&!shown.some(r=>r.uid===own.uid))shown.push(own);
  for(const r of shown){
   const card=document.createElement('div');card.className='pg-leader-card '+(outletView?'arena-rank-'+r.rank:'arena-player-standing');if(!outletView)attachPlayerDetails(card,r);if(r.uid===user?.uid)card.classList.add('pg-you');
   const place=document.createElement('span');place.className='pg-place';place.textContent=String(places.get(r));card.append(place);
@@ -365,11 +379,16 @@ function board(keepScroll=false){
   }
   const score=document.createElement('span');score.className='pg-score';score.textContent=r.score+' PTS';card.append(score);standings.append(card);
  }
- if(!outletView&&records.length>20){standings.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board(true);},true));}
- if(records.length>0&&!remaining.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='More players will appear here as they earn points.';standings.append(empty);}
+ if(!query&&!outletView&&records.length>20){standings.append(btn(showAllPlayers?'SHOW TOP 20':'VIEW ALL '+records.length+' PLAYERS',()=>{showAllPlayers=!showAllPlayers;board(true);},true));}
+ if(query&&records.length&&!shown.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='No matching '+(outletView?'outlets':'players')+'.';standings.append(empty);}
+ else if(!query&&records.length>0&&!remaining.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='More players will appear here as they earn points.';standings.append(empty);}
+ };
+ search.addEventListener('input',()=>{renderStandings();standings.scrollTop=0;});
+ renderStandings();
  const footer=document.createElement('div');footer.className='pg-board-footer';
  footer.append(btn('👤 MY PROFILE',()=>show('profile'),true),btn('CLOSE',close,true));box.append(footer);
  if(keepScroll)standings.scrollTop=previousScroll;
+ if(searchFocused){search.focus({preventScroll:true});if(selection?.every(Number.isInteger))search.setSelectionRange(...selection);}
 }
 function attachPlayerDetails(node,r){
  node.setAttribute('role','button');node.tabIndex=0;
@@ -721,10 +740,14 @@ async function adminCreateUser(){
 
 async function manageUsers(){
  if(!admins)return;
- const box=open('MANAGE USERS','Create and manage player accounts.',manageUsers);box.append(btn('Create User',adminCreateUser));
- const status=document.createElement('p');status.className='pg-muted';status.textContent='Loading users…';box.append(status);
- const search=field(box,'Search username or outlet');search.required=false;
- const list=document.createElement('div');box.append(list);
+ const box=open('MANAGE USERS','Create and manage player accounts.',manageUsers);
+ root.classList.add('arena-manage-users-layout');
+ const status=document.createElement('p');status.className='pg-muted pg-users-status';status.textContent='Loading users…';status.setAttribute('role','status');box.append(status);
+ const search=document.createElement('input');search.type='search';search.className='pg-users-search';search.placeholder='Search username or outlet';search.setAttribute('aria-label',search.placeholder);search.autocomplete='off';box.append(search);
+ const list=document.createElement('div');list.className='pg-users-scroll';list.setAttribute('role','region');list.setAttribute('aria-label','User accounts');box.append(list);
+ const footer=document.createElement('div');footer.className='pg-users-footer';
+ const create=btn('Create User',adminCreateUser);create.classList.add('pg-btn-green');
+ footer.append(create,btn('Back',adminPanel,true),btn('Close',close,true));box.append(footer);
  const draw=(entries)=>{
    list.replaceChildren();
    if(!entries.length){const empty=document.createElement('div');empty.className='pg-empty';empty.textContent='No matching users.';list.append(empty);return;}
@@ -745,11 +768,11 @@ async function manageUsers(){
   const records=snap.docs.map(doc=>({...doc.data(),uid:doc.id}));
   const roleDocs=await Promise.all(records.map(p=>F.getDoc(F.doc(db,'admins',p.uid)).catch(()=>null)));
   const recordsWithRoles=records.map((p,i)=>({...p,isAdmin:roleDocs[i]?.exists()===true}));
+  if(!box.isConnected)return;
   status.textContent='Showing up to 250 users. Administrator accounts are protected.';
-  const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));};
+  const render=()=>{const q=norm(search.value);draw(recordsWithRoles.filter(p=>!q||norm(p.username).includes(q)||norm(p.outlet).includes(q)));list.scrollTop=0;};
   search.addEventListener('input',render);render();
- }catch(err){status.textContent='Could not load users: '+errorMessage(err);}
- box.append(btn('BACK',adminPanel,true),btn('CLOSE',close,true));
+ }catch(err){if(box.isConnected)status.textContent='Could not load users: '+errorMessage(err);}
 }
 async function confirmUserRemoval(person){
  if(!admins||!user||person.uid===user.uid||RESERVED.has(norm(person.username))||person.isAdmin){
