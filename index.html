@@ -1517,6 +1517,7 @@ function renderQuestion() {
   isTranslated = false;
   
   const q = questions[qIndex];
+  window.BTExamBridge?.onQuestion?.({paperId:currentPaper,originalQuestionIndex:Number.isInteger(q.btOriginalQuestionIndex)?q.btOriginalQuestionIndex:PAPERS[currentPaper].qs.findIndex(item=>item.q===q.q&&JSON.stringify(item.opts)===JSON.stringify(q.opts))});
   const total = questions.length;
   const pct = Math.round((qIndex / total) * 100);
 
