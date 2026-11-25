@@ -18,6 +18,7 @@ assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
 assert.ok(html.includes('arena-polish-v43.css?v=4.7.5'));
 assert.ok(sw.includes('arena-polish-v43.css?v=4.7.5'));
+assert.doesNotMatch(src,/The crown is waiting!/,'The empty crown waiting panel is removed');
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
  const classes=new Set();
@@ -54,6 +55,12 @@ assert.equal(rows().at(-1).children[0].textContent,'25');
 vm.runInContext('outletView=true;board();',ctx);
 assert.equal(rows()[0].children[0].textContent,'4');
 assert.equal(find('pg-board-footer').children.length,2);
+assert.ok(find('pg-private'),'Qualified outlet still displays its Crown leader');
+ctx.ranked=(period,isOutlet)=>isOutlet?records.map(x=>({...x,people:1})):records;
+vm.runInContext('board();',ctx);
+assert.ok(!find('pg-private'),'No crown-waiting panel shown when no outlet qualifies');
+assert.equal(find('pg-board-footer').children.length,2,'Outlet Arena navigation retained without a crown');
+
 const nav=fs.readFileSync('js/arena-navigation-ranks.js','utf8');
 assert.ok(css.includes('scrollbar-width:none!important'),'scrollbar chrome concealed');
 assert.ok(css.includes('*::-webkit-scrollbar{'),'WebKit scrollbar concealed');
