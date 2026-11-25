@@ -1,5 +1,5 @@
 {
-  "version": "4.7.12-arena",
+  "version": "4.7.13-arena",
   "released": "2026-11-25",
-  "notes": "Match Player Card backgrounds to the leaderboard palette and restore green level progress. Replace the paper-wide ranked claim with one immutable score event per user, Sri Lankan answer day and canonical question; preserve first answers, existing points, queued answers and the 72-hour offline sync policy. The new Firestore rules must be published before live scoring can sync."
+  "notes": "Replace Answered with accuracy on My Player Card and show accuracy in every opened player details card. Use recorded personal or published ranked answer counts with consistent rounding, including zero-answer handling. Halve level badge height and change the sync message to contact admin. Preserve scoring, permissions, layouts and previous palette."
 }
