@@ -16,24 +16,24 @@ assert.match(src,/place\.textContent=String\(places\.get\(r\)\)/);
 assert.match(css,/\.pg-standings-scroll\{[^}]*overflow-y:auto/);
 assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
-assert.ok(html.includes('arena-polish-v43.css?v=4.7.5'));
-assert.ok(sw.includes('arena-polish-v43.css?v=4.7.5'));
+assert.ok(html.includes('arena-polish-v43.css?v=4.7.11'));
+assert.ok(sw.includes('arena-polish-v43.css?v=4.7.11'));
 assert.doesNotMatch(src,/The crown is waiting!/,'The empty crown waiting panel is removed');
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
  const classes=new Set();
  return {tag,children:[],className:'',style:{},classList:{add:(...n)=>n.forEach(x=>classes.add(x)),remove:(...n)=>n.forEach(x=>classes.delete(x)),contains:n=>classes.has(n)},
-  append(...n){this.children.push(...n)},setAttribute(k,v){this[k]=v},scrollTop:0};
+  append(...n){this.children.push(...n)},replaceChildren(...n){this.children=n},addEventListener(k,fn){this[k]=fn},setAttribute(k,v){this[k]=v},scrollTop:0};
 }
 const root=el();root.hidden=false;
 let box,profileOpened=0,closed=0;
 const records=Array.from({length:25},(_,i)=>({name:'Player '+(i+1),outlet:'Matara',uid:'u'+(i+1),score:500-i,lifetimePoints:500-i,rank:i+1,people:3}));
 const ctx={root,document:{createElement:el,createTextNode:x=>x},window:{},period:'weekly',outletView:false,
  showAllPlayers:false,profile:{outlet:'Matara'},user:{uid:'u25'},admins:false,boardOpen:false,unsubscribe:()=>{},
- ranked:()=>records,rankEligible:()=>false,listen:()=>{},attachPlayerDetails:()=>{},day:()=>'',week:()=>'',close:()=>closed++,
+ ranked:()=>records,norm:x=>String(x||'').trim().toLowerCase(),rankEligible:()=>false,listen:()=>{},attachPlayerDetails:()=>{},day:()=>'',week:()=>'',close:()=>closed++,
  show:()=>profileOpened++,open:()=>{box=el();return box},
  btn:(title,action)=>{const b=el('button');b.textContent=title;b.click=action;return b;}};
-root.querySelector=s=>s==='.panel>p'?{remove(){}}:s==='.pg-standings-scroll'?box?.children.find(x=>x.className==='pg-standings-scroll'):null;
+root.querySelector=s=>s==='.panel>p'?{remove(){}}:s==='.pg-standings-scroll'||s==='.pg-board-search'?box?.children.find(x=>x.className===s.slice(1)):null;
 vm.createContext(ctx);vm.runInContext(src+'\nboard();',ctx);
 const find=n=>box.children.find(x=>x.className===n);
 const rows=()=>find('pg-standings-scroll').children.filter(x=>x.className.startsWith('pg-leader-card'));
@@ -52,6 +52,22 @@ find('pg-standings-scroll').children.find(x=>x.tag==='button').click();
 assert.equal(rows().length,22);
 assert.equal(rows()[0].children[0].textContent,'4');
 assert.equal(rows().at(-1).children[0].textContent,'25');
+const search=find('pg-board-search');
+search.value='Player 1';search.input();
+assert.equal(find('pg-podium').hidden,true);
+assert.equal(rows()[0].children[0].textContent,'1');
+assert.equal(rows().length,11);
+vm.runInContext('board(true);',ctx);
+assert.equal(find('pg-board-search').value,'Player 1');
+assert.equal(rows().length,11);
+find('pg-board-search').value='no such player';find('pg-board-search').input();
+assert.equal(rows().length,0);
+find('pg-board-search').value='';find('pg-board-search').input();
+assert.equal(find('pg-podium').hidden,false);
+assert.equal(rows()[0].children[0].textContent,'4');
+assert.match(css,/\.pg-users-footer\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+assert.match(css,/\.pg-users-scroll\{[^}]*overflow-y:auto/);
+assert.match(app,/footer\.append\(create,btn\('Back',adminPanel,true\),btn\('Close',close,true\)\)/);
 vm.runInContext('outletView=true;board();',ctx);
 assert.equal(rows()[0].children[0].textContent,'4');
 assert.equal(find('pg-board-footer').children.length,2);
