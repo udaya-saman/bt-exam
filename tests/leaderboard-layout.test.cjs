@@ -16,8 +16,8 @@ assert.match(src,/place\.textContent=String\(places\.get\(r\)\)/);
 assert.match(css,/\.pg-standings-scroll\{[^}]*overflow-y:auto/);
 assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
-assert.ok(html.includes('arena-polish-v43.css?v=4.7.11'));
-assert.ok(sw.includes('arena-polish-v43.css?v=4.7.11'));
+assert.ok(html.includes('arena-polish-v43.css?v=4.7.12'));
+assert.ok(sw.includes('arena-polish-v43.css?v=4.7.12'));
 assert.doesNotMatch(src,/The crown is waiting!/,'The empty crown waiting panel is removed');
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
@@ -110,7 +110,7 @@ assert.ok(css.includes('.pg-podium>.pg-podium-item strong{'),'podium name rule e
 assert.ok(css.includes('white-space:normal!important;overflow:visible!important'),'podium names wrap rather than clip');
 assert.ok(css.includes('minmax(0,1fr) minmax(0,1.09fr) minmax(0,1fr)'),'first-place card is slightly wider');
 assert.ok(css.includes('#d41420'),'Player Card uses Pizza Hut red');
-assert.doesNotMatch(css.split('4.7.4 — Pizza Hut red')[1],/#761d30|#81283b|#632030/,'no maroon in new Player Card override');
+assert.doesNotMatch(css.split('4.7.4 — Pizza Hut red')[1].split('4.7.12 —')[0],/#761d30|#81283b|#632030/,'no maroon in new Player Card override');
 assert.ok(app.includes("manageButton.classList.add('arena-manage-action')"),'Manage gets its own class');
 assert.ok(app.includes('if(admins){const manageButton='),'Manage remains admin-only');
 assert.ok(css.includes('button.arena-manage-action{'),'gold Manage style exists');
@@ -161,3 +161,8 @@ console.log('Podium name wrapping, quicker animation, Pizza Hut red, admin-only 
  search.value='';search.input();assert.equal(list.children.length,5);
  console.log('Manage Users: fixed footer actions, search by username/outlet, and existing protection rules verified.');
 })().catch(err=>{console.error(err);process.exitCode=1;});
+
+assert.ok(css.includes('4.7.12 — share the actual leaderboard'));
+assert.ok(css.includes('linear-gradient(180deg,#21191b 0%,#181416 100%)'));
+assert.ok(css.includes('linear-gradient(90deg,#493034,#322629)'));
+assert.ok(css.includes('linear-gradient(90deg,#0b8f32,#2fdb53,#b1ff54)'));

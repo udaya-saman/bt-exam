@@ -1,5 +1,5 @@
 {
-  "version": "4.7.11-arena",
+  "version": "4.7.12-arena",
   "released": "2026-11-25",
-  "notes": "Fixed search fields and independently scrolling lists on Manage Users and Leaderboard. Move Create User, Back and Close to an equal-width fixed single-row Manage Users footer. Search all eligible ranked players or outlets without altering ranks. Preserve user permissions, account actions, scores and quiz/study functionality."
+  "notes": "Match Player Card backgrounds to the leaderboard palette and restore green level progress. Replace the paper-wide ranked claim with one immutable score event per user, Sri Lankan answer day and canonical question; preserve first answers, existing points, queued answers and the 72-hour offline sync policy. The new Firestore rules must be published before live scoring can sync."
 }
