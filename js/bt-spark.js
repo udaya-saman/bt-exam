@@ -847,22 +847,27 @@ function show(view){if(!user||!profile){gate();return;}if(view==='board')board()
 async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;rankSnapshotReady=false;cloudRank.clear();rankCloudUnavailable=false;gate();return;}
  try{
-  const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
-  if(blocked.exists()){await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;}
-  let snap=await F.getDoc(F.doc(db,'users',u.uid));
-  // Firebase Auth can fire before the registration transaction creates the user profile.
-  for(let retry=0;retry<6&&!snap.exists();retry++){
+  // Offline access is only for the authenticated Firebase user restored by persistence.
+  if(auth?.currentUser?.uid!==u.uid)return;
+  const blocked=await readSessionDoc(F.doc(db,'accountBlocks',u.uid),true);
+  if(blocked?.exists()){await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;}
+  let snap=await readSessionDoc(F.doc(db,'users',u.uid));
+  // New online registrations can precede the user profile being written.
+  for(let retry=0;navigator.onLine&&retry<6&&!snap.exists();retry++){
     await new Promise(resolve=>setTimeout(resolve,500));
-    snap=await F.getDoc(F.doc(db,'users',u.uid));
+    snap=await readSessionDoc(F.doc(db,'users',u.uid));
   }
-  if(!snap.exists()){gate('setup','We could not open your account. Please reopen the app or ask for help.');return;}
-  profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
+  if(!snap.exists()){gate('setup',navigator.onLine?'We could not open your account. Please reopen the app or ask for help.':'Turn on mobile data or connect to Wi-Fi once to load your player card on this device.');return;}
+  if(auth?.currentUser?.uid!==u.uid)return;
+  profile=snap.data();rememberUsername(profile.username);
+  const adminDocument=await readSessionDoc(F.doc(db,'admins',u.uid),true);
+  admins=!!(adminDocument?.exists()&&adminDocument.data().enabled===true);
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
-  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists()){profile=d.data();if(!d.metadata?.hasPendingWrites&&!d.metadata?.fromCache)celebrateAchievements(profile);}});
+  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists()&&auth?.currentUser?.uid===u.uid){profile=d.data();rememberUsername(profile.username);if(!d.metadata?.hasPendingWrites&&!d.metadata?.fromCache)celebrateAchievements(profile);}});
   close();celebrateAchievements(profile);if(typeof checkSavedSession==='function')checkSavedSession();restoreCloudSession();sync();if(!unsubscribe)listen();
- }catch(e){gate('setup',errorMessage(e));}
+ }catch(e){gate('setup',!navigator.onLine?'Turn on mobile data or connect to Wi-Fi once to load your player card on this device.':errorMessage(e));}
 }
 async function checkForUpdates(){
  if(!navigator.onLine)return;
@@ -915,7 +920,22 @@ function promptUpdate(){
   }
 });updateNow.classList.add('pg-btn-green','arena-update-now');box.append(updateNow,btn('Later',close,true));
 }
-window.addEventListener('online',()=>{sync();checkForUpdates();});
+window.addEventListener('online',async()=>{
+ // Check with Firebase when the connection returns; do not trust cached access forever.
+ if(auth?.currentUser&&profile){
+  try{
+   const uid=auth.currentUser.uid;
+   const blocked=await F.getDocFromServer(F.doc(db,'accountBlocks',uid));
+   const account=await F.getDocFromServer(F.doc(db,'users',uid));
+   if(auth?.currentUser?.uid!==uid)return;
+   if(blocked.exists()||!account.exists()){
+    await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;
+   }
+   profile=account.data();rememberUsername(profile.username);
+  }catch(e){console.info('Account access will be checked when the connection is available.',e?.code||e);}
+ }
+ sync();checkForUpdates();
+});
 setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
 if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','The leaderboard is not ready yet. Please try again later.');dock.textContent='🏆 Leaderboard (setup)';return;}
 try{
@@ -924,7 +944,12 @@ try{
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-auth.js'),
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-firestore.js')]);
  A=authModule;F=firestoreModule;const app=appModule.initializeApp(config);auth=A.getAuth(app);
- try{await A.setPersistence(auth,A.browserLocalPersistence);}catch(e){console.warn('Persistent login unavailable:',e);await A.setPersistence(auth,A.inMemoryPersistence);}
+ try{await A.setPersistence(auth,A.browserLocalPersistence);}
+ catch(e){
+  console.warn('Long-term login persistence unavailable:',e);
+  try{await A.setPersistence(auth,A.browserSessionPersistence);}
+  catch(_){await A.setPersistence(auth,A.inMemoryPersistence);}
+ }
  try{db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})});}catch(storageError){console.warn('Persistent offline database unavailable:',storageError);db=F.getFirestore(app);note('Offline storage is limited on this browser.');}
  A.onAuthStateChanged(auth,session);
 }catch(e){gate('setup','The app could not start. Please check your internet and try again.');}
