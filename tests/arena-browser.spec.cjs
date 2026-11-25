@@ -171,7 +171,7 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
   let root=document.querySelector('#bt-spark-root');
   if(!root){root=document.createElement('div');root.id='bt-spark-root';document.body.append(root);}
   root.hidden=false;root.className='arena-profile-mode';
-  root.innerHTML='<div class="panel"><div id="bt-spark-content"><section class="arena-card"><div class="arena-card-heading">MY PLAYER CARD</div><div class="arena-card-body"><div class="arena-profile-top"><img class="arena-avatar" src="./images/default-avatar.png"><div class="arena-person-info"><h3>Udaya</h3><span class="arena-outlet-pill">Other</span></div><div class="arena-level-wrap"><span class="arena-level-badge">Lv. 5</span><div class="arena-level-track" role="progressbar" aria-label="Progress to level 6" aria-valuemin="0" aria-valuemax="500" aria-valuenow="450"><span class="arena-level-fill" style="width:90%"></span></div><small>450 / 500 pts</small></div></div><div class="arena-stats-grid"><div class="arena-stat">2,450 Points</div><div class="arena-stat arena-stat-correct"><img class="arena-stat-art" src="./images/arena/stat-correct.png" alt=""><div><strong>87</strong><span>Correct</span></div></div><div class="arena-stat">120 Answered</div></div><div class="arena-actions"><button class="pg-btn-green">Leaderboard</button><button class="pg-btn-orange arena-signout-action">Sign Out</button><button class="pg-btn-red">Close</button></div><button class="arena-outlet-row">Change your outlet?</button></div></section><div class="arena-sync-area"><div class="arena-status-card">Answers waiting · 2 saved</div><button class="arena-sync-action">Sync</button></div><section class="arena-achievements-card"><div class="arena-achievements-heading">Achievements</div><div class="arena-rewards-grid">'+Array.from({length:6},(_,i)=>'<div class="arena-reward-item">Badge '+(i+1)+'</div>').join('')+'</div></section></div></div>';
+  root.innerHTML='<div class="panel"><div id="bt-spark-content"><section class="arena-card"><div class="arena-card-heading">MY PLAYER CARD</div><div class="arena-card-body"><div class="arena-profile-top"><img class="arena-avatar" src="./images/default-avatar.png"><div class="arena-person-info"><h3>Udaya</h3><span class="arena-outlet-pill">Other</span></div><div class="arena-level-wrap"><span class="arena-level-badge">Lv. 5</span><div class="arena-level-track" role="progressbar" aria-label="Progress to level 6" aria-valuemin="0" aria-valuemax="500" aria-valuenow="450"><span class="arena-level-fill" style="width:90%"></span></div><small>450 / 500 pts</small></div></div><div class="arena-stats-grid"><div class="arena-stat">2,450 Points</div><div class="arena-stat arena-stat-correct"><img class="arena-stat-art" src="./images/arena/stat-correct.png" alt=""><div><strong>87</strong><span>Correct</span></div></div><div class="arena-stat"><strong>72.5%</strong><span>Accuracy</span></div></div><div class="arena-actions"><button class="pg-btn-green">Leaderboard</button><button class="pg-btn-orange arena-signout-action">Sign Out</button><button class="pg-btn-red">Close</button></div><button class="arena-outlet-row">Change your outlet?</button></div></section><div class="arena-sync-area"><div class="arena-status-card">Answers waiting · 2 saved</div><button class="arena-sync-action">Sync</button></div><section class="arena-achievements-card"><div class="arena-achievements-heading">Achievements</div><div class="arena-rewards-grid">'+Array.from({length:6},(_,i)=>'<div class="arena-reward-item">Badge '+(i+1)+'</div>').join('')+'</div></section></div></div>';
  });
  const styles=await page.evaluate(()=>{
   const root=document.getElementById('bt-spark-root');
@@ -188,6 +188,9 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
  await expect(page.locator('#bt-spark-root .arena-level-wrap small')).toHaveText('450 / 500 pts');
  await expect(page.locator('#bt-spark-root .arena-level-track')).toHaveAttribute('aria-valuemax','500');
  await expect(page.locator('#bt-spark-root .arena-level-track')).toHaveAttribute('aria-valuenow','450');
+ const badgeHeight=await page.locator('#bt-spark-root .arena-level-badge').evaluate(el=>el.getBoundingClientRect().height);
+ expect(badgeHeight).toBeGreaterThanOrEqual(18);expect(badgeHeight).toBeLessThanOrEqual(21);
+ await expect(page.locator('#bt-spark-root .arena-stats-grid')).toContainText('72.5%');
 
  const palette=await page.evaluate(()=>{
   const root=document.getElementById('bt-spark-root'),sample=document.createElement('div');
@@ -408,7 +411,7 @@ test('Player details have right-aligned return and invisible functional scrollba
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');
    root.hidden=false;root.className='arena-board-mode arena-player-details-mode';
-   root.innerHTML='<div class="panel"><h2>PLAYER DETAILS</h2><div id="bt-spark-content"><div class="arena-player-detail"><div class="arena-detail-ribbon">✦ PIZZA ARENA PLAYER</div><img src="./images/default-avatar.png" alt=""><h3>Sample Player</h3><p>Matara</p><div class="arena-detail-stats">'+['Level','Points','Current weekly rank','Best all-time rank observed'].map((label,i)=>'<div><strong>'+[7,'1,200',4,2][i]+'</strong><small>'+label+'</small></div>').join('')+'</div></div><div class="arena-detail-actions"><button class="arena-detail-back">Back to leaderboard</button></div></div></div>';
+   root.innerHTML='<div class="panel"><h2>PLAYER DETAILS</h2><div id="bt-spark-content"><div class="arena-player-detail"><div class="arena-detail-ribbon">✦ PIZZA ARENA PLAYER</div><img src="./images/default-avatar.png" alt=""><h3>Sample Player</h3><p>Matara</p><div class="arena-detail-stats">'+['Level','Points','Accuracy','Current weekly rank','Best all-time rank observed'].map((label,i)=>'<div'+(label==='Accuracy'?' class="arena-detail-accuracy"':'')+'><strong>'+[7,'1,200','87.5%',4,2][i]+'</strong><small>'+label+'</small></div>').join('')+'</div></div><div class="arena-detail-actions"><button class="arena-detail-back">Back to leaderboard</button></div></div></div>';
   });
   const geometry=await page.evaluate(()=>{
    const panel=document.querySelector('#bt-spark-root .panel'),button=document.querySelector('.arena-detail-back'),actions=document.querySelector('.arena-detail-actions');
@@ -416,6 +419,7 @@ test('Player details have right-aligned return and invisible functional scrollba
     panelRight:panel.getBoundingClientRect().right,scrollbarWidth:getComputedStyle(panel).scrollbarWidth,
     scrollbarDisplay:getComputedStyle(panel,'::-webkit-scrollbar').display};
   });
+  await expect(page.locator('.arena-detail-accuracy')).toContainText('87.5%');
   expect(geometry.rightGap).toBeLessThanOrEqual(2);
   expect(geometry.scrollbarWidth).toBe('none');
   expect(geometry.scrollbarDisplay).toBe('none');
