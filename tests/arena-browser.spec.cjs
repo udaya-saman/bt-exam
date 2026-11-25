@@ -211,8 +211,8 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
  await page.screenshot({path:'tests/screenshot-player-card.png',fullPage:true});
 });
 
-test('Assessment workbook appears as 86 unique bilingual practice cards with proposed answers',async({page})=>{
- for(const width of [320,375,430,768]){
+for(const width of [320,375,430,768]){
+ test('Assessment workbook bilingual practice at '+width+'px',async({page})=>{
   await page.setViewportSize({width,height:820});
   await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
   await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
@@ -261,8 +261,8 @@ test('Assessment workbook appears as 86 unique bilingual practice cards with pro
   }));
   expect(scroll.body).toBeLessThanOrEqual(width+2);
   expect(scroll.screen).toBeLessThanOrEqual(width+2);
- }
-});
+ });
+}
 
 test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scroll',async({page})=>{
  await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
