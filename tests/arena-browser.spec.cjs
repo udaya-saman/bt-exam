@@ -323,7 +323,7 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');
    root.hidden=false;root.className='arena-board-mode arena-leaderboard-layout';
-   root.innerHTML='<div class="panel"><h2>🏆 LEADERBOARD</h2><div id="bt-spark-content"><div class="pg-nav"><button>THIS WEEK</button><button>ALL TIME</button><button>OUTLETS</button></div><div class="pg-podium">'+[1,2,3].map(i=>'<div class="pg-podium-item arena-player-podium arena-rank-'+i+'">'+(i===1?'<span class="arena-first-rank">1</span>':'')+'<div>🏅</div><img src="./images/default-avatar.png" alt=""><strong>'+(i===1?'Sandamini Dilrukshi Jayasinghe':'Player '+i)+'</strong><small>100 PTS</small></div>').join('')+'</div><div class="pg-section">PLAYER STANDINGS</div><div class="pg-standings-scroll">'+Array.from({length:30},(_,i)=>'<div class="pg-leader-card arena-player-standing"><span class="pg-place">'+(i+4)+'</span><img class="pg-avatar" src="./images/default-avatar.png"><div class="pg-person"><strong>Player '+(i+4)+'</strong><small>Matara</small></div><span class="pg-score">20 PTS</span></div>').join('')+'</div><div class="pg-board-footer"><button class="pg-btn-green">👤 MY PROFILE</button><button class="pg-btn-red">CLOSE</button></div></div></div>';
+   root.innerHTML='<div class="panel"><h2>🏆 LEADERBOARD</h2><div id="bt-spark-content"><div class="pg-nav"><button>THIS WEEK</button><button>ALL TIME</button><button>OUTLETS</button></div><div class="pg-podium">'+[1,2,3].map(i=>'<div class="pg-podium-item arena-player-podium arena-rank-'+i+'">'+(i===1?'<span class="arena-first-rank">1</span>':'')+'<div>🏅</div><img src="./images/default-avatar.png" alt=""><strong>'+(i===1?'Sandamini Dilrukshi Jayasinghe':'Player '+i)+'</strong><small>100 PTS</small></div>').join('')+'</div><div class="pg-section">PLAYER STANDINGS</div><input type="text" class="pg-board-search" aria-label="Search username or outlet"><div class="pg-standings-scroll">'+Array.from({length:30},(_,i)=>'<div class="pg-leader-card arena-player-standing"><span class="pg-place">'+(i+4)+'</span><img class="pg-avatar" src="./images/default-avatar.png"><div class="pg-person"><strong>Player '+(i+4)+'</strong><small>Matara</small></div><span class="pg-score">20 PTS</span></div>').join('')+'</div><div class="pg-board-footer"><button class="pg-btn-green">👤 MY PROFILE</button><button class="pg-btn-red">CLOSE</button></div></div></div>';
   });
   await expect(page.locator('.pg-standings-scroll .pg-leader-card')).toHaveCount(30);
   const before=await page.evaluate(()=>{
@@ -332,7 +332,7 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
    const rows=document.querySelector('.pg-standings-scroll');
    const podium=document.querySelector('.pg-podium');
    const rect=x=>x.getBoundingClientRect().toJSON();
-   return {footer:rect(footer),podium:rect(podium),rows:rect(rows),
+   return {footer:rect(footer),podium:rect(podium),rows:rect(rows),search:rect(document.querySelector('.pg-board-search')),
     panelOverflow:getComputedStyle(panel).overflowY,
     scrollOverflow:getComputedStyle(rows).overflowY,
     maxScroll:rows.scrollHeight-rows.clientHeight,
@@ -376,11 +376,14 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
   const after=await page.evaluate(()=>({
    scrollTop:document.querySelector('.pg-standings-scroll').scrollTop,
    footerTop:document.querySelector('.pg-board-footer').getBoundingClientRect().top,
+   searchTop:document.querySelector('.pg-board-search').getBoundingClientRect().top,
    podiumTop:document.querySelector('.pg-podium').getBoundingClientRect().top
   }));
   expect(after.scrollTop).toBeGreaterThan(0);
   expect(Math.abs(after.footerTop-before.footer.top)).toBeLessThan(1);
   expect(Math.abs(after.podiumTop-before.podium.top)).toBeLessThan(1);
+  expect(Math.abs(after.searchTop-before.search.top)).toBeLessThan(1);
+  expect(before.search.bottom).toBeLessThanOrEqual(before.rows.top+1);
  }
 });
 
@@ -412,5 +415,40 @@ test('Player details have right-aligned return and invisible functional scrollba
   });
   expect(scrolled.range).toBeGreaterThan(0);
   expect(scrolled.scrollTop).toBeGreaterThan(0);
+ }
+});
+
+test('Manage Users search and all three equal-width actions stay fixed during list scroll',async({page})=>{
+ await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+ for(const [width,height] of [[320,568],[375,740],[430,820],[768,740]]){
+  await page.setViewportSize({width,height});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.waitForTimeout(250);
+  await page.evaluate(()=>{
+   const root=document.getElementById('bt-spark-root');root.hidden=false;root.className='arena-manage-users-layout';
+   root.innerHTML='<div class="panel"><h2>MANAGE USERS</h2><p>Create and manage player accounts.</p><div id="bt-spark-content"><p class="pg-muted pg-users-status">Showing up to 250 users. Administrator accounts are protected.</p><input type="search" class="pg-users-search" aria-label="Search username or outlet"><div class="pg-users-scroll">'+Array.from({length:60},(_,i)=>'<div class="pg-review-item"><div><strong>Player '+i+' · Matara</strong><small>200 pts · User code abcdefgh…</small></div><button>DELETE</button></div>').join('')+'</div><div class="pg-users-footer"><button class="pg-btn-green">Create User</button><button class="alt">Back</button><button class="pg-btn-red">Close</button></div></div></div>';
+  });
+  const bounds=()=>page.evaluate(()=>{
+   const panel=document.querySelector('#bt-spark-root .panel'),list=document.querySelector('.pg-users-scroll'),footer=document.querySelector('.pg-users-footer'),search=document.querySelector('.pg-users-search');
+   const rect=x=>x.getBoundingClientRect().toJSON();
+   return {panel:rect(panel),search:rect(search),list:rect(list),footer:rect(footer),buttons:[...footer.children].map(rect),overflow:getComputedStyle(list).overflowY,panelOverflow:getComputedStyle(panel).overflowY,range:list.scrollHeight-list.clientHeight,top:list.scrollTop,horizontal:panel.scrollWidth-panel.clientWidth};
+  });
+  const before=await bounds();
+  expect(before.overflow).toBe('auto');expect(before.panelOverflow).toBe('hidden');
+  expect(before.range).toBeGreaterThan(0);expect(before.list.height).toBeGreaterThan(100);
+  expect(before.horizontal).toBeLessThanOrEqual(2);
+  expect(before.search.bottom).toBeLessThanOrEqual(before.list.top+1);
+  expect(before.footer.top).toBeGreaterThanOrEqual(before.list.bottom-1);
+  expect(before.footer.bottom).toBeLessThanOrEqual(height);
+  expect(before.buttons).toHaveLength(3);
+  for(const b of before.buttons){expect(Math.abs(b.top-before.buttons[0].top)).toBeLessThan(1);expect(Math.abs(b.width-before.buttons[0].width)).toBeLessThan(1);expect(b.height).toBeGreaterThanOrEqual(44);}
+  expect(Math.abs(before.buttons[0].left-before.footer.left)).toBeLessThan(2);
+  expect(Math.abs(before.buttons[2].right-before.footer.right)).toBeLessThan(2);
+  await page.locator('.pg-users-scroll').evaluate(el=>el.scrollTop=el.scrollHeight);
+  const after=await bounds();expect(after.top).toBeGreaterThan(0);
+  expect(Math.abs(after.search.top-before.search.top)).toBeLessThan(1);
+  expect(Math.abs(after.footer.top-before.footer.top)).toBeLessThan(1);
+  await page.locator('.pg-users-search').fill('Matara');
+  await expect(page.locator('.pg-users-search')).toBeFocused();
  }
 });
