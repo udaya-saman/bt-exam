@@ -70,6 +70,7 @@ assert.match(detailSrc,/className='arena-detail-actions'/);
 let detailsBox,returned=0;
 const detailsCtx={root,document:{createElement:el},window:{BTRewards:{level:()=>({number:7})},ArenaNav:{back:()=>returned++}},period:'weekly',
  ranked:()=>records,readBest:()=>2,loadBest:()=>Promise.resolve(),
+ btn:(title,action)=>{const b=el('button');b.textContent=title;b.click=action;return b;},
  open:()=>{detailsBox=el();return detailsBox;}};
 vm.createContext(detailsCtx);vm.runInContext(detailSrc+'\nplayerDetails("u4");',detailsCtx);
 const detail=detailsBox.children[0],stats=detail.children.at(-1),actions=detailsBox.children[1];
