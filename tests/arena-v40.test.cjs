@@ -47,7 +47,7 @@ assert.ok(library.includes('questions-intro-art')&&library.includes('mascot-cham
 assert.ok(!library.includes('pa-assessment-entry')&&!html.includes('id="assessment-library"'),'Old standalone Assessment Bank section removed');
 assert.ok(library.includes('Assessment Practice')&&library.includes('86 UNIQUE QUESTIONS'),'New bilingual practice card has verified unique count');
 assert.ok(html.includes('id="assessment-practice"')&&html.includes('assessment-practice-root'),'Bilingual practice page present');
-assert.ok(html.includes('css/questions-v477.css?v=4.7.7')&&sw.includes('css/questions-v477.css?v=4.7.7'),'Questions styling enabled and cached offline');
+assert.ok(html.includes('css/questions-v477.css?v=4.7.9')&&sw.includes('css/questions-v477.css?v=4.7.9'),'Questions styling enabled and cached offline');
 
 const pressStyle=get('css/press-feedback-v477.css'),pressLogic=get('js/press-feedback-v477.js');
 assert.doesNotThrow(()=>new vm.Script(pressLogic,{filename:'press-feedback-v477.js'}),'App-wide press logic parses');
@@ -60,7 +60,10 @@ assert.ok(pressStyle.includes('prefers-reduced-motion:reduce'),'Tap feedback res
 assert.ok(pressLogic.includes("'pointerdown'")&&pressLogic.includes("'pointerup'")&&pressLogic.includes("'keydown'"),'Both pointer and keyboard feedback present');
 assert.ok(pressLogic.includes('arena-pressing')&&pressLogic.includes('arena-pressed'),'Transient pressed states defined');
 
-assert.ok(questionsCss.includes('#quiz .opt-btn.correct')&&questionsCss.includes('#quiz .opt-btn.wrong'),'Both quiz answer states styled');
+const quiz=html.slice(html.indexOf('<div id="quiz" class="screen">'),html.indexOf('<!-- RESULTS SCREEN -->'));
+assert.ok(quiz.includes('<div class="quiz-body">')&&quiz.includes('id="q-text"')&&quiz.includes('id="opts"'),'Original quiz structure retained');
+assert.doesNotMatch(quiz,/questions-question-panel|questions-answers-head|questions-timer-hint/,'No redesigned quiz wrappers');
+assert.ok(!questionsCss.includes('#quiz'),'Paper selection stylesheet must not override quiz styles');
 assert.ok(questionsCss.includes('@media(max-width:350px)')&&questionsCss.includes('prefers-reduced-motion:reduce'),'Small-phone and accessibility styles present');
 assert.ok(!library.includes('.svg')&&!questionsCss.includes('.svg')&&!library.includes('<svg')&&!questionsCss.includes('<svg'),'No SVG graphics added');
 
