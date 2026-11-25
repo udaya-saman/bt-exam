@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.9-arena';let latestUpdate=null;
+const APP_VERSION='4.7.10-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -413,7 +413,7 @@ function listen(){
   if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites&&previousRank!==null&&mine&&mine!==previousRank){const risen=mine<previousRank;rankNotice=mine===1?'champion':previousRank===1?'dethroned':risen?'up':'down';const ev=window.ArenaRankHistory?.change(previousRank,mine);if(ev)mascotToast(ev.title,ev.text,ev.mascot);}
   if(!snap.metadata?.fromCache&&!snap.metadata?.hasPendingWrites)previousRank=mine;
   if(boardOpen&&!root.hidden)board(true);
-  if(root.hidden&&!$('#quiz')?.classList.contains('active'))monthly();
+  if(root.hidden&&!$('#quiz')?.classList.contains('active')&&!$('#assessment-practice')?.classList.contains('active'))monthly();
  },err=>console.warn('Leaderboard listener',err));
 }
 async function profilePanel(){
@@ -883,7 +883,7 @@ async function checkForUpdates(){
  }catch(e){console.info('Update check unavailable:',e.message);}
 }
 function promptUpdate(){
- if(!latestUpdate||!root.hidden||$('#quiz')?.classList.contains('active'))return;
+ if(!latestUpdate||!root.hidden||$('#quiz')?.classList.contains('active')||$('#assessment-practice')?.classList.contains('active'))return;
  const v=latestUpdate;const box=open('Update available','BT Exam Prep version '+v+' is available. Updating will reload the application.');
  const picture=document.createElement('img');picture.className='pg-celebration';picture.src='./images/mascot/pizza-update.png';picture.alt='Pizza mascot with refresh symbol';box.prepend(picture);
  const updateNow=btn('Update Now',async()=>{
