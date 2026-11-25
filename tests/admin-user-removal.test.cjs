@@ -15,7 +15,7 @@ assert.match(js,/if\(!navigator\.onLine\)/,'No offline destructive requests');
 assert.match(js,/F\.runTransaction\(db,async tx=>/,'Atomic removal required');
 assert.match(js,/tx\.set\(blockRef,/,'Account block tombstone recorded');
 assert.match(js,/tx\.delete\(personRef\);tx\.delete\(regRef\);if\(rank\.exists\(\)\)tx\.delete\(rankRef\)/);
-assert.match(js,/if\(blocked\.exists\(\)\)\{await A\.signOut\(auth\)/,'Removed account cannot remain logged in');
+assert.ok(js.includes("if(blocked?.exists()){await A.signOut(auth)"),'Removed account cannot remain logged in, including offline cached blocks');
 assert.match(js,/RESERVED\.has\(norm\(account\.data\(\)\.username\)\)/,'Reserved admins protected in transaction');
 assert.match(js,/role\.exists\(\)/,'Firebase admin roles protected');
 assert.match(rules,/match \/accountBlocks\/\{uid\}/);
