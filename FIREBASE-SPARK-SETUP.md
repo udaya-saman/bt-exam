@@ -255,3 +255,6 @@ The redesign now provides two distinct mobile-friendly screens matching the appr
 
 ## v4.7.12 — daily question scoring (required rules update)
 Publish the complete new `firestore.rules` in Firebase Console before live scoring can sync. Existing answer-key documents and totals are retained; no reseeding is required if all 214 keys already exist. Updated clients use immutable `uid_q_YYYY-MM-DD_paper_index` score event IDs; historical paper claims remain readable for migration. Old clients must update. Queued answers are retained while sync is unavailable. Assessment Practice remains unranked because its proposed keys are not verified. GitHub Pages cannot deploy Firebase rules automatically.
+
+## v4.7.13 — accuracy and release verification
+My Player Card and opened player details display recorded-answer accuracy. The level badge height is 19px and sync permission errors direct players to contact admin. No new Firestore rules are required beyond v4.7.12. After deployment, verify the hosted version.json matches main. Do not clear local site data while answers are waiting to sync.
