@@ -189,8 +189,20 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
  await expect(page.locator('#bt-spark-root .arena-level-track')).toHaveAttribute('aria-valuemax','500');
  await expect(page.locator('#bt-spark-root .arena-level-track')).toHaveAttribute('aria-valuenow','450');
 
- const brandHeader=await page.locator('#bt-spark-root .arena-card-heading').evaluate(el=>getComputedStyle(el).backgroundImage);
- expect(brandHeader).toContain('rgb(212, 20, 32)');
+ const palette=await page.evaluate(()=>{
+  const root=document.getElementById('bt-spark-root'),sample=document.createElement('div');
+  sample.id='bt-spark-root';sample.className='arena-board-mode';
+  sample.style.cssText='visibility:hidden;pointer-events:none';
+  sample.innerHTML='<div class="panel"><div class="pg-leader-card">Player</div><div class="pg-leader-card pg-you">You</div></div>';
+  document.body.append(sample);
+  const bg=el=>getComputedStyle(el).backgroundImage;
+  const panel=bg(sample.querySelector('.panel')),row=bg(sample.querySelector('.pg-leader-card'));
+  const sections=['.arena-card-heading','.arena-achievements-heading','.arena-level-wrap','.arena-stat','.arena-outlet-row','.arena-reward-item','.arena-status-card'];
+  const result={panelMatch:bg(root.querySelector('.panel'))===panel,cardsMatch:['.arena-card','.arena-achievements-card','.arena-sync-area'].every(x=>bg(root.querySelector(x))===panel),sectionsMatch:sections.every(x=>bg(root.querySelector(x))===row),levelFill:bg(root.querySelector('.arena-level-fill'))};
+  sample.remove();return result;
+ });
+ expect(palette.panelMatch).toBe(true);expect(palette.cardsMatch).toBe(true);expect(palette.sectionsMatch).toBe(true);
+ expect(palette.levelFill).toContain('rgb(47, 219, 83)');
  expect(await page.locator('.arena-reward-item').count()).toBe(6);
  for(const width of [320,375,430,768]){
   await page.setViewportSize({width,height:812});
