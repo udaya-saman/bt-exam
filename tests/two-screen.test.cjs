@@ -49,7 +49,8 @@ assert.ok(app.includes('Turn on mobile data or connect to Wi-Fi'),'Offline Sync 
 assert.ok(sw.includes('await fill(cache,SDK,previous)'),'Firebase runtime pre-cached for offline app reopening');
 
 assert.match(app,/const qkey=\(\)=>user\?/,'Pending answers are scoped by user');
-assert.match(app,/saveQueue\(getQueue\(\)\.filter\(item=>item\.id!==e\.id\)\)/,'Committed answers do not remain pending');
+assert.match(app,/const removeEntry=id=>localStorage\.setItem\(queueKey,JSON\.stringify\(readQueue\(\)\.filter\(item=>item\.id!==id\)\)\)/,'Remove only the confirmed queue entry for the original user');
+assert.match(app,/done\.push\(queued\.id\);removeEntry\(queued\.id\)/,'Confirmed answers do not remain pending');
 assert.match(index,/id="paper-select"/,'Created Questions selector exists');
 assert.match(index,/id="study-app"/,'New source-based Study reader exists');
 assert.match(app,/aria-live/,'Reward announces points');
@@ -80,3 +81,37 @@ for(const [name,target] of [
  ['Super Student',500],['Weekly Warrior',2000],['Outlet Challenger',25]
 ])assert.match(rewards,new RegExp(name+"',"+target+","),name+' target unchanged');
 console.log('Pizza Arena redesigned screens, accessible actions, PNG assets and rewards checks passed.');
+
+(async()=>{
+ const vm=require('node:vm'),storage=new Map(),awards=[];
+ let clock=Date.parse('2026-11-25T18:29:00Z'),seq=0;
+ class TestDate extends Date{constructor(...a){super(...(a.length?a:[clock]))}static now(){return clock}}
+ const day=d=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Colombo',year:'numeric',month:'2-digit',day:'2-digit'}).format(d||new TestDate());
+ const label={};
+ const paper={qs:Array.from({length:50},()=>({ans:0,opts:['A','B']}))};
+ const ctx={Date:TestDate,day,week:()=> '2026-11-23',user:{uid:'one'},profile:{outlet:'Matara'},active:null,
+ window:{BT_EXAM_PAPERS:{paper1:paper,paper2:paper,questions:paper,past2024:paper}},document:{getElementById:()=>label},
+ localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},
+ rand:()=> 'attempt'+(++seq),akey:()=> 'attempt_'+ctx.user.uid,
+ getQueue:()=>JSON.parse(storage.get('queue_'+ctx.user.uid)||'[]'),saveQueue:q=>storage.set('queue_'+ctx.user.uid,JSON.stringify(q)),
+ award:(...a)=>awards.push(a),sync:()=>{},db:{},F:{doc:(_db,c,id)=>c+'/'+id}};
+ vm.createContext(ctx);
+ vm.runInContext(app.slice(app.indexOf('function questionKey('),app.indexOf('window.BTExamBridge=')),ctx);
+ const answer=async(p,i,selected=0)=>ctx.onAnswer({paperId:p,originalQuestionIndex:i,selectedOriginalIndex:selected,remainingSeconds:20,correct:selected===0});
+ ctx.onStart('paper1');await answer('paper1',0);
+ assert.equal(ctx.getQueue().length,1);assert.equal(ctx.getQueue()[0].points,30);
+ ctx.onStart('paper1');await answer('paper1',0);assert.equal(ctx.getQueue().length,1);assert.equal(awards.at(-1)[2],true);
+ await answer('paper1',1);assert.equal(ctx.getQueue().length,2);
+ await answer('paper1',2,1);await answer('paper1',2);assert.equal(ctx.getQueue().length,3);assert.equal(ctx.getQueue()[2].points,0);
+ await answer('paper1',3,-1);await answer('paper1',3);assert.equal(ctx.getQueue().length,4);assert.equal(ctx.getQueue()[3].points,0);
+ await answer('paper1',9);ctx.onStart('questions');await answer('questions',7);assert.equal(ctx.getQueue().length,5);
+ ctx.onStart('past2024');await answer('past2024',22);ctx.onStart('questions');await answer('questions',14);assert.equal(ctx.getQueue().length,6);
+ ctx.onResume('paper1',{id:'old',paper:'paper1',ranked:false});await answer('paper1',4);assert.equal(ctx.getQueue().length,7);
+ clock+=120000;ctx.onStart('paper1');await answer('paper1',0);assert.equal(ctx.getQueue().length,8);assert.notEqual(ctx.getQueue()[0].dayKey,ctx.getQueue()[7].dayKey);
+ ctx.user={uid:'two'};ctx.onStart('paper1');await answer('paper1',0);assert.equal(ctx.getQueue().length,1);assert.equal(ctx.getQueue()[0].points,30);
+ const e=ctx.getQueue()[0],prev=day(new TestDate(clock-86400000));
+ const refs=new Map([['rankedClaims/two_'+prev+'_paper1',{attemptId:'legacy'}],['scoreEvents/two_legacy_paper1_0',{activityDay:e.activityDay}]]);
+ const tx={get:async ref=>({exists:()=>refs.has(ref),data:()=>refs.get(ref)})};
+ assert.equal(await ctx.oldDailyEvent(tx,e),true);refs.set('scoreEvents/two_legacy_paper1_0',{activityDay:prev});assert.equal(await ctx.oldDailyEvent(tx,e),false);
+ console.log('Daily scoring: resets, repeat, wrong/timeout, aliases, legacy resume, Sri Lanka midnight and user isolation passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
