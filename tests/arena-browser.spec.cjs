@@ -97,11 +97,28 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
   let root=document.querySelector('#bt-spark-root');
   if(!root){root=document.createElement('div');root.id='bt-spark-root';document.body.append(root);}
   root.hidden=false;root.className='arena-profile-mode';
-  root.innerHTML='<div class="panel"><div class="arena-page-top">PIZZA ARENA · MY PLAYER CARD</div><div id="bt-spark-content"><section class="arena-card"><div class="arena-card-heading">MY PLAYER CARD</div><div class="arena-card-body"><div class="arena-profile-top"><img class="arena-avatar" src="./images/default-avatar.png"><div class="arena-person-info"><h3>Udaya</h3><span class="arena-outlet-pill">Other</span></div><div class="arena-level-wrap"><span class="arena-level-badge">Lv. 5</span><div class="arena-level-track"><span class="arena-level-fill" style="width:90%"></span></div><small>2,450 / 2,500 pts</small></div></div><div class="arena-stats-grid"><div class="arena-stat">2,450 Points</div><div class="arena-stat">87 Correct</div><div class="arena-stat">120 Answered</div></div><div class="arena-actions"><button class="pg-btn-green">Leaderboard</button><button class="pg-btn-red">Sign Out</button><button class="pg-btn-red">Close</button></div><button class="arena-outlet-row">Change your outlet?</button></div></section><div class="arena-sync-area"><div class="arena-status-card">Answers waiting · 2 saved</div><button class="arena-sync-action">Sync</button></div><section class="arena-achievements-card"><div class="arena-achievements-heading">Achievements</div><div class="arena-rewards-grid">'+Array.from({length:6},(_,i)=>'<div class="arena-reward-item">Badge '+(i+1)+'</div>').join('')+'</div></section></div></div>';
+  root.innerHTML='<div class="panel"><div id="bt-spark-content"><section class="arena-card"><div class="arena-card-heading">MY PLAYER CARD</div><div class="arena-card-body"><div class="arena-profile-top"><img class="arena-avatar" src="./images/default-avatar.png"><div class="arena-person-info"><h3>Udaya</h3><span class="arena-outlet-pill">Other</span></div><div class="arena-level-wrap"><span class="arena-level-badge">Lv. 5</span><div class="arena-level-track"><span class="arena-level-fill" style="width:90%"></span></div><small>2,450 / 2,500 pts</small></div></div><div class="arena-stats-grid"><div class="arena-stat">2,450 Points</div><div class="arena-stat arena-stat-correct"><img class="arena-stat-art" src="./images/arena/stat-correct.png" alt=""><div><strong>87</strong><span>Correct</span></div></div><div class="arena-stat">120 Answered</div></div><div class="arena-actions"><button class="pg-btn-green">Leaderboard</button><button class="pg-btn-orange arena-signout-action">Sign Out</button><button class="pg-btn-red">Close</button></div><button class="arena-outlet-row">Change your outlet?</button></div></section><div class="arena-sync-area"><div class="arena-status-card">Answers waiting · 2 saved</div><button class="arena-sync-action">Sync</button></div><section class="arena-achievements-card"><div class="arena-achievements-heading">Achievements</div><div class="arena-rewards-grid">'+Array.from({length:6},(_,i)=>'<div class="arena-reward-item">Badge '+(i+1)+'</div>').join('')+'</div></section></div></div>';
  });
- const overflow=await page.evaluate(()=>({root:document.querySelector('#bt-spark-root').scrollWidth,viewport:innerWidth,body:document.body.scrollWidth}));
- expect(overflow.root).toBeLessThanOrEqual(377);
+ const styles=await page.evaluate(()=>{
+  const root=document.getElementById('bt-spark-root');
+  const signout=root.querySelector('.arena-signout-action');
+  const correct=root.querySelector('.arena-stat-correct .arena-stat-art');
+  return {topBar:root.querySelectorAll('.arena-page-top').length,
+   orangeBackground:getComputedStyle(signout).backgroundImage,
+   correctFilter:getComputedStyle(correct).filter,
+   cardBorder:getComputedStyle(root.querySelector('.arena-card')).borderColor};
+ });
+ expect(styles.topBar).toBe(0);
+ expect(styles.orangeBackground).toContain('rgb(246, 164, 74)');
+ expect(styles.correctFilter).not.toBe('none');
  expect(await page.locator('.arena-reward-item').count()).toBe(6);
+ for(const width of [320,375,430,768]){
+  await page.setViewportSize({width,height:812});
+  const overflow=await page.evaluate(()=>({root:document.querySelector('#bt-spark-root').scrollWidth,viewport:innerWidth,body:document.body.scrollWidth}));
+  expect(overflow.root).toBeLessThanOrEqual(width+2);
+  expect(overflow.body).toBeLessThanOrEqual(width+2);
+ }
+ await page.setViewportSize({width:375,height:812});
  await page.screenshot({path:'tests/screenshot-player-card.png',fullPage:true});
 });
 
