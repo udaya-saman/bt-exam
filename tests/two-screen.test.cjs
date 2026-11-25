@@ -38,6 +38,16 @@ assert.match(app,/BTExamUI=\{/,'Home actions attached');
 assert.match(app,/role','status'/,'Accessible status card');
 assert.match(app,/recordLastSync\(\)/,'Recent synced status');
 assert.match(app,/function getQueue\(\)/,'Offline pending answers remain account-specific');
+const loginSection=app.slice(app.indexOf("function gate(mode='login'"),app.indexOf("const qkey=()"));
+assert.ok(loginSection.includes("if(mode==='login')name.value=savedUsername()"),'Returning username is pre-filled');
+assert.ok(loginSection.includes('OFFLINE_SIGNIN_REQUIRED'),'Fresh sign-ins must verify Firebase credentials');
+assert.ok(app.includes('browserLocalPersistence'),'Authenticated session persists on device');
+assert.ok(app.includes('getDocFromCache(ref)'),'Offline restoration uses Firestore cache');
+assert.ok(app.includes('rememberUsername(profile.username)'),'Remember username only after trusted profile load');
+assert.ok(app.includes("await requestSync();profilePanel();"),'Manual Sync displays offline help');
+assert.ok(app.includes('Turn on mobile data or connect to Wi-Fi'),'Offline Sync guidance is understandable');
+assert.ok(sw.includes('await fill(cache,SDK,previous)'),'Firebase runtime pre-cached for offline app reopening');
+
 assert.match(app,/const qkey=\(\)=>user\?/,'Pending answers are scoped by user');
 assert.match(app,/saveQueue\(getQueue\(\)\.filter\(item=>item\.id!==e\.id\)\)/,'Committed answers do not remain pending');
 assert.match(index,/id="paper-select"/,'Created Questions selector exists');

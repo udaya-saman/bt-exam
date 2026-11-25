@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.5-arena';let latestUpdate=null;
+const APP_VERSION='4.7.6-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -10,6 +10,19 @@ const rand=()=>crypto.randomUUID().replace(/-/g,'');
 const day=(date=new Date())=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Colombo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);const g=t=>p.find(v=>v.type===t).value;return g('year')+'-'+g('month')+'-'+g('day');};
 const week=(date=new Date())=>{const d=new Date(day(date)+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10)};
 const norm=name=>String(name||'').trim().toLowerCase();
+const LAST_USERNAME_KEY='bt_spark_last_username_v1';
+const OFFLINE_SYNC_MESSAGE='Turn on mobile data or connect to Wi-Fi, then tap Sync again. Your saved answers are safe on this device.';
+function savedUsername(){try{const value=localStorage.getItem(LAST_USERNAME_KEY)||'';return valid(value)?value:'';}catch(_){return '';}}
+function rememberUsername(value){if(!valid(value))return;try{localStorage.setItem(LAST_USERNAME_KEY,value);}catch(_){}}
+async function readSessionDoc(ref,optional=false){
+ const cached=async()=>{try{return await F.getDocFromCache(ref);}catch(e){if(optional)return null;throw e;}};
+ if(!navigator.onLine)return cached();
+ try{return await F.getDoc(ref);}
+ catch(e){
+  if(/unavailable|network|deadline-exceeded|offline/i.test(String(e?.code||'')+' '+String(e?.message||'')))return cached();
+  throw e;
+ }
+}
 const valid=name=>/^[A-Za-z0-9._-]{3,24}$/.test(name);
 const $=selector=>document.querySelector(selector);
 const clean=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -37,7 +50,7 @@ function syncDetail(err){
  if(/permission-denied|insufficient permissions/i.test(code+' '+detail))
    return 'Can’t sync yet. Please contact Udaya.';
  if(/unavailable|network|deadline-exceeded/i.test(code+' '+detail))
-   return 'No internet. Your answers are safe. Try again later.';
+   return OFFLINE_SYNC_MESSAGE;
  return 'Sync didn’t work. Try again or ask for help.';
 }
 function open(title,sub,restore){boardOpen=false;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
@@ -57,6 +70,7 @@ function errorMessage(e){
  if(/auth\/email-already-in-use/.test(code))return 'This username is already registered.';
  if(/auth\/weak-password/.test(code))return 'Please choose a stronger password.';
  if(/auth\/too-many-requests/.test(code))return 'Too many attempts. Please try again later.';
+ if(/OFFLINE_SIGNIN_REQUIRED/.test(message))return 'Turn on mobile data or connect to Wi-Fi to sign in. If you stayed signed in on this device, you can reopen the app offline.';
  if(/auth\/network-request-failed|unavailable|network/i.test(code+' '+message))return 'No connection. Check your internet and try again.';
  if(/permission-denied|insufficient permissions/i.test(code+' '+message))return 'Access denied. Please ask an administrator for help.';
  if(/PRACTICE_ONLY/.test(message))return 'You have already completed today’s ranked attempt.';
@@ -74,7 +88,10 @@ function gate(mode='login',message){
  const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Sign in to keep track of your progress.');
  const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.png':'./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
- const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
+ const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;name.autocomplete='username';
+ if(mode==='login')name.value=savedUsername();
+ const password=field(form,'Password (8 or more characters)','password');password.minLength=mode==='register'?8:1;
+ password.autocomplete=mode==='register'?'new-password':'current-password';
  const outlet=mode==='register'?sel(form,'Select outlet'):null;
  const err=document.createElement('p');err.className='err';const submit=document.createElement('button');submit.type='submit';submit.textContent=mode==='register'?'REGISTER':'SIGN IN';form.append(err,submit);box.append(form);
  form.onsubmit=async e=>{e.preventDefault();err.textContent='';submit.disabled=true;try{if(mode==='register')await register(name.value,password.value,outlet.value);else await login(name.value,password.value);}catch(ex){err.textContent=errorMessage(ex)}finally{submit.disabled=false}};
@@ -100,6 +117,8 @@ async function provisionAccount(name,password,outlet,targetAuth,targetDb){
 }
 async function login(name,password){
  if(!valid(name))throw Error('Invalid username.');
+ // Signed-out users must be verified by Firebase online. Never accept passwords offline.
+ if(!navigator.onLine)throw Error('OFFLINE_SIGNIN_REQUIRED');
  const r=await F.getDoc(F.doc(db,'usernames',norm(name)));
  if(!r.exists())throw Error('Incorrect username or password.');
  await A.signInWithEmailAndPassword(auth,r.data().authEmail,password);
@@ -173,6 +192,16 @@ async function restoreCloudSession(){
  try{const snap=await F.getDoc(F.doc(db,'savedSessions',user.uid));
   if(snap.exists()&&snap.data().snapshot){localStorage.setItem(storageKey(),JSON.stringify(snap.data().snapshot));if(typeof checkSavedSession==='function')checkSavedSession();}
  }catch(e){console.warn('Resume restore unavailable:',e.code||e);}
+}
+async function requestSync(){
+ if(!navigator.onLine){
+  syncIssue=OFFLINE_SYNC_MESSAGE;
+  note(OFFLINE_SYNC_MESSAGE);
+  return false;
+ }
+ await sync();
+ if(syncIssue)note(syncIssue);
+ return !syncIssue;
 }
 async function sync(){
  if(!user||!profile||syncing||!navigator.onLine)return;syncing=true;
@@ -314,7 +343,7 @@ function board(keepScroll=false){
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
- if(outletView){const crown=records.find(v=>v.people>=2);const status=document.createElement('div');status.className='pg-private';status.textContent=crown?'👑 Crown leader: '+crown.name+' · '+crown.score+' average points':'🍕 The crown is waiting! At least 2 active players are needed.';box.append(status);}
+ if(outletView){const crown=records.find(v=>v.people>=2);if(crown){const status=document.createElement('div');status.className='pg-private';status.textContent='👑 Crown leader: '+crown.name+' · '+crown.score+' average points';box.append(status);}}
  const section=document.createElement('div');section.className='pg-section';section.textContent=outletView?'OUTLET LEAGUE':'PLAYER STANDINGS';box.append(section);
  const standings=document.createElement('div');standings.className='pg-standings-scroll';
  standings.setAttribute('role','region');standings.setAttribute('aria-label',outletView?'Outlet standings':'Player standings, fourth place onwards');box.append(standings);
@@ -397,10 +426,11 @@ async function profilePanel(){
  const symbol=document.createElement('span');symbol.className='arena-status-icon';
  symbol.textContent=pending?'!':'✓';
  const statusCopy=document.createElement('div');statusCopy.className='arena-status-copy';
- const heading=document.createElement('strong');heading.textContent=pending?(syncIssue?'Sync failed':'Answers waiting'):'All caught up';
+ const offlineHint=syncIssue===OFFLINE_SYNC_MESSAGE&&!navigator.onLine;
+ const heading=document.createElement('strong');heading.textContent=offlineHint?'Connect to sync':pending?(syncIssue?'Sync paused':'Answers waiting'):'All caught up';
  const explanation=document.createElement('small');
- explanation.textContent=pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
- status.classList.add(pending?'has-pending':'is-synced');
+ explanation.textContent=offlineHint?OFFLINE_SYNC_MESSAGE:pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
+ status.classList.add(pending||offlineHint?'has-pending':'is-synced');
  statusCopy.append(heading,explanation);
  const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-update.png':'./images/mascot/pizza-correct.png';statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
@@ -445,7 +475,7 @@ async function profilePanel(){
  outletRow.append(pencil,copy,arrow);outletRow.onclick=changeOutlet;body.append(outletRow);
  card.append(body);box.append(card);
  const syncStatus=document.createElement('div');syncStatus.className='arena-sync-area';
- const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await sync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
+ const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await requestSync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
  syncStatus.append(status,syncButton);
  // Load a ranking snapshot when the card opens before the leaderboard has been visited.
  // Use the existing shared listener whenever it is available.
@@ -630,7 +660,7 @@ function viewSyncHealth(){
   const val=document.createElement('small');val.textContent=value;
   row.append(key,val);box.append(row);
  }
- box.append(btn('Try Sync',async()=>{await sync();viewSyncHealth();}),
+ box.append(btn('Try Sync',async()=>{await requestSync();viewSyncHealth();}),
             btn('Manage',adminPanel),
             btn('Close',close));
 }
@@ -643,7 +673,7 @@ function openNotifications(){
  else {content.textContent='No new notifications.';}
  box.append(content);
  if(admins&&requests.length)box.append(btn('Manage',adminPanel));
- if(getQueue().length)box.append(btn('Sync',async()=>{await sync();openNotifications();}));
+ if(getQueue().length)box.append(btn('Sync',async()=>{await requestSync();openNotifications();}));
  box.append(btn('My Player Card',profilePanel),btn('Close',close));
 }
 window.BTExamUI={
@@ -817,22 +847,27 @@ function show(view){if(!user||!profile){gate();return;}if(view==='board')board()
 async function session(u){
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;rankSnapshotReady=false;cloudRank.clear();rankCloudUnavailable=false;gate();return;}
  try{
-  const blocked=await F.getDoc(F.doc(db,'accountBlocks',u.uid));
-  if(blocked.exists()){await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;}
-  let snap=await F.getDoc(F.doc(db,'users',u.uid));
-  // Firebase Auth can fire before the registration transaction creates the user profile.
-  for(let retry=0;retry<6&&!snap.exists();retry++){
+  // Offline access is only for the authenticated Firebase user restored by persistence.
+  if(auth?.currentUser?.uid!==u.uid)return;
+  const blocked=await readSessionDoc(F.doc(db,'accountBlocks',u.uid),true);
+  if(blocked?.exists()){await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;}
+  let snap=await readSessionDoc(F.doc(db,'users',u.uid));
+  // New online registrations can precede the user profile being written.
+  for(let retry=0;navigator.onLine&&retry<6&&!snap.exists();retry++){
     await new Promise(resolve=>setTimeout(resolve,500));
-    snap=await F.getDoc(F.doc(db,'users',u.uid));
+    snap=await readSessionDoc(F.doc(db,'users',u.uid));
   }
-  if(!snap.exists()){gate('setup','We could not open your account. Please reopen the app or ask for help.');return;}
-  profile=snap.data();const adminDocument=await F.getDoc(F.doc(db,'admins',u.uid));admins=adminDocument.exists()&&adminDocument.data().enabled===true;
+  if(!snap.exists()){gate('setup',navigator.onLine?'We could not open your account. Please reopen the app or ask for help.':'Turn on mobile data or connect to Wi-Fi once to load your player card on this device.');return;}
+  if(auth?.currentUser?.uid!==u.uid)return;
+  profile=snap.data();rememberUsername(profile.username);
+  const adminDocument=await readSessionDoc(F.doc(db,'admins',u.uid),true);
+  admins=!!(adminDocument?.exists()&&adminDocument.data().enabled===true);
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
-  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists()){profile=d.data();if(!d.metadata?.hasPendingWrites&&!d.metadata?.fromCache)celebrateAchievements(profile);}});
+  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists()&&auth?.currentUser?.uid===u.uid){profile=d.data();rememberUsername(profile.username);if(!d.metadata?.hasPendingWrites&&!d.metadata?.fromCache)celebrateAchievements(profile);}});
   close();celebrateAchievements(profile);if(typeof checkSavedSession==='function')checkSavedSession();restoreCloudSession();sync();if(!unsubscribe)listen();
- }catch(e){gate('setup',errorMessage(e));}
+ }catch(e){gate('setup',!navigator.onLine?'Turn on mobile data or connect to Wi-Fi once to load your player card on this device.':errorMessage(e));}
 }
 async function checkForUpdates(){
  if(!navigator.onLine)return;
@@ -885,7 +920,22 @@ function promptUpdate(){
   }
 });updateNow.classList.add('pg-btn-green','arena-update-now');box.append(updateNow,btn('Later',close,true));
 }
-window.addEventListener('online',()=>{sync();checkForUpdates();});
+window.addEventListener('online',async()=>{
+ // Check with Firebase when the connection returns; do not trust cached access forever.
+ if(auth?.currentUser&&profile){
+  try{
+   const uid=auth.currentUser.uid;
+   const blocked=await F.getDocFromServer(F.doc(db,'accountBlocks',uid));
+   const account=await F.getDocFromServer(F.doc(db,'users',uid));
+   if(auth?.currentUser?.uid!==uid)return;
+   if(blocked.exists()||!account.exists()){
+    await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;
+   }
+   profile=account.data();rememberUsername(profile.username);
+  }catch(e){console.info('Account access will be checked when the connection is available.',e?.code||e);}
+ }
+ sync();checkForUpdates();
+});
 setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
 if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','The leaderboard is not ready yet. Please try again later.');dock.textContent='🏆 Leaderboard (setup)';return;}
 try{
@@ -894,7 +944,12 @@ try{
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-auth.js'),
  import('https://www.gstatic.com/firebasejs/'+VERSION+'/firebase-firestore.js')]);
  A=authModule;F=firestoreModule;const app=appModule.initializeApp(config);auth=A.getAuth(app);
- try{await A.setPersistence(auth,A.browserLocalPersistence);}catch(e){console.warn('Persistent login unavailable:',e);await A.setPersistence(auth,A.inMemoryPersistence);}
+ try{await A.setPersistence(auth,A.browserLocalPersistence);}
+ catch(e){
+  console.warn('Long-term login persistence unavailable:',e);
+  try{await A.setPersistence(auth,A.browserSessionPersistence);}
+  catch(_){await A.setPersistence(auth,A.inMemoryPersistence);}
+ }
  try{db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})});}catch(storageError){console.warn('Persistent offline database unavailable:',storageError);db=F.getFirestore(app);note('Offline storage is limited on this browser.');}
  A.onAuthStateChanged(auth,session);
 }catch(e){gate('setup','The app could not start. Please check your internet and try again.');}
