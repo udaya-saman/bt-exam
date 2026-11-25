@@ -130,5 +130,70 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
  assert(sw.includes('js/account-profile-save.js?v=4.2.0'));
  assert.match(version,/^4\.7\.\d+-arena$/);
  assert(app.includes("const APP_VERSION='"+version+"'"));
+
+ // Simulate a returning authenticated player with mobile data turned off.
+ const offlineStart=app.indexOf('const LAST_USERNAME_KEY='),offlineEnd=app.indexOf('const valid=name=>',offlineStart);
+ const sessionStart=app.indexOf('async function session(u){'),sessionEnd=app.indexOf('\nasync function checkForUpdates()',sessionStart);
+ const syncStart=app.indexOf('async function requestSync(){'),syncEnd=app.indexOf('\nasync function sync(){',syncStart);
+ const loginStart=app.indexOf('async function login(name,password){'),loginEnd=app.indexOf('\nconst qkey=',loginStart);
+ assert(offlineStart>=0&&offlineEnd>offlineStart&&sessionStart>=0&&sessionEnd>sessionStart);
+ assert(syncStart>=0&&syncEnd>syncStart&&loginStart>=0&&loginEnd>loginStart);
+ const savedNames=new Map();
+ let onlineReads=0,cacheReads=0,syncCalls=0,loginCalls=0,closed=0,gateError=null,notes=[];
+ const userDoc={exists:()=>true,data:()=>({username:'ReturningPlayer',outlet:'Matara',totalPoints:842})};
+ const registryDoc={exists:()=>true,data:()=>({authEmail:'existing@example.test'})};
+ const Fsession={
+  doc:(_db,collection,uid)=>({collection,uid}),
+  getDocFromCache:async ref=>{cacheReads++;if(ref.collection==='users')return userDoc;throw Object.assign(Error('Cache miss'),{code:'unavailable'});},
+  getDoc:async ref=>{onlineReads++;return ref.collection==='usernames'?registryDoc:ref.collection==='users'?userDoc:{exists:()=>false};},
+  onSnapshot:()=>()=>{},
+ };
+ const offlineCtx={
+  navigator:{onLine:false},
+  valid:n=>/^[A-Za-z0-9._-]{3,24}$/.test(n),
+  localStorage:{getItem:k=>savedNames.get(k)||null,setItem:(k,v)=>savedNames.set(k,v)},
+  F:Fsession,db:{},auth:{currentUser:{uid:'u-return'}},
+  A:{signOut:async()=>{},signInWithEmailAndPassword:async()=>{loginCalls++;}},
+  user:null,profile:null,admins:false,active:null,unsubscribe:null,unsubscribeAdmin:null,unsubscribeProfile:null,
+  syncIssue:'',note:m=>notes.push(m),close:()=>closed++,gate:(...args)=>{gateError=args;},
+  celebrateAchievements:()=>{},restoreCloudSession:()=>{},sync:async()=>{syncCalls++;},
+  listen:()=>{},akey:()=> 'active',console
+ };
+ vm.createContext(offlineCtx);
+ vm.runInContext(app.slice(offlineStart,offlineEnd),offlineCtx);
+ vm.runInContext(app.slice(sessionStart,sessionEnd)+'\nthis.restoreSession=session;',offlineCtx);
+ vm.runInContext(app.slice(syncStart,syncEnd)+'\nthis.askSync=requestSync;',offlineCtx);
+ vm.runInContext(app.slice(loginStart,loginEnd)+'\nthis.passwordSignIn=login;',offlineCtx);
+ // Remember only successful account names, never passwords.
+ assert.equal(vm.runInContext('savedUsername()',offlineCtx),'');
+ vm.runInContext("rememberUsername('ReturningPlayer');",offlineCtx);
+ assert.equal(vm.runInContext('savedUsername()',offlineCtx),'ReturningPlayer');
+ assert.equal(savedNames.size,1);
+ await offlineCtx.restoreSession({uid:'u-return'});
+ assert.equal(offlineCtx.profile.username,'ReturningPlayer','Cached user profile opens without mobile data');
+ assert.equal(closed,1,'Player session is opened normally');
+ assert.equal(onlineReads,0,'Offline session never depends on a network read');
+ assert.ok(cacheReads>=3,'Cached block, profile and role inspected');
+ assert.equal(gateError,null,'Offline returning player is not taken to a login error');
+ const beforeManualSync=syncCalls;
+ assert.equal(await offlineCtx.askSync(),false,'Offline manual Sync returns safely');
+ assert.equal(syncCalls,beforeManualSync,'Offline manual Sync never contacts the server');
+ assert.equal(offlineCtx.syncIssue.includes('Turn on mobile data'),true,'Clear mobile-data/Wi-Fi guidance');
+ assert.ok(notes.at(-1).includes('connect to Wi-Fi'));
+ await assert.rejects(offlineCtx.passwordSignIn('ReturningPlayer','secret'),/OFFLINE_SIGNIN_REQUIRED/);
+ assert.equal(loginCalls,0,'Signing out cannot bypass Firebase password verification offline');
+ // Wi-Fi or mobile data restores online sign-in and manual synchronization.
+ offlineCtx.navigator.onLine=true;offlineCtx.syncIssue='';
+ assert.equal(await offlineCtx.askSync(),true);
+ assert.equal(syncCalls,beforeManualSync+1);
+ await offlineCtx.passwordSignIn('ReturningPlayer','secret');
+ assert.equal(loginCalls,1);
+ assert.ok(onlineReads>=1);
+ // Network disruptions fall back to the same authenticated user's cached data.
+ Fsession.getDoc=async()=>{onlineReads++;throw Object.assign(Error('network'),{code:'unavailable'});};
+ const recovered=await vm.runInContext('readSessionDoc(F.doc(db,"users","u-return"))',offlineCtx);
+ assert.equal(recovered.data().username,'ReturningPlayer');
+ assert.ok(app.includes("if(auth?.currentUser?.uid!==u.uid)return"),'Cached user must match Firebase auth identity');
+ assert.ok(sw.includes('firebase-auth.js')&&sw.includes('firebase-firestore.js'),'Auth SDK is cached for offline reopen');
  console.log('PASS: profile transaction, picture/name changes, password-only, combined save, wrong password, partial failure, registry conflict and repair, sync-last UI, release assets.');
 })().catch(err=>{console.error(err);process.exitCode=1;});
