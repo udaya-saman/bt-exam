@@ -668,3 +668,39 @@ body #bt-spark-root.arena-manage-users-layout .pg-users-footer>button{
  body #bt-spark-root.arena-leaderboard-layout .pg-board-search{min-height:36px!important;padding:7px 10px!important}
  body #bt-spark-root.arena-leaderboard-layout .pg-section{margin:4px 0!important}
 }
+
+/* 4.7.12 — share the actual leaderboard's palette, preserve its chalk art
+   and use the existing Pizza Arena green for level progress. */
+body #bt-spark-root.arena-profile-mode{
+ background:#181416!important;
+}
+body #bt-spark-root.arena-profile-mode .panel{
+ background:linear-gradient(180deg,#21191b 0%,#181416 100%)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card,
+body #bt-spark-root.arena-profile-mode .arena-achievements-card,
+body #bt-spark-root.arena-profile-mode .arena-sync-area{
+ background:linear-gradient(180deg,#21191b 0%,#181416 100%)!important;
+ border-color:#ffe3bf26!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card-heading,
+body #bt-spark-root.arena-profile-mode .arena-achievements-heading,
+body #bt-spark-root.arena-profile-mode .arena-level-wrap,
+body #bt-spark-root.arena-profile-mode .arena-stat,
+body #bt-spark-root.arena-profile-mode .arena-personal-ranks>div,
+body #bt-spark-root.arena-profile-mode .arena-outlet-row,
+body #bt-spark-root.arena-profile-mode .arena-reward-item,
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-card{
+ background:linear-gradient(90deg,#493034,#322629)!important;
+ border-color:#ffffff15!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card-heading,
+body #bt-spark-root.arena-profile-mode .arena-achievements-heading{color:#ffe2aa!important}
+body #bt-spark-root.arena-profile-mode .arena-reward-item.is-earned{
+ background:linear-gradient(90deg,#674021,#322527)!important;
+ border-color:#e9bd6f8e!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-fill{
+ background:linear-gradient(90deg,#0b8f32,#2fdb53,#b1ff54)!important;
+ box-shadow:none!important;
+}
