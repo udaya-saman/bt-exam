@@ -116,3 +116,48 @@ assert.ok(app.includes('if(admins){const manageButton='),'Manage remains admin-o
 assert.ok(css.includes('button.arena-manage-action{'),'gold Manage style exists');
 assert.ok(css.includes('#efbd54'),'Manage has gold gradient');
 console.log('Podium name wrapping, quicker animation, Pizza Hut red, admin-only gold Manage and prior leaderboard behavior validated.');
+
+(async()=>{
+ const manageStart=app.indexOf('async function manageUsers(){'),manageEnd=app.indexOf('async function confirmUserRemoval',manageStart);
+ assert.ok(manageStart>=0&&manageEnd>manageStart);
+ const manageSrc=app.slice(manageStart,manageEnd);
+ let usersBox,created=0,backed=0,closed=0,removed=[];
+ function node(tag='div'){
+  const n=el(tag);n.isConnected=true;
+  Object.defineProperty(n,'lastChild',{get:()=>n.children.at(-1)});
+  return n;
+ }
+ const managerRoot=node(),data=[
+  {uid:'u-admin',username:'Manager',outlet:'Matara',totalPoints:99},
+  {uid:'u-reserved',username:'Udaya',outlet:'Tangalle',totalPoints:88},
+  {uid:'u-player',username:'Player One',outlet:'Matara',totalPoints:77},
+  {uid:'u-otheradmin',username:'Other Admin',outlet:'Galle',totalPoints:66},
+  {uid:'u-player2',username:'Player Two',outlet:'Tangalle',totalPoints:55}
+ ];
+ const ctx={admins:true,user:{uid:'u-admin'},root:managerRoot,db:{},document:{createElement:node},
+  RESERVED:new Set(['udaya','indika']),norm:x=>String(x||'').trim().toLowerCase(),
+  open:()=>{usersBox=node();return usersBox},adminCreateUser:()=>created++,adminPanel:()=>backed++,close:()=>closed++,
+  confirmUserRemoval:p=>removed.push(p.uid),errorMessage:()=> 'error',
+  btn:(title,handler)=>{const b=node('button');b.textContent=title;b.click=handler;return b;},
+  F:{collection:()=>({}),query:()=>({}),limit:()=>250,doc:(_db,_collection,uid)=>uid,
+   getDocs:async()=>({docs:data.map(({uid,...d})=>({id:uid,data:()=>d}))}),
+   getDoc:async uid=>({exists:()=>uid==='u-admin'||uid==='u-otheradmin'})}
+ };
+ vm.createContext(ctx);await vm.runInContext(manageSrc+'\nmanageUsers();',ctx);
+ const find=n=>usersBox.children.find(x=>x.className===n);
+ const footer=find('pg-users-footer'),search=find('pg-users-search'),list=find('pg-users-scroll');
+ assert.equal(managerRoot.classList.contains('arena-manage-users-layout'),true);
+ assert.equal(usersBox.children.at(-1),footer);
+ assert.deepEqual(Array.from(footer.children,b=>b.textContent),['Create User','Back','Close']);
+ footer.children.forEach(b=>b.click());assert.deepEqual([created,backed,closed],[1,1,1]);
+ assert.equal(list.children.length,5);
+ assert.deepEqual(Array.from(list.children,r=>!!r.lastChild.disabled),[true,true,false,true,false]);
+ search.value='  MATARA ';search.input();
+ assert.equal(list.children.length,2);assert.equal(list.children[0].lastChild.textContent,'PROTECTED');
+ assert.equal(list.children[1].lastChild.textContent,'DELETE');list.children[1].lastChild.click();
+ assert.deepEqual(removed,['u-player']);
+ search.value='player two';search.input();assert.equal(list.children.length,1);assert.match(list.children[0].children[0].children[0].textContent,/Player Two/);
+ search.value='nothing matches';search.input();assert.equal(list.children[0].className,'pg-empty');
+ search.value='';search.input();assert.equal(list.children.length,5);
+ console.log('Manage Users: fixed footer actions, search by username/outlet, and existing protection rules verified.');
+})().catch(err=>{console.error(err);process.exitCode=1;});
