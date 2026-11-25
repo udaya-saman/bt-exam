@@ -1,0 +1,513 @@
+{
+  "schema": 1,
+  "source": "All-Assessment-Questions.xlsx",
+  "excludedDuplicateRows": [
+    21,
+    42,
+    44,
+    45,
+    46,
+    49,
+    63,
+    67,
+    74,
+    88,
+    94
+  ],
+  "answers": {
+    "1": {
+      "correct": [
+        2
+      ]
+    },
+    "2": {
+      "correct": [
+        5
+      ]
+    },
+    "3": {
+      "correct": [
+        1
+      ]
+    },
+    "4": {
+      "correct": [
+        2
+      ]
+    },
+    "5": {
+      "correct": [
+        3
+      ]
+    },
+    "6": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "7": {
+      "correct": [
+        1
+      ]
+    },
+    "8": {
+      "correct": [
+        3
+      ]
+    },
+    "9": {
+      "correct": [
+        2
+      ]
+    },
+    "10": {
+      "correct": [
+        1,
+        2,
+        3
+      ]
+    },
+    "11": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "12": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "13": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "14": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "15": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "16": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "17": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "18": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "19": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "20": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "22": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "23": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "24": {
+      "correct": [
+        2
+      ]
+    },
+    "25": {
+      "correct": [
+        4
+      ]
+    },
+    "26": {
+      "suggested": "C — Cleanliness; H — Hospitality; A — Accuracy; M — Maintenance; P — Product Quality; S — Speed of Service.",
+      "siSuggested": "C — පිරිසිදුකම; H — ආගන්තුක සත්කාරය; A — නිවැරදිතාව; M — නඩත්තුව; P — නිෂ්පාදනයේ ගුණාත්මකභාවය; S — සේවා වේගය."
+    },
+    "27": {
+      "correct": [
+        1
+      ]
+    },
+    "28": {
+      "correct": [
+        2
+      ]
+    },
+    "29": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "30": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "31": {
+      "correct": [
+        2
+      ]
+    },
+    "32": {
+      "correct": [
+        1
+      ]
+    },
+    "33": {
+      "correct": [
+        2
+      ]
+    },
+    "34": {
+      "correct": [
+        1
+      ]
+    },
+    "35": {
+      "correct": [
+        2
+      ]
+    },
+    "36": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "37": {
+      "correct": [
+        1
+      ]
+    },
+    "38": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "39": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "40": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "41": {
+      "correct": [
+        2
+      ]
+    },
+    "43": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "47": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "48": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "50": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "51": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "52": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "53": {
+      "correct": [
+        3
+      ]
+    },
+    "54": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "55": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "56": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "57": {
+      "correct": [
+        3
+      ],
+      "review": true,
+      "note": "The final scanned option is truncated. The suggested third choice is clear; preserve the original text for review."
+    },
+    "58": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "59": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "60": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "61": {
+      "correct": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "62": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "64": {
+      "correct": [
+        1
+      ],
+      "review": true,
+      "note": "Options 2 and 4 were truncated in the scan. Option 1 matches the documented outlet concepts."
+    },
+    "65": {
+      "correct": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "66": {
+      "suggested": "Examples requiring an emergency/closure decision include fire, flooding, major utility failure, unsafe equipment, serious injury or security threats. Protect guests and staff, notify the manager and emergency services, and close only under the approved emergency procedure.",
+      "siSuggested": "ගින්න, ජලගැලීම්, විශාල විදුලි/ජල බිඳවැටීම්, අනාරක්ෂිත උපකරණ, බරපතළ තුවාල හෝ ආරක්ෂක තර්ජන වැනි තත්ත්වයන්හි පළමුව ආරක්ෂාව සලසා කළමනාකරුට හා හදිසි සේවාවලට දන්වන්න. වසාදැමීම අනුමත ක්‍රියාපටිපාටිය අනුව තීරණය කරන්න.",
+      "review": true
+    },
+    "68": {
+      "suggested": "ADS — Average Daily Sales; SSTG — Same-Store Transaction Growth; CCP — Critical Control Point; TTCS — Time Temperature Control System; YTD — Year to Date.",
+      "siSuggested": "ADS — සාමාන්‍ය දෛනික විකුණුම්; SSTG — එකම වෙළඳසැලේ ගනුදෙනු වර්ධනය; CCP — තීරණාත්මක පාලන ලක්ෂ්‍යය; TTCS — කාල-උෂ්ණත්ව පාලන ක්‍රමය; YTD — වසර ආරම්භයේ සිට අද දක්වා.",
+      "review": true
+    },
+    "69": {
+      "suggested": "Hand-wash sink: 37–43°C (documented training range); BOH ambient: follow the approved outlet standard. A food-safe minimum cooked pizza temperature and a 20-minute pouched pizza temperature were not specified in the supplied source; verify both against the current approved SOP before use.",
+      "siSuggested": "අත් සේදීමේ සින්ක් ජලය: 37–43°C (පුහුණු මාර්ගෝපදේශයට අනුව). BOH උෂ්ණත්වය සහ pizza පිසූ අවම උෂ්ණත්වය/විනාඩි 20 pouch උෂ්ණත්වය සඳහා අලුත්ම අනුමත SOP තහවුරු කරන්න.",
+      "review": true
+    },
+    "70": {
+      "suggested": "The two newly introduced Pan Pizza names are not identified in the supplied assessment or training material. Insert the two product names from the latest approved menu; do not guess.",
+      "siSuggested": "අලුතින් එක් කළ Pan Pizza වර්ග දෙකේ නම් සපයා ඇති දත්තවල නොමැත. අනුමත අලුත්ම මෙනුවෙන් නම් දෙක පුරවන්න.",
+      "review": true
+    },
+    "71": {
+      "correct": [
+        1,
+        2,
+        3,
+        5
+      ]
+    },
+    "72": {
+      "suggested": "Four examples: birthday gift or voucher; wedding assistance; childbirth assistance; education or scholarship support.",
+      "siSuggested": "උදාහරණ හතරක්: උපන්දින තෑගි/වවුචර්, විවාහ දීමනා, දරු උපත සඳහා ආධාර, අධ්‍යාපන/ශිෂ්‍යත්ව ආධාර."
+    },
+    "73": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "75": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "76": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "77": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "78": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "79": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "80": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "81": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "82": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "83": {
+      "correct": [
+        3
+      ]
+    },
+    "84": {
+      "correct": [
+        3
+      ],
+      "review": true
+    },
+    "85": {
+      "correct": [
+        4
+      ],
+      "review": true
+    },
+    "86": {
+      "correct": [
+        1,
+        2,
+        3
+      ]
+    },
+    "87": {
+      "correct": [
+        1
+      ],
+      "review": true
+    },
+    "89": {
+      "correct": [
+        2
+      ],
+      "review": true
+    },
+    "90": {
+      "correct": [
+        5
+      ]
+    },
+    "91": {
+      "suggested": "Possible high-risk times include opening the restaurant, cash handling or bank runs, closing/locking up, and periods when staff are working alone or the premises are unattended. Follow the current security SOP.",
+      "siSuggested": "අවදානම් අවස්ථා: ආපනශාලාව විවෘත කිරීමේදී, මුදල් ගණන් කිරීමේදී/බැංකු ගෙන යාමේදී, වසා තැබීමේදී සහ තනිව සේවය කරන හෝ ස්ථානය හිස්වන අවස්ථාවලදී. අදාළ ආරක්ෂක SOP අනුගමනය කරන්න.",
+      "review": true
+    },
+    "92": {
+      "correct": [],
+      "suggested": "None of the six choices is unrelated to food safety; every listed statement is food-safety related. The question requires a 'None of the above' option.",
+      "siSuggested": "මෙහි සඳහන් විකල්ප හයම ආහාර ආරක්ෂාවට අදාළ වේ. නිවැරදි පිළිතුර සඳහා 'ඉහත කිසිවක් නොවේ' විකල්පයක් අවශ්‍යයි.",
+      "review": true,
+      "note": "All six answers describe food safety practices. No negative answer exists in the supplied options."
+    },
+    "93": {
+      "suggested": "SSTG — Same-Store Transaction Growth; SSSG — Same-Store Sales Growth; ADS — Average Daily Sales; ADT — Average Daily Transactions; APC — Average Per Check (or Average Per Cheque).",
+      "siSuggested": "SSTG — එකම වෙළඳසැලේ ගනුදෙනු වර්ධනය; SSSG — එකම වෙළඳසැලේ විකුණුම් වර්ධනය; ADS — සාමාන්‍ය දෛනික විකුණුම්; ADT — සාමාන්‍ය දෛනික ගනුදෙනු; APC — ගනුදෙනුවකට සාමාන්‍ය වටිනාකම.",
+      "review": true
+    },
+    "95": {
+      "correct": [
+        1
+      ]
+    },
+    "96": {
+      "suggested": "The four FER category names are not defined in the provided assessments or training material. Confirm the official FER checklist and enter those four headings here rather than treating an unsupported guess as correct.",
+      "siSuggested": "FER ප්‍රධාන ප්‍රවර්ග හතර සපයා ඇති ලේඛනවල නිශ්චිතව දක්වා නොමැත. අනුමත FER checklist එකෙන් නම් හතර තහවුරු කර එක් කරන්න.",
+      "review": true
+    },
+    "97": {
+      "correct": [
+        2
+      ]
+    }
+  }
+}
