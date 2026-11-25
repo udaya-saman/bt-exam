@@ -45,6 +45,8 @@ vm.runInContext(source,context);
 const individual=context.ranked('weekly',false);
 assert.deepEqual(Array.from(individual.map(x=>x.name)),['Dana','Alice','Bob','Cara']);
 assert.deepEqual(Array.from(context.ranked('alltime',false).map(x=>x.name)),['Dana','Alice','Bob','Cara']);
+assert.equal(individual.find(x=>x.name==='Alice').totalAnswers,6,'Published answer total used for accuracy');
+assert.equal(context.answerAccuracy(3,6),'50%');
 const crowns=context.ranked('weekly',true);
 assert.ok(!crowns.some(x=>x.name==='Other'),'Other must not be in outlet standings');
 assert.equal(crowns.find(x=>x.name==='Galle').people,1,'Excluded admins must not count in outlet averages');

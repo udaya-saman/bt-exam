@@ -16,8 +16,8 @@ assert.match(src,/place\.textContent=String\(places\.get\(r\)\)/);
 assert.match(css,/\.pg-standings-scroll\{[^}]*overflow-y:auto/);
 assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
-assert.ok(html.includes('arena-polish-v43.css?v=4.7.12'));
-assert.ok(sw.includes('arena-polish-v43.css?v=4.7.12'));
+assert.ok(html.includes('arena-polish-v43.css?v=4.7.13'));
+assert.ok(sw.includes('arena-polish-v43.css?v=4.7.13'));
 assert.doesNotMatch(src,/The crown is waiting!/,'The empty crown waiting panel is removed');
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
@@ -27,7 +27,7 @@ function el(tag='div'){
 }
 const root=el();root.hidden=false;
 let box,profileOpened=0,closed=0;
-const records=Array.from({length:25},(_,i)=>({name:'Player '+(i+1),outlet:'Matara',uid:'u'+(i+1),score:500-i,lifetimePoints:500-i,rank:i+1,people:3}));
+const records=Array.from({length:25},(_,i)=>({name:'Player '+(i+1),outlet:'Matara',uid:'u'+(i+1),score:500-i,lifetimePoints:500-i,rank:i+1,people:3,correctAnswers:7,totalAnswers:8}));
 const ctx={root,document:{createElement:el,createTextNode:x=>x},window:{},period:'weekly',outletView:false,
  showAllPlayers:false,profile:{outlet:'Matara'},user:{uid:'u25'},admins:false,boardOpen:false,unsubscribe:()=>{},
  ranked:()=>records,norm:x=>String(x||'').trim().toLowerCase(),rankEligible:()=>false,listen:()=>{},attachPlayerDetails:()=>{},day:()=>'',week:()=>'',close:()=>closed++,
@@ -91,16 +91,30 @@ assert.ok(detailStart>=0&&detailEnd>detailStart);
 const detailSrc=app.slice(detailStart,detailEnd);
 assert.match(detailSrc,/className='arena-detail-actions'/);
 let detailsBox,returned=0;
-const detailsCtx={root,document:{createElement:el},window:{BTRewards:{level:()=>({number:7})},ArenaNav:{back:()=>returned++}},period:'weekly',
+const detailsCtx={root,user:{uid:'u25'},profile:{},statTotals:()=>({correct:3,answered:4}),document:{createElement:el},window:{BTRewards:{level:()=>({number:7})},ArenaNav:{back:()=>returned++}},period:'weekly',
  ranked:()=>records,readBest:()=>2,loadBest:()=>Promise.resolve(),
  btn:(title,action)=>{const b=el('button');b.textContent=title;b.click=action;return b;},
  open:()=>{detailsBox=el();return detailsBox;}};
-vm.createContext(detailsCtx);vm.runInContext(detailSrc+'\nplayerDetails("u4");',detailsCtx);
+vm.createContext(detailsCtx);vm.runInContext(app.slice(app.indexOf('function publicAnswerCount('),app.indexOf('// Rank history is a client-observed'))+'\n'+detailSrc+'\nplayerDetails("u4");',detailsCtx);
 const detail=detailsBox.children[0],stats=detail.children.at(-1),actions=detailsBox.children[1];
 assert.equal(detail.className,'arena-player-detail');
 assert.equal(actions.className,'arena-detail-actions');
-assert.equal(stats.children[2].children[0].textContent,'4');
-assert.equal(stats.children[3].children[0].textContent,'2');
+assert.equal(stats.children[2].children[0].textContent,'87.5%');
+assert.equal(stats.children[2].children[1].textContent,'Accuracy');
+assert.equal(stats.children[3].children[0].textContent,'4');
+assert.equal(stats.children[4].children[0].textContent,'2');
+assert.equal(detailsCtx.playerAccuracy(records.at(-1)),'75%','Own card includes personal totals');
+assert.equal(detailsCtx.answerAccuracy(0,0),'0%');
+assert.equal(detailsCtx.answerAccuracy(2,3),'66.7%');
+assert.equal(detailsCtx.answerAccuracy(3,3),'100%');
+assert.equal(detailsCtx.answerAccuracy(0,5),'0%');
+assert.equal(detailsCtx.answerAccuracy(12,10),'100%');
+assert.equal(detailsCtx.publicAnswerCount({outletAnswers:{Matara:4,Galle:6}}),10);
+assert.equal(detailsCtx.publicAnswerCount({dailyActivity:{'2026-11-25':2}}),2);
+assert.ok(app.includes("answerAccuracy(totals.correct,totals.answered),'Accuracy','answered'"));
+assert.ok(app.includes('Please contact admin.'));
+assert.ok(!app.includes('Please contact Udaya.'));
+assert.match(css,/\.arena-level-badge\{[^}]*height:19px!important/);
 actions.children[0].click();assert.equal(returned,1);
 assert.match(css,/justify-content:flex-end/);
 

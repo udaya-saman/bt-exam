@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.12-arena';let latestUpdate=null;
+const APP_VERSION='4.7.13-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -48,7 +48,7 @@ function statTotals(){
 function syncDetail(err){
  const code=String(err?.code||''),detail=String(err?.message||'');
  if(/permission-denied|insufficient permissions/i.test(code+' '+detail))
-   return 'Can’t sync yet. Please contact Udaya.';
+   return 'Can’t sync yet. Please contact admin.';
  if(/unavailable|network|deadline-exceeded/i.test(code+' '+detail))
    return OFFLINE_SYNC_MESSAGE;
  return 'Sync didn’t work. Try again or ask for help.';
@@ -309,13 +309,29 @@ async function sync(){
 }
 function ranked(period='weekly',outletView=false){
  let list=[];const w=week();
- if(!outletView)list=users.filter(rankEligible).map(u=>({name:u.name,outlet:u.outlet,avatar:u.avatar,uid:u.uid,correctAnswers:Number(u.correctAnswers||0),dailyActivity:u.dailyActivity||{},lifetimePoints:Number(u.totalPoints||0),score:period==='weekly'?Number(u.weeklyPoints?.[w]||0):Number(u.totalPoints||0)}));
+ if(!outletView)list=users.filter(rankEligible).map(u=>({name:u.name,outlet:u.outlet,avatar:u.avatar,uid:u.uid,correctAnswers:Number(u.correctAnswers||0),totalAnswers:publicAnswerCount(u),dailyActivity:u.dailyActivity||{},lifetimePoints:Number(u.totalPoints||0),score:period==='weekly'?Number(u.weeklyPoints?.[w]||0):Number(u.totalPoints||0)}));
  else list=OUTLETS.filter(name=>name!=='Other').map(name=>{
   let sum=0,people=0;for(const u of users.filter(rankEligible)){const key=period==='weekly'?w+'__'+name:name;const ans=period==='weekly'?Number(u.outletWeeklyAnswers?.[key]||0):Number(u.outletAnswers?.[key]||0);sum+=period==='weekly'?Number(u.outletWeeklyPoints?.[key]||0):Number(u.outletPoints?.[key]||0);if(ans>0)people++;}
   return{name,score:people?Math.round(sum/people):0,people};
  });
  list.sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
  let position=0,last=-1;return list.map((entry,i)=>{if(entry.score!==last)position=i+1;last=entry.score;return{...entry,rank:position}});
+}
+// Use the same numerator/denominator scope and rounding for every accuracy tile.
+function publicAnswerCount(record){
+ const counts=record?.outletAnswers;
+ const source=counts&&Object.keys(counts).length?counts:(record?.dailyActivity||{});
+ return Object.values(source).reduce((sum,n)=>sum+(Number.isFinite(Number(n))?Math.max(0,Number(n)):0),0);
+}
+function answerAccuracy(correct,answered){
+ const c=Number(correct),a=Number(answered);
+ if(!Number.isFinite(c)||!Number.isFinite(a)||a<=0||c<=0)return '0%';
+ const pct=Math.round(Math.min(1,c/a)*1000)/10;
+ return pct.toLocaleString('en-US',{maximumFractionDigits:1})+'%';
+}
+function playerAccuracy(r){
+ if(user?.uid===r.uid&&profile){const t=statTotals();return answerAccuracy(t.correct,t.answered);}
+ return answerAccuracy(r.correctAnswers,r.totalAnswers);
 }
 // Rank history is a client-observed personal record; never used to award points.
 let cloudRank=new Map(),rankWrites=new Set(),rankReads=new Map(),rankCloudUnavailable=false,rankSnapshotReady=false;
@@ -445,8 +461,8 @@ function playerDetails(uid){
  const outlet=document.createElement('p');outlet.textContent=r.outlet;
  const stats=document.createElement('div');stats.className='arena-detail-stats';
  const best=readBest(uid);
- for(const [label,value] of [['Level',window.BTRewards?.level(r.lifetimePoints)?.number||1],['Points',r.lifetimePoints.toLocaleString()],[period==='weekly'?'Current weekly rank':'Current all-time rank',selected?String(selected.rank):'Not available'],['Best all-time rank observed',best?String(best):'Not recorded']]){
- const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=value;small.textContent=label;tile.append(strong,small);stats.append(tile);}
+ for(const [label,value] of [['Level',window.BTRewards?.level(r.lifetimePoints)?.number||1],['Points',r.lifetimePoints.toLocaleString()],['Accuracy',playerAccuracy(r)],[period==='weekly'?'Current weekly rank':'Current all-time rank',selected?String(selected.rank):'Not available'],['Best all-time rank observed',best?String(best):'Not recorded']]){
+ const tile=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('small');if(label==='Accuracy'){tile.className='arena-detail-accuracy';tile.title=user?.uid===r.uid?'Correct answers out of all recorded answers':'Correct answers out of published ranked answers';}strong.textContent=value;small.textContent=label;tile.append(strong,small);stats.append(tile);}
  panel.append(ribbon,avatar,name,outlet,stats);const actions=document.createElement('div');actions.className='arena-detail-actions';const back=btn('Back to leaderboard',()=>window.ArenaNav?.back(),true);back.classList.add('arena-detail-back');actions.append(back);box.append(panel,actions);
  loadBest(uid).then(()=>{if(panel.isConnected){const n=readBest(uid);stats.lastElementChild.firstElementChild.textContent=n?String(n):'Not recorded';}});
 }
@@ -514,10 +530,10 @@ async function profilePanel(){
  nextGoal.title=lvl.remaining.toLocaleString()+' points remaining to level '+(lvl.number+1);
  levels.append(levelBadge,progress,nextGoal);profileRow.append(avatar,person,levels);body.append(profileRow);
  const stats=document.createElement('div');stats.className='arena-stats-grid';
- for(const [glyph,count,word] of [['🏆',totals.points,'Points'],['🎯',totals.correct,'Correct'],['📘',totals.answered,'Answered']]){
-   const item=document.createElement('div');item.className='arena-stat';if(word==='Correct')item.classList.add('arena-stat-correct');
-   const icon=document.createElement('img');icon.className='arena-stat-art';icon.src='./images/arena/stat-'+word.toLowerCase()+'.png';icon.alt='';icon.decoding='async';
-   const detail=document.createElement('div');const number=document.createElement('strong');number.textContent=Number(count).toLocaleString();
+ for(const [count,word,asset] of [[totals.points,'Points','points'],[totals.correct,'Correct','correct'],[answerAccuracy(totals.correct,totals.answered),'Accuracy','answered']]){
+   const item=document.createElement('div');item.className='arena-stat';if(word==='Correct')item.classList.add('arena-stat-correct');if(word==='Accuracy'){item.classList.add('arena-stat-accuracy');item.title=totals.correct+' correct out of '+totals.answered+' recorded answers';}
+   const icon=document.createElement('img');icon.className='arena-stat-art';icon.src='./images/arena/stat-'+asset+'.png';icon.alt='';icon.decoding='async';
+   const detail=document.createElement('div');const number=document.createElement('strong');number.textContent=typeof count==='string'?count:Number(count).toLocaleString();
    const label=document.createElement('span');label.textContent=word;detail.append(number,label);item.append(icon,detail);stats.append(item);
  }body.append(stats);
  const actions=document.createElement('div');actions.className='arena-actions';

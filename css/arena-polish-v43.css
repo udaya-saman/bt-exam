@@ -704,3 +704,19 @@ body #bt-spark-root.arena-profile-mode .arena-level-fill{
  background:linear-gradient(90deg,#0b8f32,#2fdb53,#b1ff54)!important;
  box-shadow:none!important;
 }
+
+/* 4.7.13 — compact level badge and consistently readable accuracy. */
+body #bt-spark-root.arena-profile-mode .arena-level-badge{
+ box-sizing:border-box!important;height:19px!important;min-height:19px!important;
+ padding:0 9px!important;font-size:12px!important;line-height:17px!important;
+ border-radius:7px!important;align-self:center!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat-accuracy strong{
+ font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+body #bt-spark-root.arena-player-details-mode .arena-detail-accuracy{
+ grid-column:1/-1;
+}
+body #bt-spark-root.arena-player-details-mode .arena-detail-accuracy strong{
+ color:#8ef291;font-variant-numeric:tabular-nums;
+}
