@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.3-arena';let latestUpdate=null;
+const APP_VERSION='4.7.4-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -491,8 +491,8 @@ async function profilePanel(){
  }
  const utilities=document.createElement('div');utilities.className='arena-actions'+(admins?'':' arena-account-only');
  utilities.append(btn('Account',accountSettings));
- if(admins)utilities.append(btn('Manage',adminPanel));
- utilities.querySelectorAll('button').forEach(b=>b.classList.add('pg-btn-green'));
+ if(admins){const manageButton=btn('Manage',adminPanel);manageButton.classList.add('arena-manage-action');utilities.append(manageButton);}
+ utilities.querySelectorAll('button').forEach(b=>{if(!b.classList.contains('arena-manage-action'))b.classList.add('pg-btn-green');});
  box.append(utilities);
  const last=lastSyncTime();
  const footer=document.createElement('p');footer.className='arena-last-updated';footer.style.cssText='text-align:center;color:#826964;font-size:11px;margin:13px 0 8px';
