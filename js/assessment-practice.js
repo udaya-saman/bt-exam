@@ -275,6 +275,7 @@
       if(interval!==null){remaining=Math.max(0,Math.min(60,Math.ceil((deadline-Date.now())/1000)));stopTimer();}
       return;
     }
+    if(loaded&&!started){begin();return;}
     if(started&&!finished&&!complete&&interval===null)startTimer();
   }
   async function open(){
