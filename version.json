@@ -1,5 +1,5 @@
 {
-  "version": "4.7.10-arena",
+  "version": "4.7.11-arena",
   "released": "2026-11-25",
-  "notes": "Assessment Practice now uses the original quiz layout, shared question and answer styles, 60-second timer, Sinhala toggle, feedback, score/progress and Home/Reset/Next controls. All 86 bilingual questions and proposed answers preserved; multi-answer, written and invalid-choice questions handled safely. Practice remains separate from ranked scoring and saved exam progress."
+  "notes": "Fixed search fields and independently scrolling lists on Manage Users and Leaderboard. Move Create User, Back and Close to an equal-width fixed single-row Manage Users footer. Search all eligible ranked players or outlets without altering ranks. Preserve user permissions, account actions, scores and quiz/study functionality."
 }

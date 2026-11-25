@@ -624,3 +624,47 @@ body #bt-spark-root.arena-profile-mode .arena-level-track[role=progressbar]{
   max-width:105px!important;font-size:10px!important;
  }
 }
+
+/* 4.7.11 — fixed search and actions; only the account/standings list scrolls. */
+body #bt-spark-root.arena-manage-users-layout .panel{
+ display:flex!important;flex-direction:column!important;
+ height:calc(100dvh - 24px)!important;max-height:calc(100dvh - 24px)!important;
+ min-height:0!important;overflow:hidden!important;
+ padding-bottom:max(16px,calc(10px + env(safe-area-inset-bottom,0px)))!important;
+}
+body #bt-spark-root.arena-manage-users-layout .panel>h2,
+body #bt-spark-root.arena-manage-users-layout .panel>p{flex:0 0 auto}
+body #bt-spark-root.arena-manage-users-layout #bt-spark-content{
+ display:flex;flex-direction:column;flex:1 1 auto;min-height:0;min-width:0;gap:9px;
+}
+body #bt-spark-root.arena-manage-users-layout .pg-users-status{
+ flex:0 0 auto;margin:0!important;font-size:12px!important;line-height:1.4;
+}
+body #bt-spark-root .pg-users-search,body #bt-spark-root .pg-board-search{
+ flex:0 0 auto;min-width:0;width:100%!important;margin:0 0 6px!important;
+ padding:10px 12px!important;min-height:42px!important;border-radius:12px!important;
+ font-size:16px!important;line-height:1.25;box-sizing:border-box;
+}
+body #bt-spark-root.arena-leaderboard-layout .pg-podium[hidden]{display:none!important}
+body #bt-spark-root.arena-leaderboard-layout .pg-season-chip,
+body #bt-spark-root.arena-leaderboard-layout .pg-private{flex-shrink:0}
+body #bt-spark-root.arena-manage-users-layout .pg-users-scroll{
+ flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;
+ overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 2px 2px 0;
+}
+body #bt-spark-root.arena-manage-users-layout .pg-users-scroll .pg-review-item{min-width:0}
+body #bt-spark-root.arena-manage-users-layout .pg-users-scroll .pg-review-item>div{min-width:0;overflow-wrap:anywhere}
+body #bt-spark-root.arena-manage-users-layout .pg-users-footer{
+ flex:0 0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:8px;width:100%;margin-top:3px;align-items:stretch;
+}
+body #bt-spark-root.arena-manage-users-layout .pg-users-footer>button{
+ width:100%!important;min-width:0!important;min-height:44px!important;
+ margin:0!important;padding:10px 4px!important;font-size:clamp(11px,3vw,14px)!important;
+ white-space:nowrap;box-sizing:border-box;text-align:center;
+}
+@media(max-height:600px){
+ body #bt-spark-root.arena-manage-users-layout .panel{padding-top:12px!important;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))!important}
+ body #bt-spark-root.arena-leaderboard-layout .pg-board-search{min-height:36px!important;padding:7px 10px!important}
+ body #bt-spark-root.arena-leaderboard-layout .pg-section{margin:4px 0!important}
+}
