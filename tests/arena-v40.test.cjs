@@ -32,6 +32,25 @@ assert.ok(html.includes('id="paper-select"')&&html.includes('id="study-select"')
 assert.ok(!html.includes('id="study-reader"')&&html.includes('PizzaStudyLessons.open()'));
 assert.ok(html.includes('class="arena-paths"'));
 assert.ok(html.includes('29 QUESTIONS'),'Past 2024 card must show actual 29 questions');
+const questionsCss=get('css/questions-v477.css');
+const startLibrary=html.indexOf('<!-- QUESTIONS LIBRARY:'),endLibrary=html.indexOf('<!-- Assessment review is deliberately separate',startLibrary);
+assert.ok(startLibrary>=0&&endLibrary>startLibrary,'Questions library section is intact');
+const library=html.slice(startLibrary,endLibrary);
+const cardIds=[...library.matchAll(/data-paper="([^"]+)"/g)].map(x=>x[1]);
+assert.deepEqual(cardIds,Object.keys(expected),'Original five paper IDs are all present exactly once');
+for(const [id,size] of Object.entries(expected)){
+ assert.ok(library.includes('onclick="startPaper(\''+id+'\')"'),'Original paper action retained: '+id);
+ assert.ok(library.includes(size+' QUESTIONS'),'Paper count visible: '+id);
+}
+assert.equal((library.match(/class="paper-card questions-paper"/g)||[]).length,5,'Five native exam buttons');
+assert.ok(library.includes('questions-intro-art')&&library.includes('mascot-champion.png'),'Brand PNG hero present');
+assert.ok(library.includes('class="pa-assessment-entry questions-review-card"'),'Review bank remains separate from graded exams');
+assert.ok(library.includes('88 distinct questions')&&library.includes('No scoring'),'Assessment review does not imply scoring');
+assert.ok(html.includes('css/questions-v477.css?v=4.7.7')&&sw.includes('css/questions-v477.css?v=4.7.7'),'Questions styling enabled and cached offline');
+assert.ok(questionsCss.includes('#quiz .opt-btn.correct')&&questionsCss.includes('#quiz .opt-btn.wrong'),'Both quiz answer states styled');
+assert.ok(questionsCss.includes('@media(max-width:350px)')&&questionsCss.includes('prefers-reduced-motion:reduce'),'Small-phone and accessibility styles present');
+assert.doesNotMatch(library+questionsCss,/\\.svg(?:["'?)]|$)|data:image\\/svg|<svg/i,'No SVG graphics added');
+
 assert.ok(app.includes("people>=2")&&!app.includes("people>=3"));
 assert.ok(app.includes("practice?'PRACTICE · NO RANK POINTS'"));
 assert.ok(app.includes('setTimeout(()=>pill.remove(),4000)'));
