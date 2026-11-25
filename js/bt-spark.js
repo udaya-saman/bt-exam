@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.11-arena';let latestUpdate=null;
+const APP_VERSION='4.7.12-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -39,7 +39,7 @@ function award(points,correct,practice=false){
  pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),4000);
 }
 function statTotals(){
- const pending=getQueue().filter(q=>q.uid===user?.uid);
+ const pending=uniquePending(getQueue().filter(q=>q.uid===user?.uid));
  return{points:Number(profile?.totalPoints||0)+pending.reduce((a,e)=>a+Number(e.points||0),0),
  answered:Number(profile?.totalAnswers||0)+pending.length,
  correct:Number(profile?.correctAnswers||0)+pending.filter(e=>e.points>0).length,
@@ -73,7 +73,7 @@ function errorMessage(e){
  if(/OFFLINE_SIGNIN_REQUIRED/.test(message))return 'Turn on mobile data or connect to Wi-Fi to sign in. If you stayed signed in on this device, you can reopen the app offline.';
  if(/auth\/network-request-failed|unavailable|network/i.test(code+' '+message))return 'No connection. Check your internet and try again.';
  if(/permission-denied|insufficient permissions/i.test(code+' '+message))return 'Access denied. Please ask an administrator for help.';
- if(/PRACTICE_ONLY/.test(message))return 'You have already completed today’s ranked attempt.';
+ if(/DAILY_QUESTION_REPEAT/.test(message))return 'This question has already been answered today.';
  if(/OUTLET_CHANGED/.test(message))return 'Your outlet has changed. Ask an administrator for help.';
  if(/Username already taken/i.test(message))return 'That username is taken. Please choose another.';
  if(/Image too large/i.test(message))return 'This picture is too large. Try a smaller PNG.';
@@ -130,47 +130,81 @@ function getQueue(){try{return JSON.parse(localStorage.getItem(qkey())||'[]')}ca
 function saveQueue(q){localStorage.setItem(qkey(),JSON.stringify(q))}
 function lastSyncTime(){try{return Number(localStorage.getItem('bt_spark_last_sync_'+user?.uid)||0)}catch(_){return 0}}
 function recordLastSync(){try{localStorage.setItem('bt_spark_last_sync_'+user.uid,String(Date.now()))}catch(_){}}
+function uniquePending(queue){const seen=new Set();return [...queue].sort((a,b)=>a.earnedAt-b.earnedAt).filter(e=>{const id=dailyEventId(e.uid,eventDay(e),e.paper,e.index);if(seen.has(id))return false;seen.add(id);return true;});}
 function pendingDescription(){
  const count=getQueue().filter(e=>e.uid===user?.uid).length;
  return count?count+' '+(count===1?'answer is':'answers are')+' waiting to be saved.':'All answers are saved.';
 }
-function rankedKey(paper,dayKey){return 'bt_spark_daily_ranked_'+user.uid+'_'+dayKey+'_'+paper;}
-function modeBadge(){
+// Stable identities are independent of shuffled answer order, attempts and paper resets.
+// The two identical stems shared across papers use one identity each.
+function questionKey(paper,index){
+ const key=paper+'_'+index;
+ return key==='questions_14'?'past2024_22':key==='paper1_9'?'questions_7':key;
+}
+function dailyEventId(uid,answerDay,paper,index){return uid+'_q_'+answerDay+'_'+questionKey(paper,index);}
+function eventDay(e){return day(new Date(e.earnedAt));}
+function seenKey(uid,answerDay){return 'bt_spark_seen_questions_'+uid+'_'+answerDay;}
+function seenQuestion(uid,answerDay,key){
+ try{return JSON.parse(localStorage.getItem(seenKey(uid,answerDay))||'[]').includes(key);}catch(_){return false;}
+}
+function markQuestion(uid,answerDay,key){
+ try{const id=seenKey(uid,answerDay),values=new Set(JSON.parse(localStorage.getItem(id)||'[]'));values.add(key);localStorage.setItem(id,JSON.stringify([...values]));}catch(_){}
+}
+function modeBadge(repeated=false){
  let label=document.getElementById('bt-exam-mode');
  if(!label){label=document.createElement('span');label.id='bt-exam-mode';label.className='pg-mode-label';document.getElementById('quiz-paper-label')?.after(label);}
- if(label)label.textContent=active?.ranked===false?'📚 PRACTICE · NO RANK POINTS':'🏅 DAILY RANKED';
+ if(label)label.textContent=repeated?'📚 REPEAT · NO RANK POINTS':'🏅 FIRST ANSWER EACH DAY EARNS POINTS';
 }
 function onStart(paper){
  if(!user)return;
- const today=day(),previous=localStorage.getItem(rankedKey(paper,today));
- const current={id:rand(),paper,dayKey:today,startedAt:Date.now(),ranked:!previous};
- active=current;localStorage.setItem(akey(),JSON.stringify(active));modeBadge();
- if(!navigator.onLine)return;
- const claimId=user.uid+'_'+today+'_'+paper;
- F.getDoc(F.doc(db,'rankedClaims',claimId)).then(doc=>{
-  if(active!==current||!doc.exists())return;
-  if(doc.data().attemptId!==current.id){current.ranked=false;localStorage.setItem(akey(),JSON.stringify(active));modeBadge();}
- }).catch(err=>console.info('Ranked mode check unavailable:',err.code||err));
+ active={id:rand(),paper,dayKey:day(),startedAt:Date.now(),ranked:true};
+ localStorage.setItem(akey(),JSON.stringify(active));modeBadge();
 }
 function onResume(paper,saved){
  if(!user)return;
  try{active=saved||JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
  if(!active||active.paper!==paper)onStart(paper);
- else{localStorage.setItem(akey(),JSON.stringify(active));modeBadge();}
+ else{active.ranked=true;localStorage.setItem(akey(),JSON.stringify(active));modeBadge();}
 }
 function onFinish(){clearTimeout(cloudTimer);cloudTimer=null;pendingCloudSnapshot=null;if(user){localStorage.removeItem(akey());F.deleteDoc(F.doc(db,'savedSessions',user.uid)).catch(()=>{});}active=null;}
 async function onAnswer(a){
  if(!user||!profile||!active||active.paper!==a.paperId)return;
- if(active.ranked===false){award(0,Boolean(a.correct),true);return;}
  const index=Number(a.originalQuestionIndex),selected=Number(a.selectedOriginalIndex);
- if(!Number.isInteger(index)||index<0||!Number.isInteger(selected))return;
- const id=user.uid+'_'+active.id+'_'+active.paper+'_'+index,q=getQueue();
- if(q.some(x=>x.id===id))return;
- const remaining=a.correct?Math.max(0,Math.min(60,Math.floor(Number(a.remainingSeconds)||0))):0;
- const earnedAt=Date.now(),earnedDate=new Date(earnedAt),answerDay=day(earnedDate);
- const entry={id,uid:user.uid,paper:active.paper,index,selected,remaining,points:a.correct?10+remaining:0,attemptId:active.id,dayKey:active.dayKey,startedAt:active.startedAt,weekKey:week(earnedDate),monthKey:answerDay.slice(0,7),activityDay:answerDay,outlet:profile.outlet,earnedAt,claimId:user.uid+'_'+active.dayKey+'_'+active.paper};
- q.push(entry);saveQueue(q);localStorage.setItem(rankedKey(active.paper,active.dayKey),active.id);
+ const paper=active.paper,question=window.BT_EXAM_PAPERS?.[paper]?.qs?.[index];
+ if(!Number.isInteger(index)||index<0||!question||!Number.isInteger(selected)||selected<-1||selected>=question.opts.length)return;
+ const uid=user.uid,earnedAt=Date.now(),earnedDate=new Date(earnedAt),answerDay=day(earnedDate),key=questionKey(paper,index);
+ const id=dailyEventId(uid,answerDay,paper,index),q=getQueue();
+ if(seenQuestion(uid,answerDay,key)||q.some(x=>x.uid===uid&&dailyEventId(uid,eventDay(x),x.paper,x.index)===id)){
+  modeBadge(true);award(0,Boolean(a.correct),true);return;
+ }
+ const correct=selected===question.ans;
+ const remaining=correct?Math.max(0,Math.min(60,Math.floor(Number(a.remainingSeconds)||0))):0;
+ const entry={id,uid,paper,index,selected,remaining,points:correct?10+remaining:0,attemptId:active.id,dayKey:answerDay,weekKey:week(earnedDate),monthKey:answerDay.slice(0,7),activityDay:answerDay,outlet:profile.outlet,earnedAt};
+ q.push(entry);saveQueue(q);markQuestion(uid,answerDay,key);modeBadge();
  award(entry.points,entry.points>0);sync();
+}
+// Old clients stored attempt-scoped events. Preserve their queued answers and
+// recognize an already committed legacy event during the migration.
+function legacyAliases(paper,index){
+ const key=questionKey(paper,index);
+ if(key==='past2024_22')return [['past2024',22],['questions',14]];
+ if(key==='questions_7')return [['questions',7],['paper1',9]];
+ return [[paper,index]];
+}
+async function oldDailyEvent(tx,e){
+ for(const [paper,index] of legacyAliases(e.paper,e.index)){
+  // Older versions reserved a paper at its start; a session could cross midnight.
+  // Look back up to three days, but only count events actually earned on this day.
+  for(let offset=0;offset<=3;offset++){
+   const date=day(new Date(e.earnedAt-offset*86400000));
+   const claim=await tx.get(F.doc(db,'rankedClaims',e.uid+'_'+date+'_'+paper));
+   if(!claim.exists())continue;
+   const oldId=e.uid+'_'+claim.data().attemptId+'_'+paper+'_'+index;
+   const old=await tx.get(F.doc(db,'scoreEvents',oldId));
+   if(old.exists()&&old.data().activityDay===e.activityDay)return true;
+  }
+ }
+ return false;
 }
 window.BTExamBridge={storageKey,getPapers:()=>window.BT_EXAM_PAPERS,getAttempt:()=>active,onPaperStart:o=>onStart(o.paperId),onPaperResume:o=>onResume(o.paperId,o.attempt),onAnswer,onPaperComplete:onFinish,onProgress:state=>saveCloudSession(state),onScreenChange:()=>promptUpdate()};
 let cloudTimer=null, pendingCloudSnapshot=null;
@@ -206,23 +240,29 @@ async function requestSync(){
 async function sync(){
  if(!user||!profile||syncing||!navigator.onLine)return;syncing=true;
  try{
-  const list=getQueue(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
-  for(const e of list){
+  const uid=user.uid,queueKey=qkey(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
+  const readQueue=()=>{try{return JSON.parse(localStorage.getItem(queueKey)||'[]')}catch(_){return []}};
+  const removeEntry=id=>localStorage.setItem(queueKey,JSON.stringify(readQueue().filter(item=>item.id!==id)));
+  const handled=new Set();
+  while(user?.uid===uid){
+   const queued=readQueue().filter(e=>e.uid===uid&&!handled.has(e.id)).sort((a,b)=>a.earnedAt-b.earnedAt)[0];if(!queued)break;
+   handled.add(queued.id);
+   const answerDay=eventDay(queued),e={...queued,id:dailyEventId(uid,answerDay,queued.paper,queued.index),dayKey:answerDay,activityDay:answerDay,weekKey:week(new Date(queued.earnedAt)),monthKey:answerDay.slice(0,7)};
    if(Date.now()-e.earnedAt>72*3600000){syncIssue='Some older answers need help from an administrator.';continue;}
    if(!maximum[e.paper]||e.index>=maximum[e.paper]){syncIssue='An answer could not be matched. Please ask an administrator for help.';continue;}
-   const er=F.doc(db,'scoreEvents',e.id),cr=F.doc(db,'rankedClaims',e.claimId),ur=F.doc(db,'users',user.uid);
+   const er=F.doc(db,'scoreEvents',e.id),ur=F.doc(db,'users',uid);
    try{
-    await F.runTransaction(db,async tx=>{
-     const pr=F.doc(db,'publicRanks',user.uid),ad=F.doc(db,'admins',user.uid);
-     const [claim,event,u,publicScore,role]=await Promise.all([tx.get(cr),tx.get(er),tx.get(ur),tx.get(pr),tx.get(ad)]);
-     if(event.exists())return;
-     if(claim.exists()&&claim.data().attemptId!==e.attemptId)throw Error('PRACTICE_ONLY');
+    const outcome=await F.runTransaction(db,async tx=>{
+     if(user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
+     const pr=F.doc(db,'publicRanks',uid),ad=F.doc(db,'admins',uid);
+     const [event,u,publicScore,role]=await Promise.all([tx.get(er),tx.get(ur),tx.get(pr),tx.get(ad)]);
+     if(event.exists())return 'duplicate';
+     if(await oldDailyEvent(tx,e))return 'duplicate';
      if(!u.exists()||u.data().outlet!==e.outlet)throw Error('OUTLET_CHANGED');
      const p=u.data(),change=(m,k,v)=>Object.assign({},m||{},{[k]:Number((m||{})[k]||0)+v}),wk=e.weekKey+'__'+e.outlet;
      const rapid=e.points>=68?Number(p.rapidCorrectStreak||0)+1:0;
      const review=Boolean(p.reviewSuggested)||rapid>=7;
-     tx.set(er,{uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,outletMonthKey:e.monthKey+'__'+e.outlet,activityDay:e.activityDay||day(new Date(e.earnedAt)),earnedAt:F.Timestamp.fromMillis(e.earnedAt),claimId:e.claimId});
-     if(!claim.exists())tx.set(cr,{uid:e.uid,paper:e.paper,dayKey:e.dayKey,attemptId:e.attemptId,startedAt:F.Timestamp.fromMillis(e.startedAt||e.earnedAt)});
+     tx.set(er,{uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,outletMonthKey:e.monthKey+'__'+e.outlet,activityDay:e.activityDay||day(new Date(e.earnedAt)),earnedAt:F.Timestamp.fromMillis(e.earnedAt)});
      const publish=p.outlet!=='Other'&&!RESERVED.has(String(p.username||'').toLowerCase())&&!(role.exists()&&role.data().enabled===true);
      tx.update(ur,{lastEventId:e.id,totalPoints:Number(p.totalPoints||0)+e.points,totalAnswers:Number(p.totalAnswers||0)+1,
       correctAnswers:Number(p.correctAnswers||0)+(e.points>0?1:0),dailyActivity:change(p.dailyActivity,e.activityDay||day(new Date(e.earnedAt)),1),
@@ -234,39 +274,30 @@ async function sync(){
       outletAnswers:change(p.outletAnswers,e.outlet,1),outletWeeklyAnswers:change(p.outletWeeklyAnswers,wk,1),updatedAt:F.serverTimestamp()});
      if(publish){
        const b=publicScore.exists()?publicScore.data():{},mk=e.monthKey+'__'+e.outlet;
-       tx.set(pr,{uid:user.uid,name:p.username,outlet:p.outlet,avatar:p.avatar||'',lastEventId:e.id,totalPoints:Number(b.totalPoints||0)+e.points,
+       tx.set(pr,{uid,name:p.username,outlet:p.outlet,avatar:p.avatar||'',lastEventId:e.id,totalPoints:Number(b.totalPoints||0)+e.points,
         correctAnswers:Number(b.correctAnswers||0)+(e.points>0?1:0),dailyActivity:change(b.dailyActivity,e.activityDay||day(new Date(e.earnedAt)),1),
         weeklyPoints:change(b.weeklyPoints,e.weekKey,e.points),monthlyPoints:change(b.monthlyPoints,e.monthKey,e.points),
         outletPoints:change(b.outletPoints,e.outlet,e.points),outletWeeklyPoints:change(b.outletWeeklyPoints,wk,e.points),
         outletMonthlyPoints:change(b.outletMonthlyPoints,mk,e.points),outletAnswers:change(b.outletAnswers,e.outlet,1),
         outletWeeklyAnswers:change(b.outletWeeklyAnswers,wk,1),outletMonthlyAnswers:change(b.outletMonthlyAnswers,mk,1),updatedAt:F.serverTimestamp()});
      }
-    });done.push(e.id);
-    // A committed event must not also remain in the optimistic pending count.
-    saveQueue(getQueue().filter(item=>item.id!==e.id));
+     return 'saved';
+    });
+    done.push(queued.id);removeEntry(queued.id);markQuestion(uid,e.activityDay,questionKey(e.paper,e.index));
+    if(outcome==='duplicate'&&user?.uid===uid&&active?.id===e.attemptId)modeBadge(true);
    }catch(err){
     const message=errorMessage(err);
-    if(/PRACTICE_ONLY/.test(String(err?.message||err))){
-      // The server has confirmed another ranked attempt owns this day/paper.
-      // These answers can only be practice; never keep them as misleading pending rank points.
-      syncIssue='This paper has already been played for points today. Your latest try is practice.';
-      saveQueue(getQueue().filter(item=>!(item.attemptId===e.attemptId&&item.paper===e.paper)));
-      if(active?.id===e.attemptId){active.ranked=false;localStorage.setItem(akey(),JSON.stringify(active));modeBadge();}
-      break;
-    }
     syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
    }
   }
-  if(done.length){
-    const removed=new Set(done);
-    saveQueue(getQueue().filter(e=>!removed.has(e.id)));
+  if(done.length&&user?.uid===uid){
     recordLastSync();
     try{
       const refreshed=await F.getDoc(F.doc(db,'users',user.uid));
-      if(refreshed.exists())profile=refreshed.data();
+      if(user?.uid===uid&&refreshed.exists())profile=refreshed.data();
     }catch(e){console.info('Updated player totals will appear after reconnecting.');}
   }
-  if(!getQueue().length)syncIssue='';
+  if(user?.uid===uid&&!readQueue().length)syncIssue='';
  }finally{syncing=false;}
 }
 function ranked(period='weekly',outletView=false){
