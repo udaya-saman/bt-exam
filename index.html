@@ -1466,7 +1466,7 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
   checkSavedSession();
-  window.BTAssessmentPractice?.onScreenChange(id);
+  window.BTAssessmentPractice?.onScreenChange?.(id);
   window.BTExamBridge?.onScreenChange?.();
 }
 
