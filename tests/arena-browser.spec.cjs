@@ -220,52 +220,99 @@ for(const width of [320,375,430,768]){
   await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
   await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
   await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;openQuestions();});
-  await expect(page.locator('#paper-select .questions-assessment-paper')).toBeVisible();
   await page.locator('#paper-select .questions-assessment-paper').click();
-  await expect(page.locator('#assessment-practice.active')).toBeVisible();
+  const practice=page.locator('#assessment-practice');
+  await expect(practice).toHaveClass(/active/);
   await expect(page.locator('#bt-spark-dock')).toBeHidden();
-  await expect(page.locator('.aq-question-card')).toHaveCount(12,{timeout:12000});
-  await expect(page.locator('.aq-result-count')).toHaveText('Showing 12 of 86 unique questions');
-  await expect(page.locator('.aq-question-card').first().locator('.aq-question-si')).not.toBeEmpty();
-  await expect(page.locator('.aq-question-card').first().locator('.aq-option-si').first()).not.toBeEmpty();
-  // Multi-answer question shows a real check button, rather than assuming 4 choices.
-  await page.locator('.aq-search').fill('three Ps of first aid');
-  await expect(page.locator('.aq-question-card')).toHaveCount(1);
-  await expect(page.locator('.aq-question-card .aq-option')).toHaveCount(4);
-  for(let i=0;i<3;i++)await page.locator('.aq-question-card .aq-option').nth(i).click();
-  await page.locator('.aq-question-card .aq-check').click();
-  await expect(page.locator('.aq-feedback')).toContainText('Preserve Life');
-  // Proposed single answer, including both English and Sinhala.
-  await page.locator('.aq-search').fill('Cheesy Kottchi Sauce');
-  await expect(page.locator('.aq-question-card')).toHaveCount(1);
-  await page.locator('.aq-question-card .aq-option').first().click();
-  await expect(page.locator('.aq-feedback')).toContainText('600 g');
-  await expect(page.locator('.aq-feedback-si')).not.toBeEmpty();
-  // Known duplicates are consolidated to one card but source provenance is retained.
-  await page.locator('.aq-search').fill('RIIT');
-  await expect(page.locator('.aq-question-card')).toHaveCount(1);
-  await expect(page.locator('.aq-question-card .aq-source-pill')).toHaveCount(2);
-  // Written response: reveal the supplied suggested answer in both languages.
-  await page.locator('.aq-search').fill('');
-  await page.locator('.aq-filter').filter({hasText:'Written answers'}).click();
-  await expect(page.locator('.aq-question-card')).toHaveCount(9);
-  await page.locator('.aq-question-card').first().locator('.aq-check').click();
-  await expect(page.locator('.aq-question-card').first().locator('.aq-feedback-si')).not.toBeEmpty();
-  await page.locator('.aq-filter').filter({hasText:'All types'}).click();
-  // No valid answer exists in this particular scanned negative question.
-  await page.locator('.aq-search').fill('NOT related to food-safety rules');
-  await expect(page.locator('.aq-question-card')).toHaveCount(1);
-  await expect(page.locator('.aq-question-card .aq-option')).toHaveCount(6);
-  await expect(page.locator('.aq-question-card .aq-option:disabled')).toHaveCount(6);
-  await page.locator('.aq-question-card .aq-check').click();
-  await expect(page.locator('.aq-feedback')).toContainText('None of the six');
-  const scroll=await page.evaluate(()=>({
-   viewport:innerWidth,body:document.documentElement.scrollWidth,screen:document.getElementById('assessment-practice').scrollWidth
-  }));
-  expect(scroll.body).toBeLessThanOrEqual(width+2);
-  expect(scroll.screen).toBeLessThanOrEqual(width+2);
+  await expect(practice.locator('#aq-quiz-q-info')).toHaveText('Question 1 of 86',{timeout:12000});
+  await expect(practice.locator('#aq-timer-val')).toHaveText(/^0:5[0-9]$|^1:00$/);
+  const first=await page.evaluate(()=>BTAssessmentPractice.getQuestions()[0]);
+  await expect(practice.locator('#aq-q-text')).toHaveText(first.q);
+  await practice.locator('#aq-translate-btn').click();
+  await expect(practice.locator('#aq-q-text')).toHaveText(first.siQ);
+  await expect(practice.locator('.opt-text').first()).toHaveText(first.siOpts[0]);
+  await practice.locator('#aq-translate-btn').click();
+  await expect(practice.locator('#aq-q-text')).toHaveText(first.q);
+  await expect(practice.locator('.opt-btn')).toHaveCount(first.opts.length);
+  // Compare shared visual properties, including type and dimensions, against an original quiz.
+  const visual=await page.evaluate(()=>{
+   const s=document.querySelector('#assessment-practice');
+   const q=document.querySelector('#quiz');
+   const classes=['quiz-bar','quiz-body','q-text','timer-val','translate-btn','score-pill','prog-bar','bottom-bar','home-btn','reset-btn','next-btn'];
+   return classes.every(c=>['fontSize','fontFamily','fontWeight','color','backgroundColor','borderRadius','padding'].every(p=>getComputedStyle(s.querySelector('.'+c))[p]===getComputedStyle(q.querySelector('.'+c))[p]));
+  });
+  expect(visual).toBe(true);
+  await practice.locator('.opt-btn').nth(first.answer.correct[0]-1).click();
+  if(first.answer.correct.length>1){
+   for(const n of first.answer.correct.slice(1))await practice.locator('.opt-btn').nth(n-1).click();
+   await practice.locator('.aq-action').click();
+  }
+  await expect(practice.locator('.opt-btn.correct')).toHaveCount(first.answer.correct.length);
+  await expect(practice.locator('#aq-score-display')).toHaveText('100%');
+  await expect(practice.locator('#aq-next-btn')).toBeVisible();
+  await practice.locator('#aq-next-btn').click();
+  await expect(practice.locator('#aq-quiz-q-info')).toHaveText('Question 2 of 86');
+  await expect(practice.locator('#aq-prog-fill')).not.toHaveAttribute('style','width: 0%;');
+  const overflow=await page.evaluate(()=>({viewport:innerWidth,body:document.documentElement.scrollWidth,screen:document.getElementById('assessment-practice').scrollWidth}));
+  expect(overflow.body).toBeLessThanOrEqual(width+2);
+  expect(overflow.screen).toBeLessThanOrEqual(width+2);
+  await practice.locator('.reset-btn').click();
+  await page.locator('.modal-btn-confirm').click();
+  await expect(practice.locator('#aq-quiz-q-info')).toHaveText('Question 1 of 86');
+  await expect(practice.locator('#aq-score-display')).toHaveText('0%');
+  await practice.locator('.home-btn').click();
+  await page.locator('.modal-btn-confirm').click();
+  await expect(page.locator('#home.active')).toBeVisible();
  });
 }
+test('Assessment practice all 86 questions: mixed formats, score isolation, timeout and completion',async({page})=>{
+ await page.setViewportSize({width:375,height:820});
+ await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;openQuestions();});
+ await page.locator('.questions-assessment-paper').click();
+ await expect(page.locator('#aq-quiz-q-info')).toHaveText('Question 1 of 86');
+ const result=await page.evaluate(()=>{
+  const qs=BTAssessmentPractice.getQuestions(),s=document.getElementById('assessment-practice');
+  const get=id=>document.getElementById('aq-'+id);
+  const before=JSON.stringify(Object.entries(localStorage).sort());
+  let valid=0,written=0,invalid=0,multi=0,errors=0;
+  for(const [i,q] of qs.entries()){
+   if(get('q-text').textContent!==q.q||get('quiz-q-info').textContent!=='Question '+(i+1)+' of 86')errors++;
+   const buttons=[...s.querySelectorAll('.opt-btn')];
+   if(buttons.length!==q.opts.length)errors++;
+   if(q.opts.length&&q.answer.correct.length){
+    valid++;if(q.answer.correct.length>1)multi++;
+    for(const n of q.answer.correct)buttons[n-1].click();
+    if(q.answer.correct.length>1)s.querySelector('.aq-action').click();
+    if(s.querySelectorAll('.opt-btn.correct').length!==q.answer.correct.length)errors++;
+   }else{
+    if(q.opts.length)invalid++;else written++;
+    if(buttons.some(b=>!b.disabled))errors++;
+    s.querySelector('.aq-action').click();
+    if(!get('result-area').querySelector('.rc-si')?.textContent)errors++;
+   }
+   get('next-btn').click();
+  }
+  return {valid,written,invalid,multi,errors,score:get('score-display').textContent,complete:get('q-text').textContent,storageUnchanged:before===JSON.stringify(Object.entries(localStorage).sort())};
+ });
+ expect(result).toEqual({valid:76,written:9,invalid:1,multi:5,errors:0,score:'100%',complete:'Practice complete!',storageUnchanged:true});
+ await page.locator('#assessment-practice .reset-btn').click();
+ await page.locator('.modal-btn-confirm').click();
+ const q=await page.evaluate(()=>BTAssessmentPractice.getQuestions()[0]);
+ const bad=q.opts.findIndex((_,i)=>!q.answer.correct.includes(i+1));
+ if(bad>=0){
+  await page.locator('#assessment-practice .opt-btn').nth(bad).click();
+  if(q.answer.correct.length>1)await page.locator('#assessment-practice .aq-action').click();
+  await expect(page.locator('#assessment-practice .opt-btn.wrong')).toHaveCount(1);
+  await expect(page.locator('#aq-score-display')).toHaveText('0%');
+  await page.locator('#aq-next-btn').click();
+ }
+ await page.evaluate(()=>{const original=Date.now;Date.now=()=>original()+61000;});
+ await expect(page.locator('#assessment-practice .timeout-card')).toBeVisible({timeout:4000});
+ await expect(page.locator('#aq-timer-val')).toHaveText('0:00');
+ await expect(page.locator('#aq-next-btn')).toBeVisible();
+});
 
 test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scroll',async({page})=>{
  await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
