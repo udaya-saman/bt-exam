@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.2-arena';let latestUpdate=null;
+const APP_VERSION='4.7.3-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -286,7 +286,8 @@ function mascotToast(title,caption,file){
 }
 function celebrateAchievements(p,crown=false){
  if(!user||!p||!window.BTRewards)return;
- const key='bt_achievement_seen_v1:'+user.uid;
+ // A new threshold set needs a fresh celebration record; all earned points remain untouched.
+  const key='bt_achievement_seen_v2:'+user.uid;
  const entries=window.BTRewards.achievements(p,day(),week(),crown).filter(a=>a.unlocked);
  try{
   const raw=localStorage.getItem(key);const seen=new Set(raw?JSON.parse(raw):[]);
@@ -391,10 +392,6 @@ async function profilePanel(){
  boardOpen=false;
  const box=open('MY PLAYER CARD','',profilePanel);
  root.classList.add('arena-profile-mode');
- const bar=document.createElement('div');bar.className='arena-page-top';
- const title=document.createElement('span');title.textContent='PIZZA ARENA · PLAYER HQ';
- const closeButton=btn('Close',close);closeButton.setAttribute('aria-label','Close player card');
- bar.append(title,closeButton);root.querySelector('.panel').prepend(bar);
  const totals=statTotals(),pending=totals.syncCount;
  const status=document.createElement('div');status.className='arena-status-card';status.setAttribute('role','status');
  const symbol=document.createElement('span');symbol.className='arena-status-icon';
@@ -408,7 +405,7 @@ async function profilePanel(){
  const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-update.png':'./images/mascot/pizza-correct.png';statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
- const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='🏆  MY PLAYER CARD';card.append(cardHeader);
+ const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
  const body=document.createElement('div');body.className='arena-card-body';
  const profileRow=document.createElement('div');profileRow.className='arena-profile-top';
  const avatar=document.createElement('img');avatar.className='arena-avatar';
@@ -427,14 +424,14 @@ async function profilePanel(){
  levels.append(levelBadge,progress,nextGoal);profileRow.append(avatar,person,levels);body.append(profileRow);
  const stats=document.createElement('div');stats.className='arena-stats-grid';
  for(const [glyph,count,word] of [['🏆',totals.points,'Points'],['🎯',totals.correct,'Correct'],['📘',totals.answered,'Answered']]){
-   const item=document.createElement('div');item.className='arena-stat';
+   const item=document.createElement('div');item.className='arena-stat';if(word==='Correct')item.classList.add('arena-stat-correct');
    const icon=document.createElement('img');icon.className='arena-stat-art';icon.src='./images/arena/stat-'+word.toLowerCase()+'.png';icon.alt='';icon.decoding='async';
    const detail=document.createElement('div');const number=document.createElement('strong');number.textContent=Number(count).toLocaleString();
    const label=document.createElement('span');label.textContent=word;detail.append(number,label);item.append(icon,detail);stats.append(item);
  }body.append(stats);
  const actions=document.createElement('div');actions.className='arena-actions';
  const boardButton=btn('Leaderboard',board);const trophy=document.createElement('img');trophy.className='arena-board-trophy';trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='';boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
- const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.add('pg-btn-red');
+ const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.remove('pg-btn-red');signoutButton.classList.add('pg-btn-orange','arena-signout-action');
  const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
  actions.append(boardButton,signoutButton,closeAction);body.append(actions);
  const outletRow=document.createElement('button');outletRow.type='button';outletRow.className='arena-outlet-row';
@@ -470,7 +467,7 @@ async function profilePanel(){
    const sorted=[...entries].sort((a,b)=>priority.indexOf(a.id)===-1?(priority.indexOf(b.id)===-1?0:1):(priority.indexOf(b.id)===-1?-1:priority.indexOf(a.id)-priority.indexOf(b.id)));
    const achievements=document.createElement('section');achievements.className='arena-achievements-card';
    const awardHead=document.createElement('div');awardHead.className='arena-achievements-heading';
-   const awardTitle=document.createElement('strong');awardTitle.textContent='🏅 Achievements';
+   const awardTitle=document.createElement('strong');awardTitle.textContent='ACHIEVEMENTS';
    const viewAll=btn('View All ›',()=>renderRewards(!showAll));
    awardHead.append(awardTitle,viewAll);achievements.append(awardHead);
    const grid=document.createElement('div');grid.className='arena-rewards-grid';achievements.append(grid);box.append(achievements);

@@ -1,5 +1,5 @@
 {
-  "version": "4.7.2-arena",
+  "version": "4.7.3-arena",
   "released": "2026-11-25",
-  "notes": "Hide scrollbars while retaining scrolling; remove # from all rank displays; polish player details and right-align return button; add subtle first-place podium animation. Firebase scoring and saved data unchanged."
+  "notes": "Player Card streamlined with no redundant top banner, refined charcoal/gold leaderboard-inspired layout, professional Correct stat icon treatment, and orange Sign Out. Achievement targets: Pizza Legend 10,000 points; Weekly Warrior 2,000 weekly points; Super Student 500 correct answers. Saved player progress and quiz scoring unchanged."
 }

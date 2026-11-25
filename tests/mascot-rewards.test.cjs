@@ -24,10 +24,11 @@ outletWeeklyAnswers:{'2026-11-09__Matara':225},weeklyPoints:{'2026-11-09':225}};
 let a=rw.achievements(progress,'2026-11-13','2026-11-09',true);
 const unlocked=id=>a.find(x=>x.id===id)?.unlocked;
 assert.equal(unlocked('centurion'),true);
-assert.equal(unlocked('legend'),true);
+assert.equal(unlocked('legend'),false);
+assert.equal(unlocked('super-student'),false);
+assert.equal(unlocked('weekly-50'),false);
 assert.equal(unlocked('streak-3'),true);
 assert.equal(unlocked('streak-7'),false);
-assert.equal(unlocked('weekly-50'),true);
 assert.equal(unlocked('outlet-drive'),true);
 assert.equal(unlocked('outlet-crown'),true);
 assert.equal(rw.achievements({...progress,outlet:'Other'},'2026-11-13','2026-11-09',false).find(x=>x.id==='outlet-drive').unlocked,false);
@@ -57,9 +58,27 @@ const thresholds=rw.achievements({outlet:'Matara',totalPoints:1499,correctAnswer
 for(const id of ['rising-star','sharp-mind','super-student','weekly-50','outlet-drive'])
  assert.equal(thresholds.find(x=>x.id===id).unlocked,false,id+' must be earned at harder threshold');
 assert.equal(thresholds.find(x=>x.id==='rising-star').target,1500);
-assert.equal(thresholds.find(x=>x.id==='legend').target,6000);
+assert.equal(thresholds.find(x=>x.id==='legend').target,10000);
 assert.equal(thresholds.find(x=>x.id==='sharp-mind').target,50);
-assert.equal(thresholds.find(x=>x.id==='super-student').target,150);
-assert.equal(thresholds.find(x=>x.id==='weekly-50').target,200);
+assert.equal(thresholds.find(x=>x.id==='super-student').target,500);
+assert.equal(thresholds.find(x=>x.id==='weekly-50').target,2000);
 assert.equal(thresholds.find(x=>x.id==='outlet-drive').target,25);
-console.log('Transparent PNG mascot/reward/streak/timer checks passed.');
+// Exact unlock boundaries: progress below the target stays locked, at the target unlocks.
+const getMilestone=(p,id)=>rw.achievements(p,'2026-11-13','2026-11-09').find(x=>x.id===id);
+for(const [id,low,high,field] of [
+ ['legend',9999,10000,'totalPoints'],
+ ['super-student',499,500,'correctAnswers']
+]){
+ const before=getMilestone({[field]:low},id),after=getMilestone({[field]:high},id);
+ assert.equal(before.unlocked,false,id+' locked before new target');
+ assert.ok(before.percent<100,id+' progress before target');
+ assert.equal(after.unlocked,true,id+' unlocked exactly at target');
+ assert.equal(after.percent,100,id+' complete progress');
+}
+const weeklyBefore=getMilestone({weeklyPoints:{'2026-11-09':1999}},'weekly-50');
+const weeklyAt=getMilestone({weeklyPoints:{'2026-11-09':2000}},'weekly-50');
+assert.equal(weeklyBefore.unlocked,false);
+assert.equal(weeklyAt.unlocked,true);
+assert.equal(weeklyAt.percent,100);
+assert.equal(getMilestone({weeklyPoints:{'2026-11-02':5000}},'weekly-50').unlocked,false,'weekly goal uses current week only');
+console.log('Transparent PNGs, 10000/2000/500 achievement boundaries, rewards, streak and timer checks passed.');
