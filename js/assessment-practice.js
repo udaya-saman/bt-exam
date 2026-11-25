@@ -12,9 +12,10 @@
   ];
   const TRANSLATIONS=[1,2,3,4].map(n=>'./assessments/si-part-'+n+'.json');
   const ANSWERS='./assessments/proposed-answers.json';
-  const PAGE_SIZE=12;
-  let questions=[],source='all',format='all',search='',limit=PAGE_SIZE,loaded=false,loading=null;
-  const attempts=new Map();
+  // Separate session: never touch ranked paper state, storage or Firebase.
+  let questions=[],loaded=false,loading=null;
+  let index=0,chosen=new Set(),finished=false,translated=false,complete=false,started=false;
+  let right=0,wrong=0,skipped=0,reviewed=0,remaining=60,deadline=0,interval=null,warned=false,outcome=null;
   const normalize=s=>String(s||'').normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
   const create=(tag,cls,text)=>{
     const el=document.createElement(tag);
@@ -26,7 +27,10 @@
     const el=create('button',cls||'',label);
     el.type='button';el.addEventListener('click',fn);return el;
   };
-  const root=()=>document.getElementById('assessment-practice-root');
+  const get=id=>document.getElementById('aq-'+id);
+  const screen=()=>document.getElementById('assessment-practice');
+  const active=()=>screen()?.classList.contains('active');
+  const current=()=>questions[index];
   const fetchJson=async url=>{
     const response=await fetch(url,{cache:'default'});
     if(!response.ok)throw Error('Unable to load '+url);
@@ -88,166 +92,204 @@
     if(answer.siSuggested)return answer.siSuggested;
     return answer.correct.map(n=>choiceLabel(n-1)+'. '+record.siOpts[n-1]).join(' · ');
   }
-  function answerPanel(record,correct){
-    const section=create('div','aq-feedback'+(correct===true?' aq-feedback-right':correct===false?' aq-feedback-incorrect':''));
-    section.setAttribute('role','status');
-    section.append(create('strong','','Suggested answer · යෝජිත පිළිතුර'),
-      create('p','aq-feedback-en',answerSummary(record)),
-      create('p','aq-feedback-si',answerSummarySinhala(record)));
-    if(record.answer.review)section.append(create('small','aq-review-note','Check against the latest approved outlet SOP before relying on this proposed answer.'));
-    if(record.answer.note)section.append(create('small','aq-review-note',record.answer.note));
-    return section;
+  const gradable=q=>q.opts.length>0&&q.answer.correct.length>0;
+  const score=()=>right+wrong+skipped?Math.round(100*right/(right+wrong+skipped)):0;
+  function updateScore(){get('score-display').textContent=score()+'%';}
+  function stopTimer(){
+    if(interval!==null){clearInterval(interval);interval=null;}
+    screen()?.querySelector('.bt-timer-warning')?.remove();
   }
-  function card(record){
-    const body=create('article','aq-question-card');
-    body.dataset.question=String(record.row);
-    const top=create('div','aq-question-top');
-    top.append(create('span','aq-question-number','QUESTION '+String(record.row).padStart(2,'0')));
-    top.append(create('span','aq-question-type',record.opts.length?'MULTIPLE CHOICE':'WRITTEN ANSWER'));
-    body.append(top);
-    body.append(create('h3','aq-question-en',record.q));
-    const sinhala=create('p','aq-question-si',record.siQ);sinhala.lang='si';
-    body.append(sinhala);
-    const badges=create('div','aq-question-sources');
-    for(const id of record.sources){
-      const sourceInfo=FILES.find(file=>file.id===id);
-      badges.append(create('span','aq-source-pill',sourceInfo?.name||id));
+  function warning(){
+    if(warned||finished||remaining>15||remaining<=0)return;
+    warned=true;
+    const chip=create('span','bt-timer-warning');
+    chip.setAttribute('aria-hidden','true');
+    const picture=create('img');picture.src='./images/mascot/pizza-timer.png';picture.alt='';
+    chip.append(picture,create('span','','15s LEFT'));
+    screen().querySelector('.timer-row').append(chip);
+    setTimeout(()=>chip.remove(),2300);
+  }
+  function timerUI(){
+    get('timer-val').textContent=Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0');
+    const state=remaining>15?'ok':'crit';
+    get('timer-val').className='timer-val '+state;
+    get('timer-fill').className='timer-fill '+state;
+    get('timer-fill').style.width=100*remaining/60+'%';
+    warning();
+  }
+  function tick(){
+    if(!active()){stopTimer();return;}
+    remaining=Math.max(0,Math.min(60,Math.ceil((deadline-Date.now())/1000)));
+    timerUI();
+    if(remaining===0)finish('timeout');
+  }
+  function startTimer(){
+    stopTimer();deadline=Date.now()+remaining*1000;timerUI();
+    if(remaining<=0){finish('timeout');return;}
+    interval=setInterval(tick,250);
+  }
+  function checkTime(){
+    if(finished||complete||!active())return false;
+    remaining=Math.max(0,Math.min(60,Math.ceil((deadline-Date.now())/1000)));
+    timerUI();
+    if(!remaining){finish('timeout');return false;}
+    return true;
+  }
+  function select(n){
+    if(!checkTime())return;
+    const q=current();
+    if(!gradable(q))return;
+    if(q.answer.correct.length===1){chosen=new Set([n]);finish('answer');}
+    else{
+      if(chosen.has(n))chosen.delete(n);else chosen.add(n);
+      updateChoices();
     }
-    body.append(badges);
-    const answer=record.answer;
-    const state=attempts.get(record.row)||{chosen:new Set(),checked:false};
-    attempts.set(record.row,state);
-    if(record.opts.length){
-      const opts=create('div','aq-choices');opts.setAttribute('role','group');
-      opts.setAttribute('aria-label','Answer choices for question '+record.row);
-      const multi=answer.correct.length>1;
-      const check=answer.correct.length===0; // source has no valid choice
-      const buttons=[];
-      const feedbackHolder=create('div','aq-feedback-holder');
-      const update=()=>{
-        buttons.forEach((btn,i)=>{
-          const selected=state.chosen.has(i+1),correct=answer.correct.includes(i+1);
-          btn.classList.toggle('aq-selected',selected);
-          btn.classList.toggle('aq-choice-right',state.checked&&correct);
-          btn.classList.toggle('aq-choice-wrong',state.checked&&selected&&!correct);
-          btn.setAttribute('aria-pressed',String(selected));
-          btn.disabled=state.checked||check;
-        });
-        feedbackHolder.replaceChildren();
-        if(state.checked){
-          const selected=[...state.chosen].sort((a,b)=>a-b);
-          const right=sameList(selected,[...answer.correct].sort((a,b)=>a-b));
-          feedbackHolder.append(answerPanel(record,check?null:right));
-        }
-      };
-      record.opts.forEach((value,i)=>{
-        const btn=button('',()=>{
-          if(state.checked)return;
-          if(multi){
-            if(state.chosen.has(i+1))state.chosen.delete(i+1);
-            else state.chosen.add(i+1);
-          }else{
-            state.chosen=new Set([i+1]);state.checked=true;
-          }
-          update();
-        },'aq-option');
-        const label=create('span','aq-option-letter',choiceLabel(i));
-        const copy=create('span','aq-option-copy');
-        copy.append(create('span','aq-option-en',value));
-        const translated=create('span','aq-option-si',record.siOpts[i]);translated.lang='si';copy.append(translated);
-        btn.append(label,copy);buttons.push(btn);opts.append(btn);
-      });
-      body.append(opts);
-      if(multi){
-        const checkButton=button('Check selected answers',()=>{
-          if(!state.chosen.size)return;
-          state.checked=true;
-          checkButton.disabled=true;
-          update();
-        },'aq-check');
-        if(state.checked)checkButton.disabled=true;
-        body.append(checkButton);
-      }else if(check){
-        const reveal=button('Show suggested answer',()=>{
-          state.checked=true;reveal.hidden=true;update();
-        },'aq-check');
-        reveal.hidden=state.checked;body.append(reveal);
+  }
+  function updateChoices(){
+    const q=current(),valid=gradable(q);
+    get('opts').querySelectorAll('.opt-btn').forEach((el,i)=>{
+      const n=i+1,selected=chosen.has(n);
+      el.classList.toggle('aq-selected',!finished&&selected);
+      el.classList.toggle('correct',finished&&valid&&q.answer.correct.includes(n));
+      el.classList.toggle('wrong',finished&&valid&&selected&&!q.answer.correct.includes(n));
+      el.disabled=finished||!valid;
+      el.setAttribute('aria-pressed',String(selected));
+    });
+    const action=get('opts').querySelector('.aq-action');
+    if(action){action.hidden=finished;action.disabled=valid&&!chosen.size;}
+  }
+  function updateLanguage(){
+    const q=current();if(!q||complete)return;
+    get('q-text').textContent=translated?q.siQ:q.q;
+    get('q-text').lang=translated?'si':'en';
+    get('opts').querySelectorAll('.opt-text').forEach((el,i)=>{
+      el.textContent=translated?(q.siOpts[i]||q.opts[i]):q.opts[i];
+      el.lang=translated?'si':'en';
+    });
+    const btn=get('translate-btn');
+    btn.classList.toggle('active',translated);
+    btn.textContent=translated?'🔄 English':'🇱🇰 සිංහල';
+    btn.setAttribute('aria-pressed',String(translated));
+    const action=get('opts').querySelector('.aq-action');
+    if(action)action.textContent=gradable(q)?(translated?'පිළිතුරු පරීක්ෂා කරන්න':'Check selected answers'):(translated?'යෝජිත පිළිතුර බලන්න':'Show suggested answer');
+    const instruction=get('opts').querySelector('.aq-instruction');
+    if(instruction)instruction.textContent=gradable(q)?(translated?'නිවැරදි පිළිතුරු සියල්ල තෝරන්න.':'Select all correct answers.'):(q.opts.length?(translated?'වලංගු පිළිතුරු විකල්පයක් නොමැත.':'No valid answer choice is available.'):(translated?'පිළිතුර සිතා යෝජිත පිළිතුර සමඟ සසඳන්න.':'Think of your answer, then reveal the suggested response.'));
+  }
+  function feedback(q){
+    const timed=outcome==='timeout',correct=outcome==='correct',incorrect=outcome==='wrong';
+    const type=timed?'timeout':correct?'correct':incorrect?'wrong':'';
+    const card=create('div','result-card'+(type?' '+type+'-card':''));
+    card.setAttribute('role','status');
+    card.append(create('div','rc-title'+(type?' '+type+'-t':''),timed?'⏰ කාලය ඉකුත් විය! (Time Expired!)':correct?'✅ නිවැරදියි! (Correct!)':incorrect?'❌ වැරදියි (Wrong)':'Suggested answer · යෝජිත පිළිතුර'));
+    card.append(create('div','rc-eng','Suggested answer: '+answerSummary(q)),create('div','rc-si',answerSummarySinhala(q)));
+    if(q.answer.review)card.append(create('p','aq-note','Check against the latest approved outlet SOP before relying on this proposed answer.'));
+    if(q.answer.note)card.append(create('p','aq-note',q.answer.note));
+    const sources=q.sources.map(id=>FILES.find(f=>f.id===id)?.name||id);
+    card.append(create('p','aq-note',sources.join(' · ')));
+    if(type){
+      const mascot=create('img','bt-answer-mascot');mascot.src='./images/mascot/pizza-'+(timed?'timer':correct?'correct':'wrong')+'.png';mascot.alt='';mascot.setAttribute('aria-hidden','true');card.append(mascot);
+    }
+    get('result-area').replaceChildren(card);
+    get('next-btn').classList.add('show');
+    const body=document.getElementById('assessment-practice-root');
+    setTimeout(()=>{if(active()&&finished&&current()===q)body.scrollTo({top:body.scrollHeight,behavior:'smooth'});},100);
+  }
+  function finish(reason){
+    if(finished||complete||!current())return;
+    const q=current();finished=true;stopTimer();
+    if(gradable(q)){
+      if(reason==='timeout'){skipped++;outcome='timeout';}
+      else{
+        const correct=sameList([...chosen].sort((a,b)=>a-b),[...q.answer.correct].sort((a,b)=>a-b));
+        if(correct)right++;else wrong++;
+        outcome=correct?'correct':'wrong';
       }
-      body.append(feedbackHolder);update();
-    }else{
-      const revealArea=create('div','aq-feedback-holder');
-      if(state.checked)revealArea.append(answerPanel(record,null));
-      const reveal=button(state.checked?'Hide suggested answer':'Show suggested answer',()=>{
-        state.checked=!state.checked;reveal.textContent=state.checked?'Hide suggested answer':'Show suggested answer';
-        revealArea.replaceChildren();
-        if(state.checked)revealArea.append(answerPanel(record,null));
-      },'aq-check');
-      body.append(reveal,revealArea);
-    }
-    return body;
-  }
-  function matches(record){
-    if(source!=='all'&&!record.sources.includes(source))return false;
-    if(format==='written'&&record.opts.length)return false;
-    if(format==='choice'&&!record.opts.length)return false;
-    if(!search)return true;
-    const text=[record.q,record.siQ,...record.opts,...record.siOpts,answerSummary(record),answerSummarySinhala(record)].join(' ');
-    return normalize(text).includes(normalize(search));
-  }
-  function filterButton(text,id,value,set){
-    const active=id===value;
-    const el=button(text,()=>{set(id);limit=PAGE_SIZE;render();},'aq-filter'+(active?' is-active':''));
-    el.setAttribute('aria-pressed',String(active));return el;
-  }
-  function renderResults(){
-    const list=document.getElementById('aq-question-list');
-    const count=document.getElementById('aq-count');
-    if(!list||!count)return;
-    const matchesList=questions.filter(matches);
-    count.textContent='Showing '+Math.min(limit,matchesList.length)+' of '+matchesList.length+' unique questions';
-    list.replaceChildren();
-    if(!matchesList.length){list.append(create('p','aq-empty','No matching questions. Try another keyword or filter.'));return;}
-    for(const question of matchesList.slice(0,limit))list.append(card(question));
-    if(matchesList.length>limit){
-      const more=button('Show '+Math.min(PAGE_SIZE,matchesList.length-limit)+' more questions',()=>{
-        limit+=PAGE_SIZE;renderResults();
-      },'aq-more');
-      list.append(more);
-    }
+    }else{reviewed++;outcome=reason==='timeout'?'timeout':'review';}
+    updateScore();updateChoices();feedback(q);
+    if(gradable(q))global.playFeedback?.(outcome==='correct');
   }
   function render(){
-    const host=root();if(!host)return;
-    host.replaceChildren();
-    const filters=create('section','aq-controls');
-    const searchInput=create('input','aq-search');
-    searchInput.type='search';searchInput.placeholder='Search English / සිංහල questions or answers';
-    searchInput.value=search;searchInput.autocomplete='off';
-    searchInput.setAttribute('aria-label','Search assessment questions');
-    searchInput.addEventListener('input',()=>{search=searchInput.value;limit=PAGE_SIZE;renderResults();});
-    filters.append(searchInput);
-    const sources=create('div','aq-filters');
-    for(const [id,label] of [['all','All assessments'],...FILES.map(file=>[file.id,file.name])]){
-      sources.append(filterButton(label,id,source,v=>source=v));
+    stopTimer();const q=current();if(!q)return;
+    chosen=new Set();finished=false;translated=false;outcome=null;warned=false;remaining=60;
+    get('quiz-paper-label').textContent='Assessment Practice · No ranking points';
+    get('quiz-q-info').textContent='Question '+(index+1)+' of '+questions.length;
+    get('q-badge').textContent='Q'+(index+1)+' · Assessment Practice';
+    get('prog-fill').style.width=Math.round(index/questions.length*100)+'%';
+    get('translate-btn').hidden=false;
+    get('next-btn').classList.remove('show');
+    get('next-btn').textContent='ඊළඟ ප්‍රශ්නය →';
+    get('result-area').replaceChildren();
+    const opts=get('opts');opts.replaceChildren();
+    if(!gradable(q)||q.answer.correct.length>1)opts.append(create('p','aq-instruction'));
+    q.opts.forEach((value,i)=>{
+      const btn=button('',()=>select(i+1),'opt-btn');
+      btn.append(create('span','opt-letter',choiceLabel(i)),create('span','opt-text',value));
+      opts.append(btn);
+    });
+    if(!gradable(q)||q.answer.correct.length>1){
+      const action=button('',()=>{if(checkTime()&&(!gradable(q)||chosen.size))finish(gradable(q)?'answer':'review');},'next-btn show aq-action');
+      opts.append(action);
     }
-    const types=create('div','aq-filters aq-type-filters');
-    for(const [id,label] of [['all','All types'],['choice','Multiple choice'],['written','Written answers']]){
-      types.append(filterButton(label,id,format,v=>format=v));
+    updateLanguage();updateChoices();updateScore();
+    document.getElementById('assessment-practice-root').scrollTop=0;
+    startTimer();
+  }
+  function showComplete(){
+    stopTimer();complete=true;finished=true;
+    get('quiz-q-info').textContent=questions.length+' of '+questions.length+' completed';
+    get('q-badge').textContent='Assessment Practice';
+    get('q-text').textContent='Practice complete!';
+    get('q-text').lang='en';get('translate-btn').hidden=true;
+    get('prog-fill').style.width='100%';get('timer-fill').style.width='0%';get('timer-val').textContent='0:00';
+    get('next-btn').classList.remove('show');get('opts').replaceChildren();
+    const card=create('div','result-card correct-card');
+    card.append(create('div','rc-title correct-t','Practice score: '+score()+'%'),
+      create('div','rc-eng',right+' correct · '+wrong+' incorrect · '+skipped+' timed out · '+reviewed+' ungraded review questions'),
+      create('div','rc-si','Practice only. No leaderboard points. Written and invalid-choice questions are not graded.'));
+    get('result-area').replaceChildren(card);updateScore();
+    document.getElementById('assessment-practice-root').scrollTop=0;
+  }
+  function begin(){
+    stopTimer();index=0;right=wrong=skipped=reviewed=0;complete=false;started=true;
+    render();
+  }
+  function next(){
+    if(!active()||!finished||complete)return;
+    if(++index>=questions.length)showComplete();else render();
+  }
+  function translate(){
+    if(!started||complete||!current())return;
+    translated=!translated;updateLanguage();
+  }
+  function home(){
+    if(!active())return;
+    if(!started||complete){global.showScreen('home');return;}
+    global.showModal({icon:'🏠',title:'Return to Home?',msg:'Your practice session will be kept until you close or reload the app.',confirmText:'Home',cancelText:'Continue',onConfirm:()=>global.showScreen('home')});
+  }
+  function reset(){
+    if(!active()||!loaded)return;
+    global.showModal({icon:'🔄',title:'Reset Assessment Practice?',msg:'Restart all 86 practice questions and clear this practice score?',confirmText:'Reset',cancelText:'Continue',onConfirm:()=>{if(active())begin();}});
+  }
+  function onScreenChange(id){
+    if(id!=='assessment-practice'){
+      if(interval!==null){remaining=Math.max(0,Math.min(60,Math.ceil((deadline-Date.now())/1000)));stopTimer();}
+      return;
     }
-    filters.append(sources,types);host.append(filters);
-    const count=create('p','aq-result-count');count.id='aq-count';host.append(count);
-    const list=create('div','aq-question-list');list.id='aq-question-list';host.append(list);
-    renderResults();
+    if(loaded&&!started){begin();return;}
+    if(started&&!finished&&!complete&&interval===null)startTimer();
   }
   async function open(){
-    const host=root();if(!host)return;
-    global.showScreen('assessment-practice');
-    host.replaceChildren(create('p','aq-loading','Loading bilingual questions…'));
-    try{await load();render();}
+    global.initAudio?.();global.showScreen('assessment-practice');
+    if(started){return;}
+    get('q-text').textContent='Loading bilingual questions…';get('opts').replaceChildren();
+    get('result-area').replaceChildren();get('next-btn').classList.remove('show');
+    try{await load();if(active()&&!started)begin();}
     catch(error){
-      host.replaceChildren(create('p','aq-error','Could not load the saved question data. Reconnect once, then try again.'));
-      host.append(button('Try again',open,'aq-check'));
+      if(!active())return;
+      get('q-text').textContent='Could not load the saved questions. Reconnect once, then try again.';
+      get('opts').append(button('Try again',open,'next-btn show aq-action'));
       console.warn('Assessment practice:',error);
     }
   }
-  global.BTAssessmentPractice={open,load,getQuestions:()=>questions.slice()};
+  global.BTAssessmentPractice={open,load,getQuestions:()=>questions.slice(),translate,home,reset,next,onScreenChange};
 })(window);

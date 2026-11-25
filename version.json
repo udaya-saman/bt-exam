@@ -1,5 +1,5 @@
 {
-  "version": "4.7.9-arena",
+  "version": "4.7.10-arena",
   "released": "2026-11-25",
-  "notes": "Restore the original scored-question quiz layout and styling from 4.7.6 without changing the Questions library, Study, 86 bilingual practice questions, original 214 scored questions, scoring, translations, timer logic, player data or app-wide button feedback. Refresh the offline cache."
+  "notes": "Assessment Practice now uses the original quiz layout, shared question and answer styles, 60-second timer, Sinhala toggle, feedback, score/progress and Home/Reset/Next controls. All 86 bilingual questions and proposed answers preserved; multi-answer, written and invalid-choice questions handled safely. Practice remains separate from ranked scoring and saved exam progress."
 }
