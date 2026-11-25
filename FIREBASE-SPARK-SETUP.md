@@ -12,7 +12,7 @@ This branch preserves the existing exam questions and explanations. It replaces 
 - Scoring events are checked by Firestore rules against **admin-seeded answer keys**. Even with rules, an offline user can modify their local client or time; this is a motivation system, not cheat-proof certification.
 - All-time, weekly and monthly points are stored in Firestore user documents and viewed in real time. **Live listeners of every user can consume a lot of free reads**, so monitor quotas.
 - Weekly scoring starts Monday 00:00 Asia/Colombo. The monthly winner announcement appears from the **4th day** of the next month, after a 72-hour late-sync window.
-- Attempts are limited to one ranked attempt per paper per Sri Lankan day. Repeating the paper remains possible as unranked practice.
+- From v4.7.12, each scored question is eligible once per user per Sri Lankan calendar day, regardless of paper resets or repeated papers. Repeated questions receive no additional points.
 - Scores earned offline are provisional until validated online. Scores that are more than 72 hours old, conflict with another attempt, or fail validation may not reach the ranking.
 - Previously unfinished papers can sync between devices when online; local progress cannot appear on another device until the originating device reconnects.
 
@@ -61,7 +61,7 @@ If the admin registration usernames were already taken, do not grant admin statu
 - Answer a correct question within 45 seconds: 25 points should be shown when 15 seconds remain.
 - Answer incorrectly and allow a timeout: both earn 0.
 - Resume a paper, including on a second device; make sure previous answers stay locked and the timer is not reset.
-- Complete the same paper twice in one day; only the first ranked attempt should count.
+- Answer a question, restart the paper and answer a different question: both first answers count. Re-answer the first question on the same day: no extra points. Test again the next day.
 - Go offline and answer more questions; reconnect and confirm pending scores are accepted.
 - Change the outlet and verify only an admin can approve.
 - Check weekly and all-time individual and outlet leaderboards.
@@ -252,3 +252,6 @@ The redesign now provides two distinct mobile-friendly screens matching the appr
 **No Firestore rule changes were introduced by this v3.6 visual and backup release.** If you already published the v3.5 rules and seeded the answer keys, the same rules can remain in place. You should still run a live test with `udaya` and a regular outlet account after the update.
 
 **Testing:** JavaScript syntax, Firestore score transaction emulator, PNG-only asset audits, responsive browser layouts at 320/375/430/768/1280px, and account-specific backup validation are included in CI. Real iPhones, Android phones and the live Firebase project need final acceptance checks before deploying broadly.
+
+## v4.7.12 — daily question scoring (required rules update)
+Publish the complete new `firestore.rules` in Firebase Console before live scoring can sync. Existing answer-key documents and totals are retained; no reseeding is required if all 214 keys already exist. Updated clients use immutable `uid_q_YYYY-MM-DD_paper_index` score event IDs; historical paper claims remain readable for migration. Old clients must update. Queued answers are retained while sync is unavailable. Assessment Practice remains unranked because its proposed keys are not verified. GitHub Pages cannot deploy Firebase rules automatically.
