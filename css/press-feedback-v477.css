@@ -5,6 +5,7 @@
    the Questions library, the assessment review, or the Study Academy. */
 body:has(#paper-select.active) #bt-spark-dock,
 body:has(#assessment-library.active) #bt-spark-dock,
+body:has(#assessment-practice.active) #bt-spark-dock,
 body:has(#study-select.active) #bt-spark-dock {
   display:none!important;
 }
