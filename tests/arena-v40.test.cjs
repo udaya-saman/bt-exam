@@ -47,6 +47,18 @@ assert.ok(library.includes('questions-intro-art')&&library.includes('mascot-cham
 assert.ok(library.includes('class="pa-assessment-entry questions-review-card"'),'Review bank remains separate from graded exams');
 assert.ok(library.includes('88 distinct questions')&&library.includes('No scoring'),'Assessment review does not imply scoring');
 assert.ok(html.includes('css/questions-v477.css?v=4.7.7')&&sw.includes('css/questions-v477.css?v=4.7.7'),'Questions styling enabled and cached offline');
+
+const pressStyle=get('css/press-feedback-v477.css'),pressLogic=get('js/press-feedback-v477.js');
+assert.doesNotThrow(()=>new vm.Script(pressLogic,{filename:'press-feedback-v477.js'}),'App-wide press logic parses');
+assert.ok(html.includes('css/press-feedback-v477.css?v=4.7.7')&&sw.includes('css/press-feedback-v477.css?v=4.7.7'),'Press CSS loaded and cached for offline use');
+assert.ok(html.includes('js/press-feedback-v477.js?v=4.7.7')&&sw.includes('js/press-feedback-v477.js?v=4.7.7'),'Press keyboard/touch logic loaded and cached');
+for(const page of ['paper-select','study-select','assessment-library']){
+ assert.ok(pressStyle.includes('#'+page+'.active'),'Duplicate bottom-right dock is hidden on '+page);
+}
+assert.ok(pressStyle.includes('prefers-reduced-motion:reduce'),'Tap feedback respects reduced motion');
+assert.ok(pressLogic.includes("'pointerdown'")&&pressLogic.includes("'pointerup'")&&pressLogic.includes("'keydown'"),'Both pointer and keyboard feedback present');
+assert.ok(pressLogic.includes('arena-pressing')&&pressLogic.includes('arena-pressed'),'Transient pressed states defined');
+
 assert.ok(questionsCss.includes('#quiz .opt-btn.correct')&&questionsCss.includes('#quiz .opt-btn.wrong'),'Both quiz answer states styled');
 assert.ok(questionsCss.includes('@media(max-width:350px)')&&questionsCss.includes('prefers-reduced-motion:reduce'),'Small-phone and accessibility styles present');
 assert.ok(!library.includes('.svg')&&!questionsCss.includes('.svg')&&!library.includes('<svg')&&!questionsCss.includes('<svg'),'No SVG graphics added');
