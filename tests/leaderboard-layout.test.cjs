@@ -16,8 +16,8 @@ assert.match(src,/place\.textContent=String\(places\.get\(r\)\)/);
 assert.match(css,/\.pg-standings-scroll\{[^}]*overflow-y:auto/);
 assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
-assert.ok(html.includes('arena-polish-v43.css?v=4.7.4'));
-assert.ok(sw.includes('arena-polish-v43.css?v=4.7.4'));
+assert.ok(html.includes('arena-polish-v43.css?v=4.7.5'));
+assert.ok(sw.includes('arena-polish-v43.css?v=4.7.5'));
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
  const classes=new Set();
