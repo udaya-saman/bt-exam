@@ -1,5 +1,5 @@
 {
   "version": "4.7.7-arena",
   "released": "2026-11-25",
-  "notes": "Modern responsive Pizza Arena Questions experience: brand-red challenge hero, readable five-paper PNG card library with accessible buttons, distinct 2025–2026 assessment review card, improved quiz question and answer layout, timer and progress presentation, responsive mobile/tablet/desktop styling. All five original paper identifiers, their 214 questions, quiz/answer/translation/timer/points/resume logic, Firestore and offline progress remain unchanged. New CSS is cached offline."
+  "notes": "Modern responsive Pizza Arena Questions experience: brand-red challenge hero, readable five-paper PNG card library with accessible buttons, distinct 2025–2026 assessment review card, improved quiz question and answer layout, timer and progress presentation, responsive mobile/tablet/desktop styling. All five original paper identifiers, their 214 questions, quiz/answer/translation/timer/points/resume logic, Firestore and offline progress remain unchanged. New CSS is cached offline. Hide the redundant floating Leaderboard dock on Questions, Study and Assessment Review. Apply responsive button press/release feedback to all native and role-based buttons, supporting pointer/touch, keyboard and reduced-motion preferences without altering their actions. All new visual assets are in the offline cache."
 }
