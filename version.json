@@ -1,5 +1,5 @@
 {
-  "version": "4.7.1-arena",
-  "releaseDate": "2026-11-24",
-  "notes": "Leaderboard: removed redundant intro and hero, kept top three only in podium, made #4+ standings scroll separately and fixed equal-width My Profile / Close actions. Quiz scoring and profile UI unchanged."
+  "version": "4.7.2-arena",
+  "released": "2026-11-25",
+  "notes": "Hide scrollbars while retaining scrolling; remove # from all rank displays; polish player details and right-align return button; add subtle first-place podium animation. Firebase scoring and saved data unchanged."
 }
