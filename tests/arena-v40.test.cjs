@@ -31,7 +31,7 @@ assert.equal(api.achievements({totalPoints:1500},week,week).find(x=>x.id==='risi
 assert.ok(html.includes('id="paper-select"')&&html.includes('id="study-select"')&&html.includes('id="study-app"'));
 assert.ok(!html.includes('id="study-reader"')&&html.includes('PizzaStudyLessons.open()'));
 assert.ok(html.includes('class="arena-paths"'));
-assert.ok(html.includes('29 Qs'),'Past 2024 card must show actual 29 questions');
+assert.ok(html.includes('29 QUESTIONS'),'Past 2024 card must show actual 29 questions');
 assert.ok(app.includes("people>=2")&&!app.includes("people>=3"));
 assert.ok(app.includes("practice?'PRACTICE · NO RANK POINTS'"));
 assert.ok(app.includes('setTimeout(()=>pill.remove(),4000)'));
