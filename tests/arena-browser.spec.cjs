@@ -52,13 +52,14 @@ for(const width of widths){
  await expect(page.locator('#bt-spark-dock')).toBeHidden();
   await expect(page.locator('#paper-select #questions-title')).toContainText('Your next challenge');
   await expect(page.locator('#paper-select .questions-quick-stats')).toContainText('214');
-  await expect(page.locator('#paper-select .pa-assessment-entry')).toHaveCount(1);
-  await expect(page.locator('#paper-select.active .paper-card')).toHaveCount(5);
-  await expect(page.locator('#paper-select .questions-paper')).toHaveCount(5);
+  await expect(page.locator('#paper-select .pa-assessment-entry')).toHaveCount(0);
+  await expect(page.locator('#paper-select .questions-assessment-paper')).toHaveCount(1);
+  await expect(page.locator('#paper-select.active .paper-card')).toHaveCount(6);
+  await expect(page.locator('#paper-select .questions-paper')).toHaveCount(6);
   const ids=await page.locator('#paper-select .questions-paper').evaluateAll(cards=>cards.map(card=>card.dataset.paper));
-  expect(ids).toEqual(['past2024','questions','paper1','paper2','paper3']);
+  expect(ids).toEqual(['past2024','questions','paper1','paper2','paper3','assessment-practice']);
   const questions=await page.locator('#paper-select .questions-paper-count').allTextContents();
-  expect(questions).toEqual(['29 QUESTIONS','40 QUESTIONS','50 QUESTIONS','50 QUESTIONS','45 QUESTIONS']);
+  expect(questions).toEqual(['29 QUESTIONS','40 QUESTIONS','50 QUESTIONS','50 QUESTIONS','45 QUESTIONS','86 UNIQUE QUESTIONS']);
   await expect.poll(()=>page.locator('#paper-select .questions-paper-icon img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   await expect.poll(()=>page.locator('#paper-select .questions-intro-art').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
   const columns=await page.locator('#all-question-papers').evaluate(grid=>getComputedStyle(grid).gridTemplateColumns.split(' ').length);
@@ -210,31 +211,58 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
  await page.screenshot({path:'tests/screenshot-player-card.png',fullPage:true});
 });
 
-test('Imported 2025–26 assessments are grouped without duplicates on phones',async({page})=>{
- await page.setViewportSize({width:375,height:820});
- await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
- await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
- await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;openQuestions();});
- await expect(page.locator('#paper-select .pa-assessment-entry')).toBeVisible();
- await page.locator('#paper-select .pa-assessment-entry').click();
- await expect(page.locator('#assessment-library.active')).toBeVisible();
- await expect(page.locator('#bt-spark-dock')).toBeHidden();
- await expect(page.locator('.pa-assessment-summary strong')).toHaveText('88 distinct questions');
- await expect(page.locator('.pa-assessment-card')).toHaveCount(15);
- await page.locator('.pa-assessment-search').fill('Cheesy Kottchi Sauce');
- await expect(page.locator('.pa-assessment-card')).toHaveCount(1);
- await expect(page.locator('.pa-assessment-card').first()).toContainText('600 g');
- await page.locator('.pa-assessment-search').fill('RIIT');
- await expect(page.locator('.pa-assessment-card')).toHaveCount(1);
- await expect(page.locator('.pa-assessment-card').first().locator('.pa-assessment-source')).toHaveCount(2);
- await page.locator('.pa-assessment-tab').filter({hasText:'LAS · Jan 2026'}).click();
- await expect(page.locator('.pa-assessment-missing')).toContainText('17–19');
- await page.locator('.pa-assessment-search').fill('PPM strength');
- await expect(page.locator('.pa-assessment-card')).toHaveCount(1);
- const overflow=await page.evaluate(()=>({w:document.documentElement.scrollWidth,viewport:innerWidth}));
- expect(overflow.w).toBeLessThanOrEqual(overflow.viewport+2);
-});
-
+for(const width of [320,375,430,768]){
+ test('Assessment workbook bilingual practice at '+width+'px',async({page})=>{
+  await page.setViewportSize({width,height:820});
+  await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;openQuestions();});
+  await expect(page.locator('#paper-select .questions-assessment-paper')).toBeVisible();
+  await page.locator('#paper-select .questions-assessment-paper').click();
+  await expect(page.locator('#assessment-practice.active')).toBeVisible();
+  await expect(page.locator('#bt-spark-dock')).toBeHidden();
+  await expect(page.locator('.aq-question-card')).toHaveCount(12,{timeout:12000});
+  await expect(page.locator('.aq-result-count')).toHaveText('Showing 12 of 86 unique questions');
+  await expect(page.locator('.aq-question-card').first().locator('.aq-question-si')).not.toBeEmpty();
+  await expect(page.locator('.aq-question-card').first().locator('.aq-option-si').first()).not.toBeEmpty();
+  // Multi-answer question shows a real check button, rather than assuming 4 choices.
+  await page.locator('.aq-search').fill('three Ps of first aid');
+  await expect(page.locator('.aq-question-card')).toHaveCount(1);
+  await expect(page.locator('.aq-question-card .aq-option')).toHaveCount(4);
+  for(let i=0;i<3;i++)await page.locator('.aq-question-card .aq-option').nth(i).click();
+  await page.locator('.aq-question-card .aq-check').click();
+  await expect(page.locator('.aq-feedback')).toContainText('Preserve Life');
+  // Proposed single answer, including both English and Sinhala.
+  await page.locator('.aq-search').fill('Cheesy Kottchi Sauce');
+  await expect(page.locator('.aq-question-card')).toHaveCount(1);
+  await page.locator('.aq-question-card .aq-option').first().click();
+  await expect(page.locator('.aq-feedback')).toContainText('600 g');
+  await expect(page.locator('.aq-feedback-si')).not.toBeEmpty();
+  // Known duplicates are consolidated to one card but source provenance is retained.
+  await page.locator('.aq-search').fill('RIIT');
+  await expect(page.locator('.aq-question-card')).toHaveCount(1);
+  await expect(page.locator('.aq-question-card .aq-source-pill')).toHaveCount(2);
+  // Written response: reveal the supplied suggested answer in both languages.
+  await page.locator('.aq-search').fill('');
+  await page.locator('.aq-filter').filter({hasText:'Written answers'}).click();
+  await expect(page.locator('.aq-question-card')).toHaveCount(9);
+  await page.locator('.aq-question-card').first().locator('.aq-check').click();
+  await expect(page.locator('.aq-question-card').first().locator('.aq-feedback-si')).not.toBeEmpty();
+  await page.locator('.aq-filter').filter({hasText:'All types'}).click();
+  // No valid answer exists in this particular scanned negative question.
+  await page.locator('.aq-search').fill('NOT related to food-safety rules');
+  await expect(page.locator('.aq-question-card')).toHaveCount(1);
+  await expect(page.locator('.aq-question-card .aq-option')).toHaveCount(6);
+  await expect(page.locator('.aq-question-card .aq-option:disabled')).toHaveCount(6);
+  await page.locator('.aq-question-card .aq-check').click();
+  await expect(page.locator('.aq-feedback')).toContainText('None of the six');
+  const scroll=await page.evaluate(()=>({
+   viewport:innerWidth,body:document.documentElement.scrollWidth,screen:document.getElementById('assessment-practice').scrollWidth
+  }));
+  expect(scroll.body).toBeLessThanOrEqual(width+2);
+  expect(scroll.screen).toBeLessThanOrEqual(width+2);
+ });
+}
 
 test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scroll',async({page})=>{
  await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());

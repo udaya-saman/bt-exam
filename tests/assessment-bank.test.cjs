@@ -3,54 +3,94 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const read=file=>fs.readFileSync(file,'utf8');
-const docs=['bt-oct-2025','las-2025','las-jan-2026'].map(id=>JSON.parse(read('assessments/'+id+'.json')));
-assert.deepEqual(docs.map(x=>x.questions.length),[40,30,27],'All readable questions transcribed by assessment');
-const seenByPaper=new Set();
-for(const doc of docs){
- assert.equal(doc.schema,1);
- assert.ok(doc.id&&doc.title&&Array.isArray(doc.sourceImages)&&doc.sourceImages.length>=3);
- for(const q of doc.questions){
-  assert(Number.isInteger(q.n)&&q.n>0);
-  assert(typeof q.q==='string'&&q.q.length>=10);
-  assert(Array.isArray(q.options));
-  assert(q.options.every(o=>typeof o==='string'&&o.length>0));
-  assert(!Object.hasOwn(q,'ans'),'No unverified answer may be published as a scored key');
-  assert(!Object.hasOwn(q,'correct'),'No unverified answer may be published as a scored key');
-  const ref=doc.id+':'+q.n;assert(!seenByPaper.has(ref),'Duplicate paper question '+ref);seenByPaper.add(ref);
+const json=file=>JSON.parse(read(file));
+const ids=['bt-oct-2025','las-2025','las-jan-2026'];
+const docs=ids.map(id=>json('assessments/'+id+'.json'));
+const translations=[1,2,3,4].flatMap(n=>json('assessments/si-part-'+n+'.json'));
+const proposals=json('assessments/proposed-answers.json');
+const html=read('index.html'),sw=read('sw.js'),app=read('js/bt-spark.js');
+const css=read('css/assessment-practice.css');
+const practice=read('js/assessment-practice.js');
+assert.deepEqual(docs.map(x=>x.questions.length),[40,30,27]);
+assert.equal(docs.reduce((n,x)=>n+x.questions.length,0),97,'All 97 workbook entries are preserved in source packs');
+assert.deepEqual(docs[2].missingQuestionNumbers,[17,18,19],'Missing scan question numbers must not be invented');
+assert.equal(proposals.schema,1);
+assert.equal(proposals.excludedDuplicateRows.length,11,'Nine duplicated scan topics plus two already scored');
+assert.equal(new Set(proposals.excludedDuplicateRows).size,11,'Excluded rows unique');
+assert.equal(translations.length,86);
+assert.equal(new Set(translations.map(x=>x[0])).size,86,'One Sinhala translation per new question');
+assert.equal(Object.keys(proposals.answers).length,86);
+const sourceRows=docs.flatMap((doc,p)=>doc.questions.map((q,i)=>({
+ id:[0,40,70][p]+i+1,doc:doc.id,q,
+ key:q.key?'topic:'+String(q.key).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim():'stem:'+String(q.q).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()
+})));
+const unique=new Set(sourceRows.map(x=>x.key));
+assert.equal(unique.size,88,'97 scanned entries contain 88 distinct source topics');
+const byId=new Map(sourceRows.map(x=>[x.id,x]));
+let missing=0,written=0,multiple=0,invalid=0;
+for(const [number,q,opts] of translations){
+ const row=byId.get(number),answer=proposals.answers[String(number)];
+ assert(row,'Translation refers to a real workbook row '+number);
+ assert(!proposals.excludedDuplicateRows.includes(number),'Duplicated topic not surfaced twice '+number);
+ assert(typeof q==='string'&&q.trim(),'Missing Sinhala question '+number);
+ assert.equal(row.q.options.length,opts.length,'English and Sinhala options align at row '+number);
+ assert(answer,'Missing proposed answer '+number);
+ assert(!Object.hasOwn(row.q,'ans')&&!Object.hasOwn(row.q,'correct'),'Unverified answers must not be inserted into scored Firebase question packs');
+ if(!opts.length){
+  written++;
+  assert(answer.suggested&&answer.siSuggested,'Written answers should have bilingual proposals '+number);
+ }else{
+  assert(Array.isArray(answer.correct),'Multiple choice needs a proposed option list '+number);
+  for(const n of answer.correct)assert(Number.isInteger(n)&&n>=1&&n<=opts.length,'Bad proposed choice index at '+number);
+  if(answer.correct.length>1)multiple++;
+  if(!answer.correct.length){invalid++;assert(answer.suggested&&answer.siSuggested,'No valid option must be explained');}
  }
 }
-assert.deepEqual(docs[2].missingQuestionNumbers,[17,18,19]);
-assert.deepEqual(docs[2].questions.filter(x=>x.n>16&&x.n<20),[]);
-assert.equal(docs[0].questions.find(x=>x.n===17).options[0],'Nacho Cheese 600 g / Kottchi Sauce 400 g');
-assert.equal(docs[1].questions.find(x=>x.n===22).options[1],'3 min / 5 min / 10 min');
-assert.equal(docs[2].questions.find(x=>x.n===13).options[2],'21–49°C / above 49°C / 5–65°C / 22–26°C');
-const ctx={window:{}};new vm.Script(read('js/assessment-bank.js'),{filename:'js/assessment-bank.js'}).runInNewContext(ctx);
-const merged=ctx.window.BTAssessmentBank.groupPapers(docs);
-assert.equal(docs.reduce((sum,x)=>sum+x.questions.length,0),97);
-assert.equal(merged.groups.length,88,'Repeated question variants must show as one card');
-assert.equal(new Set(merged.groups.map(x=>x.key)).size,88);
-assert.equal(merged.groups.reduce((sum,x)=>sum+x.variants.length,0),97,'No original question lost');
-for(const g of merged.groups){
- assert(new Set(g.variants.map(v=>v.paper+':'+v.n)).size===g.variants.length);
+const kept=sourceRows.filter(row=>!proposals.excludedDuplicateRows.includes(row.id));
+assert.equal(kept.length,86);
+assert.equal(new Set(kept.map(row=>row.key)).size,86,'No duplicate assessment topic shown');
+assert.equal(written,9,'One repeated written question was removed');
+assert.equal(multiple,5,'Five multi-answer questions remain multi-select');
+assert.equal(invalid,1,'Question with no valid option must be flagged, not incorrectly graded');
+assert.ok(proposals.answers[57].review&&proposals.answers[64].review,'Scanned truncated options remain reviewable');
+assert.ok(proposals.answers[92].review&&proposals.answers[92].correct.length===0,'Flawed negative question not assigned a false answer');
+assert.ok(!html.includes('id="assessment-library"')&&!html.includes('BTAssessmentBank?.open'),'Redundant assessment bank screen removed');
+assert.ok(html.includes('id="assessment-practice"')&&html.includes('id="assessment-practice-root"'));
+assert.ok(html.includes('window.BTAssessmentPractice?.open()'),'Bilingual practice accessible in Questions');
+assert.ok(html.includes('css/assessment-practice.css?v=4.7.8'));
+assert.ok(html.includes('js/assessment-practice.js?v=4.7.8'));
+for(const file of ['js/assessment-practice.js?v=4.7.8','css/assessment-practice.css?v=4.7.8',
+ ...[1,2,3,4].map(n=>'assessments/si-part-'+n+'.json'),'assessments/proposed-answers.json']){
+ assert(sw.includes(file),'Offline pre-cache includes '+file);
 }
-const html=read('index.html'),sw=read('sw.js'),css=read('css/assessment-bank.css');
-assert.match(html,/id="assessment-library"/);
-assert.match(html,/id="assessment-bank-root"/);
-assert.match(html,/BTAssessmentBank\?\.open\(\)/);
-assert.match(html,/js\/assessment-bank\.js\?v=4\.7\.0/);
-assert.match(html,/css\/assessment-bank\.css\?v=4\.7\.0/);
-for(const id of docs.map(x=>x.id))assert(sw.includes('./assessments/'+id+'.json'),'Missing offline question pack '+id);
-assert(sw.includes('./js/assessment-bank.js?v=4.7.0'));
-assert(sw.includes('./css/assessment-bank.css?v=4.7.0'));
-assert.match(css,/pa-assessment-card/);
-assert.match(css,/max-width:390px/);
-const release=JSON.parse(read('version.json')).version;
-assert.match(release,/^4\.7\.\d+-arena$/);
-assert(read('js/bt-spark.js').includes("APP_VERSION='"+release+"'"));
-// Preserve existing ranked question indexes and paper counts for Firebase validation.
-const a=html.indexOf('const PAPERS = {'),b=html.indexOf('window.BT_EXAM_PAPERS = PAPERS;',a);
-assert(a>=0&&b>a);
-const papers=vm.runInNewContext(html.slice(a,b)+'\nPAPERS;');
-assert.deepEqual(['past2024','questions','paper1','paper2','paper3'].map(k=>papers[k].qs.length),[29,40,50,50,45]);
-assert(!Object.keys(papers).some(k=>k.includes('las-')||k.includes('assessment-')),'New review questions must not mutate ranked papers');
-console.log('PASS: 97 image-transcribed entries consolidated to 88 unique assessment questions; no answer keys fabricated, 214 ranked questions preserved.');
+assert(css.includes('@media(max-width:430px)'),'Mobile question cards remain styled');
+assert(!practice.includes('BTExamBridge?.onAnswer')&&!practice.includes('scoreEvents')&&!practice.includes('rankedClaims'),'Provisional practice does not award or submit scores');
+new vm.Script(practice,{filename:'js/assessment-practice.js'});
+// Runtime loader test, including exact source-to-workbook ordinal mapping.
+const fixtures={};
+ids.forEach((id,i)=>fixtures['./assessments/'+id+'.json']=docs[i]);
+[1,2,3,4].forEach(n=>fixtures['./assessments/si-part-'+n+'.json']=json('assessments/si-part-'+n+'.json'));
+fixtures['./assessments/proposed-answers.json']=proposals;
+const sandbox={window:{},console,fetch:async url=>({
+ ok:Object.hasOwn(fixtures,url),json:async()=>fixtures[url]
+})};
+vm.runInNewContext(practice,sandbox,{filename:'assessment-practice.js'});
+(async()=>{
+ const practiceApi=sandbox.window.BTAssessmentPractice;
+ const loaded=JSON.parse(JSON.stringify(await practiceApi.load()));
+ assert.equal(loaded.length,86);
+ assert.equal(loaded.filter(x=>!x.opts.length).length,9);
+ assert(loaded.some(x=>x.row===1&&x.sources.includes('las-2025')),'Deduplicated RIIT answer cites both relevant source assessments');
+ assert(!loaded.some(x=>x.row===21||x.row===63),'Already graded questions not repeated');
+ assert(loaded.some(x=>x.row===97&&x.q.includes('attrition')),'Final question included');
+ // Old scored question IDs, answer indexes and quantities are unchanged.
+ const a=html.indexOf('const PAPERS = {'),b=html.indexOf('window.BT_EXAM_PAPERS = PAPERS;',a);
+ assert(a>=0&&b>a);
+ const papers=vm.runInNewContext(html.slice(a,b)+'\nPAPERS;');
+ assert.deepEqual(['past2024','questions','paper1','paper2','paper3'].map(k=>papers[k].qs.length),[29,40,50,50,45]);
+ assert(!Object.keys(papers).some(k=>k.includes('assessment')),'New proposals are never published as scored paper keys');
+ const version=json('version.json').version;
+ assert.equal(version,'4.7.8-arena');
+ assert(app.includes("const APP_VERSION='"+version+"'"));
+ console.log('PASS: 97 source entries, 9 within-source duplicates and 2 existing-paper overlaps -> 86 bilingual practice cards; 86 provisional answer keys; 214 original ranked questions unchanged.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

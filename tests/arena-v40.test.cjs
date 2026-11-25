@@ -33,26 +33,27 @@ assert.ok(!html.includes('id="study-reader"')&&html.includes('PizzaStudyLessons.
 assert.ok(html.includes('class="arena-paths"'));
 assert.ok(html.includes('29 QUESTIONS'),'Past 2024 card must show actual 29 questions');
 const questionsCss=get('css/questions-v477.css');
-const startLibrary=html.indexOf('<!-- QUESTIONS LIBRARY:'),endLibrary=html.indexOf('<!-- Assessment review is deliberately separate',startLibrary);
+const startLibrary=html.indexOf('<!-- QUESTIONS LIBRARY:'),endLibrary=html.indexOf('<!-- Bilingual assessment practice;',startLibrary);
 assert.ok(startLibrary>=0&&endLibrary>startLibrary,'Questions library section is intact');
 const library=html.slice(startLibrary,endLibrary);
 const cardIds=[...library.matchAll(/data-paper="([^"]+)"/g)].map(x=>x[1]);
-assert.deepEqual(cardIds,Object.keys(expected),'Original five paper IDs are all present exactly once');
+assert.deepEqual(cardIds,[...Object.keys(expected),'assessment-practice'],'Original five scored papers and one deduplicated practice card present');
 for(const [id,size] of Object.entries(expected)){
  assert.ok(library.includes('onclick="startPaper(\''+id+'\')"'),'Original paper action retained: '+id);
  assert.ok(library.includes(size+' QUESTIONS'),'Paper count visible: '+id);
 }
 assert.equal((library.match(/class="paper-card questions-paper"/g)||[]).length,5,'Five native exam buttons');
 assert.ok(library.includes('questions-intro-art')&&library.includes('mascot-champion.png'),'Brand PNG hero present');
-assert.ok(library.includes('class="pa-assessment-entry questions-review-card"'),'Review bank remains separate from graded exams');
-assert.ok(library.includes('88 distinct questions')&&library.includes('No scoring'),'Assessment review does not imply scoring');
+assert.ok(!library.includes('pa-assessment-entry')&&!html.includes('id="assessment-library"'),'Old standalone Assessment Bank section removed');
+assert.ok(library.includes('Assessment Practice')&&library.includes('86 UNIQUE QUESTIONS'),'New bilingual practice card has verified unique count');
+assert.ok(html.includes('id="assessment-practice"')&&html.includes('assessment-practice-root'),'Bilingual practice page present');
 assert.ok(html.includes('css/questions-v477.css?v=4.7.7')&&sw.includes('css/questions-v477.css?v=4.7.7'),'Questions styling enabled and cached offline');
 
 const pressStyle=get('css/press-feedback-v477.css'),pressLogic=get('js/press-feedback-v477.js');
 assert.doesNotThrow(()=>new vm.Script(pressLogic,{filename:'press-feedback-v477.js'}),'App-wide press logic parses');
 assert.ok(html.includes('css/press-feedback-v477.css?v=4.7.7')&&sw.includes('css/press-feedback-v477.css?v=4.7.7'),'Press CSS loaded and cached for offline use');
 assert.ok(html.includes('js/press-feedback-v477.js?v=4.7.7')&&sw.includes('js/press-feedback-v477.js?v=4.7.7'),'Press keyboard/touch logic loaded and cached');
-for(const page of ['paper-select','study-select','assessment-library']){
+for(const page of ['paper-select','study-select','assessment-practice']){
  assert.ok(pressStyle.includes('#'+page+'.active'),'Duplicate bottom-right dock is hidden on '+page);
 }
 assert.ok(pressStyle.includes('prefers-reduced-motion:reduce'),'Tap feedback respects reduced motion');

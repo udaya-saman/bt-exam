@@ -279,7 +279,7 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./css/player-card-v42.css?v=4.2.0">
 <link rel="stylesheet" href="./study/lesson-player.css?v=4.1.0">
 <link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.7.5">
-<link rel="stylesheet" href="./css/assessment-bank.css?v=4.7.0">
+<link rel="stylesheet" href="./css/assessment-practice.css?v=4.7.8">
 <link rel="stylesheet" href="./css/questions-v477.css?v=4.7.7">
 <link rel="stylesheet" href="./css/press-feedback-v477.css?v=4.7.7">
 </head>
@@ -360,31 +360,16 @@ button { outline: none; border: none; font-family: inherit; }
         <p>Choose a paper, put your knowledge to the test, and keep leveling up.</p>
         <div class="questions-quick-stats" aria-label="Exam library overview">
           <span><strong>5</strong> exam papers</span>
-          <span><strong>214</strong> questions</span>
-          <span><strong>60s</strong> per question</span>
+          <span><strong>214</strong> graded questions</span>
+          <span><strong>86</strong> practice questions</span>
         </div>
       </div>
       <img class="questions-intro-art" src="./images/arena/mascot-champion.png" width="238" height="258" alt="" decoding="async">
     </section>
-    <section class="questions-review-section" aria-labelledby="questions-review-title">
-      <div class="questions-section-head">
-        <div><span class="questions-section-eyebrow">REFERENCE LIBRARY</span><h2 id="questions-review-title">Assessment questions</h2><p>Explore questions from previous assessments.</p></div>
-        <span class="questions-section-count">REVIEW ONLY</span>
-      </div>
-      <button type="button" class="pa-assessment-entry questions-review-card" onclick="window.BTAssessmentBank?.open()" aria-label="Open 2025 to 2026 assessment question bank">
-        <span class="questions-review-art"><img class="pa-assessment-entry-art" src="./images/arena/stat-answered.png" width="60" height="60" alt=""></span>
-        <span class="pa-assessment-entry-text">
-          <strong>2025–2026 Assessment Bank</strong>
-          <small>Buddy Trainer Oct 2025 · LAS 2025 · LAS Jan 2026</small>
-          <span class="questions-review-foot">88 distinct questions <span aria-hidden="true">·</span> 97 scanned entries <span aria-hidden="true">·</span> No scoring</span>
-        </span>
-        <span class="pa-assessment-entry-arrow" aria-hidden="true">→</span>
-      </button>
-    </section>
     <section class="questions-papers-section" aria-labelledby="questions-papers-title">
       <div class="questions-section-head">
-        <div><span class="questions-section-eyebrow">CHOOSE YOUR CHALLENGE</span><h2 id="questions-papers-title">Exam papers</h2><p>Five organized question sets, ready to play.</p></div>
-        <span class="questions-section-count">5 PAPERS</span>
+        <div><span class="questions-section-eyebrow">CHOOSE YOUR CHALLENGE</span><h2 id="questions-papers-title">Questions &amp; practice</h2><p>Choose an exam paper or review bilingual practice questions.</p></div>
+        <span class="questions-section-count">5 EXAMS + PRACTICE</span>
       </div>
       <div class="paper-grid paper-selection-grid" id="all-question-papers">
         <button type="button" class="paper-card questions-paper" data-paper="past2024" onclick="startPaper('past2024')" aria-label="Start Past Paper 2024, 29 questions">
@@ -466,17 +451,43 @@ button { outline: none; border: none; font-family: inherit; }
             <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
           </span>
         </button>
+        <button type="button" class="paper-card questions-paper questions-assessment-paper" data-paper="assessment-practice" onclick="window.BTAssessmentPractice?.open()" aria-label="Open assessment practice, 86 questions in English and Sinhala">
+          <span class="questions-paper-top">
+            <span class="questions-paper-icon"><img src="./images/arena/stat-answered.png" width="58" height="58" alt=""></span>
+            <span class="questions-paper-count">86 UNIQUE QUESTIONS</span>
+          </span>
+          <span class="questions-paper-content">
+            <span class="questions-paper-kind">2025–2026 · BILINGUAL PRACTICE</span>
+            <strong class="pc-title">Assessment Practice</strong>
+            <span class="pc-desc">Multiple choice and written answers, with Sinhala translations and suggested solutions.</span>
+          </span>
+          <span class="questions-paper-footer">
+            <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Practice · no ranking points</span>
+            <span class="questions-paper-action">Practice now <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
       </div>
     </section>
   </main>
 </div>
-<!-- Assessment review is deliberately separate from ranked Firebase papers. -->
-<div id="assessment-library" class="screen">
-  <main class="pa-assessment-shell">
-    <header class="arena-library-head"><button type="button" class="arena-library-back" onclick="showScreen('paper-select')">← Questions</button><span>PIZZA ARENA</span></header>
-    <h1>Assessment Questions · 2025–2026</h1>
-    <p class="pa-assessment-intro">Review the questions and answer choices from the uploaded assessment sheets. Repeated questions are combined, with alternative versions available in the same card. Official answer keys were not supplied, so this section does not grade answers or award ranking points.</p>
-    <div id="assessment-bank-root" aria-live="polite"></div>
+<!-- Bilingual assessment practice; suggested answers are not credited to rank. -->
+<div id="assessment-practice" class="screen">
+  <main class="aq-shell">
+    <header class="arena-library-head aq-topbar">
+      <button type="button" class="arena-library-back" onclick="showScreen('paper-select')">← Questions</button>
+      <span>PIZZA ARENA · PRACTICE</span>
+    </header>
+    <section class="aq-hero">
+      <div>
+        <span class="aq-eyebrow">TRAIN • PRACTICE • REMEMBER</span>
+        <h1>Assessment Practice</h1>
+        <p>86 unique questions from the 2025–2026 assessments, with English, සිංහල and suggested answers.</p>
+        <div class="aq-hero-pills"><span>77 multiple choice</span><span>9 written answers</span><span>1 answer-choice issue</span></div>
+      </div>
+      <img src="./images/arena/mascot-avatar.png" width="116" height="130" alt="" decoding="async">
+    </section>
+    <p class="aq-disclaimer">Study practice only — no ranking points. Answers are proposals and some outlet-specific details require confirmation against the latest approved SOP.</p>
+    <div id="assessment-practice-root" aria-live="polite"></div>
   </main>
 </div>
 
@@ -1835,7 +1846,7 @@ function confirmModal() {
 <script defer src="./js/pizza-reference.js?v=4.0.0"></script>
 <script defer src="./study/lesson-art.js?v=4.6.0"></script>
 <script defer src="./study/lesson-player.js?v=4.6.0"></script>
-<script defer src="./js/assessment-bank.js?v=4.7.0"></script>
+<script defer src="./js/assessment-practice.js?v=4.7.8"></script>
 <script defer src="./js/press-feedback-v477.js?v=4.7.7"></script>
 </body>
 </html>
