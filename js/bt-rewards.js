@@ -36,10 +36,12 @@
       ['outlet-drive','🍕','Outlet Challenger',25,outletAnswers],
       ['outlet-crown','👑','Crown Squad',1,outletCrown?1:0]
     ];
-    return a.map(([id,icon,label,target,current])=>({
-      id,icon,label,target,current,unlocked:current>=target,
-      percent:Math.max(0,Math.min(100,Math.round(100*current/target)))
-    }));
+    return a.map(([id,icon,label,target,current])=>{
+      const unlocked=current>=target;
+      // Rounded progress must never look completed while the target is still locked.
+      return {id,icon,label,target,current,unlocked,
+        percent:unlocked?100:Math.min(99,Math.max(0,Math.round(100*current/target)))};
+    });
   }
   function level(points){
     const score=Math.max(0,Number(points||0));
