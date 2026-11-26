@@ -103,7 +103,7 @@ async function run(){
   // Run the real application queue processor with an authenticated emulator SDK.
   // The older test above constructs an independent transaction; it cannot catch
   // bugs in browser queue reconciliation or skipped sync calls.
-  const vm=require('node:vm'), F=require('firebase/firestore');
+  const F=require('firebase/firestore');
   const app=fs.readFileSync('js/bt-spark.js','utf8');
   const recoveryUid='test-real-queue',recoveryOutlet='Matara';
   const db=env.authenticatedContext(recoveryUid,{email:'bt-queue@example.test'}).firestore();
@@ -122,9 +122,11 @@ async function run(){
   const store=new Map([['pending',JSON.stringify([recovered,fresh])]]);
   let notifications=[];
   const ctx={F,db,user:{uid:recoveryUid},profile:existing,auth:{currentUser:{uid:recoveryUid}},active:null,admins:false,syncTask:null,syncTaskUid:null,syncIssue:'',navigator:{onLine:true},day,week,qkey:()=> 'pending',localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},recordLastSync:()=>{},note:m=>notifications.push(m),RESERVED:new Set(['udaya','indika']),OFFLINE_SYNC_MESSAGE:'Offline',console,window:{BT_EXAM_PAPERS:{paper1:{qs:Array.from({length:50},()=>({ans:0,opts:['A','B']}))}}}};
-  vm.createContext(ctx);
-  vm.runInContext(app.slice(app.indexOf('const RULES_REQUIRED_MESSAGE='),app.indexOf('function open(title'))+'\n'+app.slice(app.indexOf('function questionKey('),app.indexOf('function modeBadge('))+'\n'+app.slice(app.indexOf('function legacyAliases('),app.indexOf('window.BTExamBridge='))+'\n'+app.slice(app.indexOf('async function requestSync(){'),app.indexOf('function ranked(')),ctx);
-  await ctx.sync();
+  // The Firestore SDK checks plain-object prototypes. Execute in the same
+  // JavaScript realm as the real SDK, exactly as the browser does.
+  const source=app.slice(app.indexOf('const RULES_REQUIRED_MESSAGE='),app.indexOf('function open(title'))+'\n'+app.slice(app.indexOf('function questionKey('),app.indexOf('function modeBadge('))+'\n'+app.slice(app.indexOf('function legacyAliases('),app.indexOf('window.BTExamBridge='))+'\n'+app.slice(app.indexOf('async function requestSync(){'),app.indexOf('function ranked('));
+  const worker=new Function('ctx','let {F,db,user,profile,auth,active,admins,syncTask,syncTaskUid,syncIssue,navigator,day,week,qkey,localStorage,recordLastSync,note,RESERVED,OFFLINE_SYNC_MESSAGE,console,window}=ctx;\n'+source+'\nreturn {sync,requestSync,get issue(){return syncIssue}};')(ctx);
+  await worker.sync();
   const left=JSON.parse(store.get('pending'));
   const after=(await getDoc(doc(db,'users',recoveryUid))).data();
   assert.equal(after.totalAnswers,2,'Fresh answer was saved by actual queue worker');
