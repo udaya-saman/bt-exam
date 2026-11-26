@@ -26,8 +26,9 @@
  const arm=()=>{history.pushState({arenaBack:true},document.title,location.href);};
  arm();w.addEventListener('popstate',()=>{arm();Nav.back();});
  const PREFIX='bt_arena_best_observed_v1:';
- function get(uid){if(!uid)return null;try{const value=Number(localStorage.getItem(PREFIX+uid));return Number.isInteger(value)&&value>0?value:null;}catch(_){return null;}}
- function observe(records){for(const r of records){if(!r.uid||!Number.isInteger(r.rank)||r.rank<1)continue;const old=get(r.uid);if(old===null||r.rank<old){try{localStorage.setItem(PREFIX+r.uid,String(r.rank));}catch(_){}}}}
+ function historyKey(uid,epoch){return PREFIX+uid+(epoch?'_'+epoch:'');}
+ function get(uid,epoch){if(!uid)return null;try{const value=Number(localStorage.getItem(historyKey(uid,epoch)));return Number.isInteger(value)&&value>0?value:null;}catch(_){return null;}}
+ function observe(records){for(const r of records){if(!r.uid||!Number.isInteger(r.rank)||r.rank<1)continue;const old=get(r.uid,r.rankEpoch);if(old===null||r.rank<old){try{localStorage.setItem(historyKey(r.uid,r.rankEpoch),String(r.rank));}catch(_){}}}}
  function change(before,after){
   if(!Number.isInteger(before)||!Number.isInteger(after)||before===after)return null;
   if(after===1)return {kind:'champion',title:'YOU ARE RANK 1!',mascot:'pizza-crown.png',text:'You took the lead!'};

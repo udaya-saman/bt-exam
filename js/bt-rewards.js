@@ -34,7 +34,13 @@
       ['streak-14','👑','14-Day Streak',14,currentStreak],
       ['weekly-50','🚀','Weekly Warrior',2000,weeklyPoints],
       ['outlet-drive','🍕','Outlet Challenger',25,outletAnswers],
-      ['outlet-crown','👑','Crown Squad',1,outletCrown?1:0]
+      ['outlet-crown','👑','Crown Squad',1,outletCrown?1:0],
+      ['master-scorer','🏆','Master Scorer',15000,points],
+      ['scholar','🎓','Arena Scholar',750,correct],
+      ['streak-21','🔥','21-Day Streak',21,currentStreak],
+      ['weekly-elite','🚀','Weekly Elite',3000,weeklyPoints],
+      ['outlet-elite','🏁','Outlet Captain',40,outletAnswers],
+      ['precision','🎯','Precision Club',1000,correct]
     ];
     return a.map(([id,icon,label,target,current])=>{
       const unlocked=current>=target;

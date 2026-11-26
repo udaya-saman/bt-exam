@@ -62,15 +62,22 @@
  }
  function userSelection(){
    const main=$('study-app');if(!main)return null;
-   main.replaceChildren();main.className='pa-study';
+   $('study-select').scrollTop=0;main.replaceChildren();main.className='pa-study';
    return main;
  }
- function navBar(root){
-   const nav=make('nav','pa-study-bar');
-   const back=make('button','pa-study-home','← Home');back.type='button';
+ function navBar(root, destination){
+   const nav=make('nav','questions-library-nav');
+   const back=make('button','questions-library-back pa-study-home','← Home');back.type='button';
    back.onclick=()=>global.showScreen('home');
-   const label=make('span','pa-study-bar-label','PIZZA ARENA · STUDY');
-   append(nav,back,label);root.append(nav);
+   nav.append(back);
+   if(destination){
+     const lesson=destination==='lesson';
+     const link=make('button','questions-library-back pa-study-back',lesson?'← Lesson':'All lessons');
+     link.type='button';link.onclick=lesson?()=>openLesson(current):library;nav.append(link);
+   }
+   const brand=make('span','questions-nav-brand','PIZZA ARENA');
+   const trophy=make('img');trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='';brand.prepend(trophy);
+   nav.append(brand);root.append(nav);
  }
  function emptyState(root,msg){
    const block=make('div','pa-study-error');
@@ -82,9 +89,9 @@
    const hero=make('section','pa-study-hero');
    const text=make('div','pa-study-hero-text');
    append(text,make('div','pa-study-eyebrow','GAMMA TRAINING ACADEMY'),
-     make('h1','', 'Learn. Remember. Grow.'),
-     make('p','', 'Learn at your own pace — no timer or ranking points.'));
-   const image=global.PizzaStudyArt?.image('Study and training','Learning','h01','pa-study-topic-cover')||make('div','pa-study-step-id','STUDY');
+     make('h1','', 'Study Academy'),
+     make('p','', 'Choose a lesson, study its picture, then test what you remember.'));
+   const image=global.PizzaStudyArt?.image('Study and training','Learning','academy','pa-study-topic-cover')||make('div','pa-study-step-id','STUDY');
    append(hero,text,image);root.append(hero);
  }
  function controls(root){
@@ -135,7 +142,7 @@
        const card=make('button','pa-study-card');card.type='button';
        card.dataset.art=lesson.art||'training';
        const top=make('span','pa-study-card-top');
-       append(top,make('span','pa-study-card-icon',iconFor(lesson.art)),
+       append(top,global.PizzaStudyArt.image(lesson.title,'',lesson.id,'pa-study-card-picture'),
          make('span','pa-study-card-state',done[lesson.id]?'✓ Learned':'Start →'));
        const name=make('strong','pa-study-card-name',lesson.title);
        const summary=make('small','pa-study-card-desc',lesson.summary);
@@ -154,16 +161,13 @@
  }
  function mnemonic(section,art,id){
    const box=make('div','pa-study-memory');
-   box.append(make('span','pa-study-memory-title','ILLUSTRATED RECALL'));
-   const flow=make('div','pa-study-visual-flow');
-   const points=section.keyPoints.length?section.keyPoints:[section.body];
-   points.forEach((point,i)=>{
-     const item=make('div','pa-study-visual-step');
-     const pic=global.PizzaStudyArt?.image(point,section.heading,id);
-     if(pic)item.append(pic);
-     append(item,make('span','pa-study-visual-number',String(i+1)),make('span','pa-study-visual-text',point.replace(/^\d+\.\s*/,'')));
-     flow.append(item);
-   });
+   const staged=id==='h18'||id==='h19';
+   const flow=make('ol','pa-study-bullets'+(staged?' pa-study-stages':''));
+   for(const [i,point] of section.keyPoints.entries()){
+     const item=make('li');
+     if(staged)item.append(global.PizzaStudyArt.image(point,section.heading,id,'pa-study-illustration',i));
+     item.append(make('span','',point.replace(/^\d+\.\s*/,'')));flow.append(item);
+   }
    box.append(flow);return box;
  }
  function renderSection(section,art,index,id){
@@ -172,11 +176,6 @@
    append(header,make('span','pa-study-step-id','STEP '+(index+1)),
      make('h3','',section.heading));block.append(header);
    block.append(make('p','pa-study-copy',section.body));
-   if(section.keyPoints.length){
-     const list=make('ul','pa-study-bullets');
-     section.keyPoints.forEach(point=>{const li=make('li','',point);list.append(li);});
-     block.append(list);
-   }
    if(section.keyPoints.length){
      const visual=mnemonic(section,art,id);if(visual)block.append(visual);
    }
@@ -192,18 +191,17 @@
  }
  function revision(id){
  const lesson=byId.get(id);if(!lesson)return;
- const cards=lesson.sections.flatMap(section=>section.keyPoints.map(point=>({heading:section.heading,answer:point})));
+ const cards=lesson.sections.flatMap(section=>section.keyPoints.map((point,i)=>({heading:section.heading,answer:point,i})));
  if(!cards.length)return;
  global.ArenaNav?.visit('study:revision:'+id,()=>revision(id));
- const root=userSelection();navBar(root);
- const back=make('button','pa-study-back','← Lesson');back.onclick=()=>global.ArenaNav?.back();root.append(back);
+ const root=userSelection();navBar(root,'lesson');
  const title=make('h1','pa-revision-title',lesson.title+' · Quick revision');root.append(title);
  const card=make('section','pa-study-section pa-revision-card');root.append(card);
  let index=0;
  function render(){
   card.replaceChildren();
   const item=cards[index];
-  const mascot=global.PizzaStudyArt?.image(item.answer,item.heading,id,'pa-study-revision-art')||make('div','pa-study-step-id','RECALL');
+  const mascot=global.PizzaStudyArt?.image(item.answer,item.heading,id,'pa-study-revision-art',item.i)||make('div','pa-study-step-id','RECALL');
   const progress=make('small','pa-study-step-id',(index+1)+' / '+cards.length);
   const heading=make('h3','',item.heading);
   const hint=make('p','pa-study-copy','Recall one learning point for this topic.');
@@ -218,9 +216,7 @@
  function openLesson(id){
    const lesson=byId.get(id);if(!lesson)return;current=id;global.ArenaNav?.visit('study:'+id,()=>openLesson(id));
    const root=userSelection();if(!root)return;
-   navBar(root);
-   const back=make('button','pa-study-back','← All Lessons');back.type='button';back.onclick=library;
-   root.append(back);
+   navBar(root,'library');
    const hero=make('div','pa-study-lesson-hero');
    const text=make('div','pa-study-lesson-intro');
    append(text,make('span','pa-study-tag',categories[lesson.sourceId].icon+' '+categories[lesson.sourceId].title),
@@ -228,7 +224,7 @@
      make('p','',lesson.summary));
    const art=make('div','pa-study-lesson-art');
    const cover=global.PizzaStudyArt?.image(lesson.title,lesson.sections[0]?.heading,lesson.id,'pa-study-topic-cover');if(cover)art.append(cover);
-   append(hero,text,art);root.append(hero);
+   const cue=make('p','pa-study-cue',global.PizzaStudyArt.cue(id));text.append(cue,make('small','pa-edition-ref',sourceName(lesson)+' · pp. '+lesson.pages));append(hero,text,art);root.append(hero);
    const sections=make('div','pa-study-reader');
    lesson.sections.forEach((section,i)=>sections.append(renderSection(section,lesson.art,i,lesson.id)));
    root.append(sections);

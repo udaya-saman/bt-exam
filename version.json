@@ -1,5 +1,5 @@
 {
-  "version": "4.7.16-arena",
+  "version": "4.7.17-arena",
   "released": "2026-11-26",
-  "notes": "Recover pending answers and preserve account identity after profile edits. Show distinct saving, paused, saved and time-up mascots. Compact Player Card and podium layout, charcoal Sign Out and consistent button styling."
+  "notes": "Illustrated mascot study lessons, fixed learning navigation, admin score resets, new achievement medals and outlet details."
 }
