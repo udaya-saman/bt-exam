@@ -33,3 +33,78 @@ jobs:
           enc=base64.b64encode(buf.getvalue()).decode()
           for pos in range(0,len(enc),3000): print('MASCOT_AUDIT:'+enc[pos:pos+3000])
           PY
+      - name: Generate context-specific PNGs from the original Pizza Arena mascot masters
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageDraw, ImageFilter
+          from pathlib import Path
+          import base64,io,shutil
+          p=Path('images/mascot')
+          shutil.copyfile(p/'ChatGPT Image Nov 19, 2026, 11_50_38 AM-10.png',p/'pizza-rank-down.png')
+          shutil.copyfile(p/'15_chasing_crown.png',p/'pizza-chasing-crown.png')
+          # Keep the master character intact: a dedicated cloud/saved-answer
+          # sign replaces the version-update motif without changing the face,
+          # cap, shoes or character rendering.
+          im=Image.open(p/'pizza-welcome.png').convert('RGBA')
+          im=im.crop(im.getchannel('A').getbbox())
+          im.thumbnail((490,675),Image.Resampling.LANCZOS)
+          canvas=Image.new('RGBA',(640,720))
+          canvas.alpha_composite(im,(5,20+(680-im.height)//2))
+          # Supersampled glossy navy shield with gold edge and white cloud.
+          S=3; W=234; H=250
+          badge=Image.new('RGBA',(W*S,H*S))
+          d=ImageDraw.Draw(badge)
+          def box(coords):return tuple(int(n*S) for n in coords)
+          def roundrect(coords,r,fill,outline=None,width=1):
+              d.rounded_rectangle(box(coords),radius=r*S,fill=fill,outline=outline,width=width*S)
+          def ellipse(coords,fill,outline=None,width=1):
+              d.ellipse(box(coords),fill=fill,outline=outline,width=width*S)
+          roundrect((3,4,230,245),32,(112,62,13,255))
+          roundrect((3,2,230,238),30,(252,190,49,255), (255,228,130,255),3)
+          roundrect((11,10,222,230),24,(28,49,78,255),(134,91,21,255),2)
+          # Clipped gradient fills the rounded central field.
+          field=Image.new('RGBA',badge.size)
+          fd=ImageDraw.Draw(field)
+          for y in range(14*S,226*S):
+              t=(y-14*S)/(212*S)
+              fd.line((16*S,y,217*S,y),fill=(int(44-24*t),int(78-45*t),int(116-59*t),255))
+          mask=Image.new('L',badge.size); md=ImageDraw.Draw(mask)
+          md.rounded_rectangle(box((15,14,218,226)),radius=20*S,fill=255)
+          badge.paste(field,(0,0),mask);d=ImageDraw.Draw(badge)
+          # Cloud silhouette with a pause marker.
+          ellipse((37,74,108,140),'#edf6ff')
+          ellipse((71,38,154,135),'#edf6ff')
+          ellipse((130,68,192,140),'#edf6ff')
+          roundrect((39,105,190,141),14,'#edf6ff')
+          ellipse((127,89,201,163),'#f1a82b','#ffdc86',3)
+          roundrect((149,110,159,143),4,'white')
+          roundrect((169,110,179,143),4,'white')
+          # Saved document, independent of the cloud pause symbol.
+          roundrect((65,153,127,214),8,'#e6f0ff')
+          for yy,xx in [(168,115),(178,115),(188,105)]:
+              roundrect((75,yy,xx,yy+4),2,'#42638b')
+          ellipse((105,178,150,223),'#239c53','#c7f7d5',2)
+          d.line([box((116,201)),box((123,208)),box((139,191))],fill='white',width=5*S,joint='curve')
+          badge=badge.resize((W,H),Image.Resampling.LANCZOS)
+          canvas.alpha_composite(badge,(401,285))
+          canvas.save(p/'pizza-sync-paused.png',optimize=True)
+          # Stable filenames and original PNG transparency for every assignment.
+          for name in ['pizza-sync-paused.png','pizza-rank-down.png','pizza-chasing-crown.png']:
+              im=Image.open(p/name).convert('RGBA')
+              if im.size!=(640,720):
+                  im.thumbnail((640,720),Image.Resampling.LANCZOS)
+                  final=Image.new('RGBA',(640,720))
+                  final.alpha_composite(im,((640-im.width)//2,(720-im.height)//2))
+                  final.save(p/name,optimize=True)
+              im=Image.open(p/name)
+              assert im.size==(640,720) and im.mode=='RGBA' and im.getchannel('A').getextrema()==(0,255)
+          im=Image.open(p/'pizza-sync-paused.png').convert('RGBA')
+          preview=Image.new('RGB',im.size,(33,25,27));preview.paste(im,(0,0),im)
+          preview.thumbnail((320,360));buf=io.BytesIO();preview.save(buf,'JPEG',quality=85)
+          for i in range(0,len(base64.b64encode(buf.getvalue())),3000):
+              print('SYNC_PREVIEW:'+base64.b64encode(buf.getvalue()).decode()[i:i+3000])
+          for name in ['pizza-sync-paused.png','pizza-rank-down.png','pizza-chasing-crown.png']:
+              enc=base64.b64encode((p/name).read_bytes()).decode()
+              print('PNG_LENGTH:'+name+':'+str(len(enc)))
+              for i in range(0,len(enc),6000): print('PNG_DATA:'+name+':'+enc[i:i+6000])
+          PY
