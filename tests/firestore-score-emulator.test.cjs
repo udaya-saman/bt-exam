@@ -99,6 +99,38 @@ async function run(){
   const otherDb=env.authenticatedContext('test-second-player').firestore();
   await assert.rejects(()=>setDoc(doc(otherDb,'rankedClaims','test-second-player_'+d+'_paper1'),{uid:'test-second-player',paper:'paper1',dayKey:d,attemptId,startedAt:Timestamp.fromDate(now)}),/permission-denied|PERMISSION_DENIED/,'Old clients cannot create whole-paper claims');
   console.log('Legacy same-day migration and obsolete paper claims verified.');
+
+  // Run the real application queue processor with an authenticated emulator SDK.
+  // The older test above constructs an independent transaction; it cannot catch
+  // bugs in browser queue reconciliation or skipped sync calls.
+  const vm=require('node:vm'), F=require('firebase/firestore');
+  const app=fs.readFileSync('js/bt-spark.js','utf8');
+  const recoveryUid='test-real-queue',recoveryOutlet='Matara';
+  const db=env.authenticatedContext(recoveryUid,{email:'bt-queue@example.test'}).firestore();
+  const oldDate=new Date(now.getTime()-96*3600000);
+  const queued=(index,when=now,overrides={})=>({uid:recoveryUid,id:'local-'+index+'-'+when.getTime(),paper:'paper1',index,earnedAt:when.getTime(),selected:0,remaining:15,points:25,attemptId:'attempt1234567890',outlet:recoveryOutlet,...overrides});
+  const recovered=queued(0,oldDate),fresh=queued(1),oldId=recoveryUid+'_q_'+day(oldDate)+'_paper1_0';
+  const oldDay=day(oldDate),oldWeek=week(oldDate),oldMonth=oldDay.slice(0,7),oldWk=oldWeek+'__'+recoveryOutlet,oldMk=oldMonth+'__'+recoveryOutlet;
+  const existing={...initial(recoveryUid,'queuetester',recoveryOutlet),lastEventId:oldId,totalPoints:25,totalAnswers:1,correctAnswers:1,dailyActivity:{[oldDay]:1},weeklyPoints:{[oldWeek]:25},monthlyPoints:{[oldMonth]:25},outletPoints:{[recoveryOutlet]:25},outletWeeklyPoints:{[oldWk]:25},outletMonthlyPoints:{[oldMk]:25},outletAnswers:{[recoveryOutlet]:1},outletWeeklyAnswers:{[oldWk]:1},outletMonthlyAnswers:{[oldMk]:1}};
+  await env.withSecurityRulesDisabled(async ctx=>{
+   const privileged=ctx.firestore();
+   await setDoc(doc(privileged,'users',recoveryUid),existing);
+   const {username,usernameLower,totalAnswers,rapidCorrectStreak,reviewSuggested,createdAt,...published}=existing;
+   await setDoc(doc(privileged,'publicRanks',recoveryUid),{...published,name:username});
+   await setDoc(doc(privileged,'scoreEvents',oldId),{uid:recoveryUid,paper:'paper1',index:0,selected:0,remaining:15,points:25,attemptId:recovered.attemptId,dayKey:oldDay,activityDay:oldDay,weekKey:oldWeek,monthKey:oldMonth,outlet:recoveryOutlet,outletWeekKey:oldWk,outletMonthKey:oldMk,earnedAt:Timestamp.fromDate(oldDate)});
+  });
+  const store=new Map([['pending',JSON.stringify([recovered,fresh])]]);
+  let notifications=[];
+  const ctx={F,db,user:{uid:recoveryUid},profile:existing,auth:{currentUser:{uid:recoveryUid}},active:null,admins:false,syncTask:null,syncTaskUid:null,syncIssue:'',navigator:{onLine:true},day,week,qkey:()=> 'pending',localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},recordLastSync:()=>{},note:m=>notifications.push(m),RESERVED:new Set(['udaya','indika']),OFFLINE_SYNC_MESSAGE:'Offline',console,window:{BT_EXAM_PAPERS:{paper1:{qs:Array.from({length:50},()=>({ans:0,opts:['A','B']}))}}}};
+  vm.createContext(ctx);
+  vm.runInContext(app.slice(app.indexOf('const RULES_REQUIRED_MESSAGE='),app.indexOf('function open(title'))+'\n'+app.slice(app.indexOf('function questionKey('),app.indexOf('function modeBadge('))+'\n'+app.slice(app.indexOf('function legacyAliases('),app.indexOf('window.BTExamBridge='))+'\n'+app.slice(app.indexOf('async function requestSync(){'),app.indexOf('function ranked(')),ctx);
+  await ctx.sync();
+  const left=JSON.parse(store.get('pending'));
+  const after=(await getDoc(doc(db,'users',recoveryUid))).data();
+  assert.equal(after.totalAnswers,2,'Fresh answer was saved by actual queue worker');
+  assert.equal(after.totalPoints,50,'Already accepted answer must not be credited twice');
+  assert.equal(left.length,0,'A previously committed answer must clear even after the offline acceptance window');
+  console.log('Actual client queue reconciled an old confirmed receipt and saved a fresh answer against Firestore.');
   // Only Udaya's administrator account may add or replace answer keys.
   await env.withSecurityRulesDisabled(async ctx=>{
    const db=ctx.firestore();
