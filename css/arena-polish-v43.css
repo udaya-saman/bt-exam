@@ -720,3 +720,101 @@ body #bt-spark-root.arena-player-details-mode .arena-detail-accuracy{
 body #bt-spark-root.arena-player-details-mode .arena-detail-accuracy strong{
  color:#8ef291;font-variant-numeric:tabular-nums;
 }
+
+/* 4.7.15 — modern Player Card, retaining the exact leaderboard surfaces. */
+body #bt-spark-root.arena-profile-mode #bt-spark-content{
+ gap:clamp(13px,3vw,20px)!important;
+ padding:clamp(10px,3vw,24px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card,
+body #bt-spark-root.arena-profile-mode .arena-achievements-card,
+body #bt-spark-root.arena-profile-mode .arena-sync-area{
+ border-radius:19px!important;box-shadow:0 7px 20px #0003!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card:before,
+body #bt-spark-root.arena-profile-mode .arena-achievements-card:before{
+ display:none!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card-heading,
+body #bt-spark-root.arena-profile-mode .arena-achievements-heading{
+ min-height:48px!important;padding:12px 15px!important;
+ border-left:3px solid #d8a75e!important;
+ letter-spacing:.055em!important;text-shadow:none!important;
+ font-size:clamp(14px,3.5vw,19px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-card-body{
+ padding:clamp(11px,3.4vw,24px)!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-profile-top{
+ gap:12px!important;margin-bottom:14px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-avatar{
+ border-radius:18px!important;box-shadow:0 0 0 2px #e7b76b25,0 4px 12px #0005!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-person-info h3{
+ font-weight:900!important;letter-spacing:-.025em!important;text-shadow:none!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-wrap{
+ padding:10px!important;border-radius:12px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-badge{
+ box-shadow:none!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-level-track{height:10px!important}
+body #bt-spark-root.arena-profile-mode .arena-stats-grid{
+ gap:clamp(6px,2vw,12px)!important;margin-bottom:14px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat,
+body #bt-spark-root.arena-profile-mode .arena-personal-ranks>div,
+body #bt-spark-root.arena-profile-mode .arena-reward-item{
+ border-radius:13px!important;box-shadow:inset 0 1px 0 #ffffff08!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat{
+ padding:12px 4px!important;min-height:110px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat-art{
+ width:clamp(38px,12vw,72px)!important;height:auto!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat strong{
+ color:#fff1d8!important;font-size:clamp(17px,4.5vw,27px)!important;
+ letter-spacing:-.025em!important;overflow-wrap:anywhere;
+}
+body #bt-spark-root.arena-profile-mode .arena-stat-accuracy strong{color:#8ef291!important}
+body #bt-spark-root.arena-profile-mode .arena-stat span:last-child{
+ color:#e7d5c5!important;letter-spacing:.02em!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-personal-ranks{gap:8px!important;margin:0 0 14px!important}
+body #bt-spark-root.arena-profile-mode .arena-personal-ranks>div{padding:10px 6px!important;gap:4px!important}
+body #bt-spark-root.arena-profile-mode .arena-actions button,
+body #bt-spark-root.arena-profile-mode .arena-sync-action{
+ min-height:44px!important;border-radius:11px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-outlet-row{
+ border-radius:12px!important;min-height:48px!important;box-shadow:none!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-rewards-grid{
+ padding:12px!important;gap:8px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-reward-item{
+ min-height:136px!important;padding:11px 5px!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .arena-status-card{
+ border-radius:13px!important;box-shadow:none!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .is-synced .arena-status-icon{
+ color:#b8ffcc!important;background:#218c3c38!important;border-color:#51d76e70!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .has-pending .arena-status-icon{
+ color:#ffe6a5!important;background:#c9903833!important;border-color:#eab6588c!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-area .is-syncing .arena-status-icon{
+ color:#ffe6a5!important;
+}
+body #bt-spark-root.arena-profile-mode .arena-sync-action:disabled{
+ cursor:wait;opacity:.75!important;
+}
+@media(max-width:350px){
+ body #bt-spark-root.arena-profile-mode .arena-card-body{padding:10px!important}
+ body #bt-spark-root.arena-profile-mode .arena-stat strong{font-size:16px!important}
+ body #bt-spark-root.arena-profile-mode .arena-level-wrap{gap:5px!important;padding:8px!important}
+}

@@ -151,7 +151,7 @@ console.log('Pizza Arena redesigned screens, accessible actions, PNG assets and 
   }
  };
  const ctx={F,db:{},user:{uid},profile,admins:false,syncTask:null,syncTaskUid:null,syncIssue:'',navigator:{onLine:true},note:x=>notes.push(x),
-  qkey:()=> 'pending',localStorage:{getItem:()=>JSON.stringify(queue),setItem:(_k,v)=>{queue=JSON.parse(v)}},
+  qkey:()=> 'pending',getQueue:()=>queue,localStorage:{getItem:()=>JSON.stringify(queue),setItem:(_k,v)=>{queue=JSON.parse(v)}},
   day:()=>date,week:()=>wk,eventDay:()=>date,dailyEventId:(u,d,p,i)=>u+'_q_'+d+'_'+p+'_'+i,
   oldDailyEvent:async()=>false,recordLastSync:()=>refreshes++,markQuestion:()=>{},questionKey:(p,i)=>p+'_'+i,RESERVED:new Set(),
   console:{warn:()=>{},info:()=>{}},OFFLINE_SYNC_MESSAGE:'Offline. Turn on mobile data.'};

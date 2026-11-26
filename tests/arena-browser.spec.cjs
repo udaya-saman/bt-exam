@@ -206,6 +206,15 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
  });
  expect(palette.panelMatch).toBe(true);expect(palette.cardsMatch).toBe(true);expect(palette.sectionsMatch).toBe(true);
  expect(palette.levelFill).toContain('rgb(47, 219, 83)');
+ const polish=await page.evaluate(()=>{
+  const q=s=>document.querySelector('#bt-spark-root '+s),c=s=>getComputedStyle(q(s));
+  return {header:q('.arena-card-heading').getBoundingClientRect().height, radius:c('.arena-card').borderTopLeftRadius,
+   ornament:getComputedStyle(q('.arena-card'),'::before').display,track:q('.arena-level-track').getBoundingClientRect().height,
+   statShadow:c('.arena-stat').boxShadow};
+ });
+ expect(polish.header).toBeLessThanOrEqual(56);expect(polish.radius).toBe('19px');
+ expect(polish.ornament).toBe('none');expect(polish.track).toBeLessThanOrEqual(12);
+ expect(polish.statShadow).toContain('inset');
  expect(await page.locator('.arena-reward-item').count()).toBe(6);
  for(const width of [320,375,430,768]){
   await page.setViewportSize({width,height:812});

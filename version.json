@@ -1,5 +1,5 @@
 {
-  "version": "4.7.14-arena",
+  "version": "4.7.15-arena",
   "released": "2026-11-26",
-  "notes": "Distinguish rejected saves from connection errors, check current scoring rules and answer-key availability without revealing answers, keep rejected results while saving later eligible answers, wait for concurrent syncs, support legacy missing counter maps, and correct sync, timeout, rank-down, dethroned and first-place PNG mascot assignments. Publish updated firestore.rules before testing live scoring."
+  "notes": "Reconcile confirmed score receipts even after the 72-hour window; drain answers that arrive during final refresh; refresh visible sync status; bind authenticated profile ID; permit authorized key administrator to repair a missing key on retry. Polish Player Card using the existing leaderboard palette. Existing scoring and Firebase rules unchanged from 4.7.14."
 }
