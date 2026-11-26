@@ -174,6 +174,24 @@ async function run(){
     'Indika must not edit answer keys'
   );
   console.log('Answer-key seeding permitted only for Udaya.');
+  const resetSource=app.slice(app.indexOf('async function resetScores('),app.indexOf('async function confirmUserRemoval'));
+  const resetAs=async(db,uid)=>{
+    const messages=[];
+    const reset=new Function('F','db','admins','confirm','note','manageUsers','errorMessage',resetSource+';return resetScores;')(F,db,true,()=>true,m=>messages.push(m),()=>{},e=>e.code);
+    await reset({uid,username:'Test account'});return messages[0];
+  };
+  assert.match(await resetAs(db,recoveryUid),/permission-denied/);
+  for(const target of [recoveryUid,'test-udaya-private','test-indika-admin']){
+   assert.match(await resetAs(udayaDb,target),/Scores reset/);
+   const p=(await getDoc(doc(udayaDb,'users',target))).data();
+   assert.equal(p.totalPoints+p.correctAnswers+p.totalAnswers,0);assert.deepEqual(p.dailyActivity,{});
+   assert.ok(p.scoreResetAt.toMillis()>0);
+   assert.equal((await getDoc(doc(udayaDb,'publicRanks',target))).exists(),false);
+  }
+  assert.equal((await getDoc(doc(udayaDb,'admins','test-udaya-private'))).data().enabled,true);
+  await assert.rejects(()=>write('test-udaya-private','paper1',2,0,yesterday),/permission-denied|PERMISSION_DENIED/);
+  console.log('Administrator can reset players, self and another admin. Regular users cannot reset scores; old pending scores cannot return.');
+
  }finally{await env.cleanup();}
 }
 run().catch(error=>{console.error('Emulator test failed:',error);process.exitCode=1;});

@@ -71,6 +71,15 @@ service cloud.firestore {
       || (admin() && getAfter(blockPath(resource.data.uid)).data.uid == resource.data.uid);
     allow update: if false;
   }
+  function resetScoresOnly() {
+    let d=request.resource.data;
+    return admin() && d.scoreResetAt == request.time && d.updatedAt == request.time
+      && d.diff(resource.data).affectedKeys().hasOnly(['totalPoints','totalAnswers','correctAnswers','lastEventId','dailyActivity','rapidCorrectStreak','reviewSuggested','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','scoreResetAt','updatedAt'])
+      && d.totalPoints == 0 && d.totalAnswers == 0 && d.correctAnswers == 0
+      && d.lastEventId == '' && d.dailyActivity == {} && d.rapidCorrectStreak == 0 && d.reviewSuggested == false
+      && d.weeklyPoints == {} && d.monthlyPoints == {} && d.outletPoints == {} && d.outletWeeklyPoints == {} && d.outletMonthlyPoints == {}
+      && d.outletAnswers == {} && d.outletWeeklyAnswers == {} && d.outletMonthlyAnswers == {};
+  }
   match /users/{uid} {
     allow read: if mine(uid) || admin();
     allow create: if mine(uid)
@@ -88,7 +97,7 @@ service cloud.firestore {
       && request.resource.data.outletAnswers == {} && request.resource.data.outletWeeklyAnswers == {}
       && request.resource.data.lastEventId == ''
       && getAfter(usernamePath(request.resource.data.usernameLower)).data.uid == uid;
-    allow update: if (mine(uid) && (profileEdit() || scoringUpdate(uid)))
+    allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasAny(['scoreResetAt']) && resetScoresOnly()) || (mine(uid) && (profileEdit() || scoringUpdate(uid)))
       || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet','updatedAt'])
       && validOutlet(request.resource.data.outlet))
       || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reviewSuggested','updatedAt'])
@@ -111,11 +120,21 @@ service cloud.firestore {
   function publicEvent(uid) {
     return getAfter(eventPath(request.resource.data.lastEventId)).data;
   }
+  function validBucket(prev,field,key,points) {
+    let old=prev.get(field,{});
+    let next=request.resource.data.get(field,{});
+    let before=old.get(key,{'answered':0,'correct':0});
+    let after=next.get(key,{});
+    return (!(field in request.resource.data)) ||
+      (next.diff(old).affectedKeys().hasOnly([key]) && after.keys().hasOnly(['answered','correct'])
+       && after.answered == before.answered+1 && after.correct == before.correct+(points>0?1:0));
+  }
   function publicFieldsOk(uid) {
     let e=publicEvent(uid);
     return request.resource.data.keys().hasAll(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt'])
-      && request.resource.data.keys().hasOnly(['uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt'])
+      && request.resource.data.keys().hasOnly(['scoreResetAt','outletAccuracy','weeklyAccuracy','uid','name','outlet','avatar','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt'])
       && request.resource.data.uid == uid
+      && request.resource.data.get('scoreResetAt',null) == getAfter(userPath(uid)).data.get('scoreResetAt',null)
       && request.resource.data.avatar == getAfter(userPath(uid)).data.avatar
       && request.resource.data.lastEventId == getAfter(userPath(uid)).data.lastEventId
       && e.uid == uid
@@ -124,7 +143,8 @@ service cloud.firestore {
   }
   function publicIncrement(prev, uid) {
     let e=publicEvent(uid);
-    return !exists(eventPath(request.resource.data.lastEventId))
+    return validBucket(prev,'outletAccuracy',e.outlet,e.points) && validBucket(prev,'weeklyAccuracy',e.outletWeekKey,e.points)
+      && !exists(eventPath(request.resource.data.lastEventId))
       && request.resource.data.totalPoints == prev.totalPoints + e.points
       && request.resource.data.correctAnswers == prev.get('correctAnswers',0) + (e.points > 0 ? 1 : 0)
       && request.resource.data.dailyActivity.diff(prev.get('dailyActivity',{})).affectedKeys().hasOnly([e.activityDay])
@@ -176,7 +196,7 @@ service cloud.firestore {
       && publicIncrement(zeroRank(), uid);
     allow update: if (allowedToPublish(uid, request.resource.data.name, request.resource.data.outlet)
       && publicFieldsOk(uid)
-      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt','name','avatar'])
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outletAccuracy','weeklyAccuracy','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt','name','avatar'])
       && publicIncrement(resource.data, uid))
       || (mine(uid)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','avatar','updatedAt'])
@@ -213,7 +233,7 @@ service cloud.firestore {
   // Permission-only health probes: no stored document or answer-key value is
   // exposed. A successful get of a missing probe document is intentional.
   match /syncChecks/{id} {
-    allow get: if logged() && id == 'daily-v4714';
+    allow get: if logged() && id in ['daily-v4714','arena-v4717'];
     allow list, create, update, delete: if false;
   }
   match /syncKeyChecks/{id} {
@@ -270,6 +290,7 @@ service cloud.firestore {
       && request.resource.data.outletWeekKey == request.resource.data.weekKey + '__' + request.resource.data.outlet
       && request.resource.data.outletMonthKey == request.resource.data.monthKey + '__' + request.resource.data.outlet
       && request.resource.data.earnedAt is timestamp
+      && request.resource.data.earnedAt > get(userPath(request.auth.uid)).data.get('scoreResetAt',timestamp.date(1970,1,1))
       && request.resource.data.weekKey == slWeek(request.resource.data.earnedAt)
       && request.resource.data.monthKey == slMonth(request.resource.data.earnedAt)
       && request.resource.data.activityDay == slDate(request.resource.data.earnedAt)

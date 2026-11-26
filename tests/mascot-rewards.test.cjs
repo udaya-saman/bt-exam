@@ -6,6 +6,14 @@ const rewardsSource=fs.readFileSync('js/bt-rewards.js','utf8');
 const context={};vm.createContext(context);vm.runInContext(rewardsSource,context);
 const rw=context.BTRewards;
 assert.ok(rw,'Rewards engine exported');
+const medals=rw.achievements({},'2026-11-13','2026-11-09');
+assert.equal(medals.length,18);
+for(const medal of medals){
+ const png=fs.readFileSync('images/achievements/'+medal.id+'.png');
+ assert.equal(png.readUInt32BE(16),256);assert.equal(png.readUInt32BE(20),256);
+ assert.equal(medal.unlocked,false);
+}
+assert.deepEqual(Array.from(medals.slice(-6),m=>m.target),[15000,750,21,3000,40,1000]);
 const daily={
  '2026-11-09':2,'2026-11-10':5,'2026-11-11':3,'2026-11-12':12,
  '2026-11-13':1

@@ -823,3 +823,16 @@ body #bt-spark-root.arena-profile-mode .arena-sync-action:disabled{
  body #bt-spark-root.arena-profile-mode .arena-stat strong{font-size:16px!important}
  body #bt-spark-root.arena-profile-mode .arena-level-wrap{gap:5px!important;padding:8px!important}
 }
+
+body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-player-controls{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:2px 0 8px!important}
+body #bt-spark-root.arena-profile-mode .arena-player-controls button{font-size:clamp(15px,3.2vw,18px)!important}
+.arena-player-controls button:first-child{grid-column:1/-1}
+.arena-player-controls button:first-child{display:flex;align-items:center;justify-content:center;gap:7px}
+.arena-player-controls .arena-board-trophy{width:26px;height:26px;object-fit:contain}
+body #bt-spark-root.arena-leaderboard-layout .panel>h2{margin-bottom:4px!important}
+body #bt-spark-root.arena-leaderboard-layout .pg-nav button:last-child{background:#fff!important;color:#252428!important;border-color:#dadada!important}
+.arena-create-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:16px}
+.arena-medal{display:block;width:clamp(49px,10vw,80px);aspect-ratio:1;border-radius:18%;object-fit:contain}
+.arena-weekly-champion,.arena-crown-row{box-shadow:0 0 8px #ffdc78,0 0 19px #f9b32d99!important}
+@keyframes earnedMedalPulse{50%{transform:scale(1.08)}}
+@media(prefers-reduced-motion:no-preference){.is-earned .arena-medal{animation:earnedMedalPulse 2.5s ease-in-out infinite}.arena-crown-row{animation:arenaFirstGlow 1.9s ease-in-out infinite}}

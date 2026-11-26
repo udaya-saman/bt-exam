@@ -16,8 +16,8 @@ assert.match(src,/place\.textContent=String\(places\.get\(r\)\)/);
 assert.match(css,/\.pg-standings-scroll\{[^}]*overflow-y:auto/);
 assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
-assert.ok(html.includes('arena-polish-v43.css?v=4.7.16'));
-assert.ok(sw.includes('arena-polish-v43.css?v=4.7.16'));
+assert.ok(html.includes('arena-polish-v43.css?v=4.7.17'));
+assert.ok(sw.includes('arena-polish-v43.css?v=4.7.17'));
 assert.doesNotMatch(src,/The crown is waiting!/,'The empty crown waiting panel is removed');
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
@@ -67,7 +67,7 @@ assert.equal(find('pg-podium').hidden,false);
 assert.equal(rows()[0].children[0].textContent,'4');
 assert.match(css,/\.pg-users-footer\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 assert.match(css,/\.pg-users-scroll\{[^}]*overflow-y:auto/);
-assert.match(app,/footer\.append\(create,btn\('Back',adminPanel,true\),btn\('Close',close,true\)\)/);
+assert.match(app,/footer\.append\(btn\('Back',adminPanel,true\),create,btn\('Close',close,true\)\)/);
 vm.runInContext('outletView=true;board();',ctx);
 assert.equal(rows()[0].children[0].textContent,'4');
 assert.equal(find('pg-board-footer').children.length,2);
@@ -162,7 +162,7 @@ console.log('Podium name wrapping, quicker animation, Pizza Hut red, admin-only 
  const footer=find('pg-users-footer'),search=find('pg-users-search'),list=find('pg-users-scroll');
  assert.equal(managerRoot.classList.contains('arena-manage-users-layout'),true);
  assert.equal(usersBox.children.at(-1),footer);
- assert.deepEqual(Array.from(footer.children,b=>b.textContent),['Create User','Back','Close']);
+ assert.deepEqual(Array.from(footer.children,b=>b.textContent),['Back','Create User','Close']);
  footer.children.forEach(b=>b.click());assert.deepEqual([created,backed,closed],[1,1,1]);
  assert.equal(list.children.length,5);
  assert.deepEqual(Array.from(list.children,r=>!!r.lastChild.disabled),[true,true,false,true,false]);

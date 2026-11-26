@@ -135,13 +135,20 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;openStudy();});
  await expect(page.locator('#study-select.active .pa-study-card')).toHaveCount(57,{timeout:12000});
  await expect(page.locator('#bt-spark-dock')).toBeHidden();
- await expect(page.locator('.pa-study-hero h1')).toContainText('Learn. Remember. Grow.');
+ await expect(page.locator('.pa-study-hero h1')).toContainText('Study Academy');
  await page.locator('.pa-study-card').first().click();
  await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
+ await page.setViewportSize({width:320,height:740});
+ const pinned=await page.locator('#study-select').evaluate(screen=>{
+  screen.scrollTop=screen.scrollHeight;
+  const nav=screen.querySelector('nav');
+  return {top:nav.getBoundingClientRect().top,width:screen.scrollWidth,scroll:screen.scrollTop};
+ });
+ expect(pinned.scroll).toBeGreaterThan(0);expect(pinned.top).toBe(0);expect(pinned.width).toBeLessThanOrEqual(320);
  await expect(page.locator('.pa-study-source')).toHaveCount(0);
  await expect(page.locator('.pa-study-memory')).not.toHaveCount(0);
- await expect(page.locator('.pa-study-illustration').first()).toBeVisible();
- await expect.poll(()=>page.locator('.pa-study-illustration').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
+ await expect(page.locator('.pa-study-lesson-art img').first()).toBeVisible();
+ await expect.poll(()=>page.locator('.pa-study-lesson-art img').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
  await page.getByRole('button',{name:'Quick revision'}).click();
  await expect(page.locator('.pa-revision-card')).toBeVisible();
  await page.getByRole('button',{name:'Reveal learning point'}).click();
@@ -160,7 +167,7 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await page.getByRole('button',{name:/Making a Pizza: Five Stages/}).click();
  const concepts=await page.locator('.pa-study-illustration').evaluateAll(nodes=>nodes.map(n=>n.dataset.concept));
  expect(concepts).toEqual(['sauce','cheese','toppings','oven','pizza']);
- await expect.poll(()=>page.locator('.pa-study-illustration').evaluateAll(nodes=>nodes.every(n=>n.complete&&n.naturalWidth===256&&n.src.startsWith('data:image/png')))).toBe(true);
+ await expect.poll(()=>page.locator('.pa-study-illustration').evaluateAll(nodes=>nodes.every(n=>n.complete&&n.naturalWidth===256&&n.src.includes('/study/art/')))).toBe(true);
 });
 test('Player Card and rewards fit narrow phones',async({page})=>{
  await page.setViewportSize({width:375,height:812});
