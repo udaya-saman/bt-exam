@@ -18,10 +18,10 @@ assert.match(app,/root\.classList\.add\('arena-profile-mode'\)/,'Player Card bec
 assert.match(app,/className='arena-profile-top'/,'Player profile area present');
 const profileSource=app.slice(app.indexOf('async function profilePanel()'),app.indexOf('function changeOutlet()'));
 assert.doesNotMatch(profileSource,/PIZZA ARENA · PLAYER HQ|className='arena-page-top'/,'Redundant Player HQ top banner removed');
-assert.match(profileSource,/arena-signout-action/,'Dedicated orange Sign Out class present');
+assert.match(profileSource,/arena-signout-action/,'Dedicated Sign Out class present');
 assert.match(profileSource,/arena-stat-correct/,'Correct statistic uses professional icon treatment');
 assert.ok(profileSource.includes("btn('✕ Close',close)"),'Working Close control retained');
-assert.ok(fs.readFileSync('css/arena-polish-v43.css','utf8').includes('.arena-actions button.arena-signout-action'),'Orange Sign Out styling loaded');
+assert.ok(fs.readFileSync('css/arena-polish-v43.css','utf8').includes('.arena-actions button.arena-signout-action'),'Charcoal Sign Out styling loaded');
 assert.match(app,/className='arena-stats-grid'/,'Stats cards present');
 assert.ok(app.includes("nextGoal.textContent=lvl.current.toLocaleString()+' / '+lvl.required.toLocaleString()+' pts'"),'Player Card shows current-tier progress and required points');
 assert.ok(app.includes("progress.setAttribute('aria-valuemax',String(lvl.required))"),'Accessible level progress uses the current tier requirement');
@@ -37,7 +37,7 @@ assert.match(app,/function openNotifications\(\)/,'Notifications working');
 assert.match(app,/BTExamUI=\{/,'Home actions attached');
 assert.match(app,/role','status'/,'Accessible status card');
 assert.match(app,/recordLastSync\(\)/,'Recent synced status');
-assert.ok(profileSource.includes('syncMascot(pending,offlineHint)'));
+assert.ok(profileSource.includes('playerSyncStatus(pending,totals.answered'));
 assert.ok(!profileSource.includes('pizza-update.png'),'Version update artwork not used for sync');
 assert.match(app,/function getQueue\(\)/,'Offline pending answers remain account-specific');
 const loginSection=app.slice(app.indexOf("function gate(mode='login'"),app.indexOf("const qkey=()"));
@@ -46,7 +46,7 @@ assert.ok(loginSection.includes('OFFLINE_SIGNIN_REQUIRED'),'Fresh sign-ins must 
 assert.ok(app.includes('browserLocalPersistence'),'Authenticated session persists on device');
 assert.ok(app.includes('getDocFromCache(ref)'),'Offline restoration uses Firestore cache');
 assert.ok(app.includes('rememberUsername(profile.username)'),'Remember username only after trusted profile load');
-assert.ok(app.includes("await requestSync();profilePanel();"),'Manual Sync displays offline help');
+assert.ok(profileSource.includes("await requestSync();}finally{refreshVisiblePlayerCard();}"),'Manual Sync refreshes in place');
 assert.ok(app.includes('Turn on mobile data or connect to Wi-Fi'),'Offline Sync guidance is understandable');
 assert.ok(sw.includes('await fill(cache,SDK,previous)'),'Firebase runtime pre-cached for offline app reopening');
 
@@ -71,7 +71,7 @@ for(const source of [index,app,css,sw,fs.readFileSync('manifest.json','utf8')]){
 for(const filename of [
  'pizza-welcome.png','pizza-correct.png','pizza-rank-up.png','pizza-overtaken.png',
  'pizza-timer.png','pizza-private.png','pizza-crown.png','pizza-monthly.png',
- 'pizza-sync-paused.png','pizza-rank-down.png','pizza-chasing-crown.png'
+ 'pizza-sync-paused.png','pizza-sync-saving.png','pizza-sync-saved.png','pizza-timeout.png','pizza-rank-down.png','pizza-chasing-crown.png'
 ]){
  const file='images/mascot/'+filename;
  const buf=fs.readFileSync(file);
@@ -151,7 +151,7 @@ console.log('Pizza Arena redesigned screens, accessible actions, PNG assets and 
   }
  };
  const ctx={F,db:{},user:{uid},profile,admins:false,syncTask:null,syncTaskUid:null,syncIssue:'',navigator:{onLine:true},note:x=>notes.push(x),
-  qkey:()=> 'pending',localStorage:{getItem:()=>JSON.stringify(queue),setItem:(_k,v)=>{queue=JSON.parse(v)}},
+  qkey:()=> 'pending',getQueue:()=>queue,localStorage:{getItem:()=>JSON.stringify(queue),setItem:(_k,v)=>{queue=JSON.parse(v)}},
   day:()=>date,week:()=>wk,eventDay:()=>date,dailyEventId:(u,d,p,i)=>u+'_q_'+d+'_'+p+'_'+i,
   oldDailyEvent:async()=>false,recordLastSync:()=>refreshes++,markQuestion:()=>{},questionKey:(p,i)=>p+'_'+i,RESERVED:new Set(),
   console:{warn:()=>{},info:()=>{}},OFFLINE_SYNC_MESSAGE:'Offline. Turn on mobile data.'};
@@ -168,10 +168,18 @@ console.log('Pizza Arena redesigned screens, accessible actions, PNG assets and 
  assert.match(ctx.syncIssue,/answer key/);
  key0=true;await ctx.sync();assert.equal(queue.length,0);assert.equal(profile.totalAnswers,2);assert.equal(profile.totalPoints,60);assert.equal(ctx.syncIssue,'');assert.equal(refreshes,2);
  await ctx.sync();assert.equal(profile.totalAnswers,2,'No duplicate increment after retry');
- ctx.navigator.onLine=false;assert.equal(await ctx.requestSync(),false);assert.equal(ctx.syncIssue,ctx.OFFLINE_SYNC_MESSAGE);
- assert.equal(ctx.syncMascot(1,false),'./images/mascot/pizza-sync-paused.png');
- assert.equal(ctx.syncMascot(0,true),'./images/mascot/pizza-sync-paused.png');
- assert.equal(ctx.syncMascot(0,false),'./images/mascot/pizza-correct.png');
+ ctx.navigator.onLine=false;assert.equal(await ctx.requestSync(),true);assert.equal(ctx.syncIssue,'');
+ queue=[make(2)];assert.equal(await ctx.requestSync(),false);assert.equal(ctx.syncIssue,ctx.OFFLINE_SYNC_MESSAGE);
+ for(const [args,title,art] of [
+  [[0,0,false,true,''],'Ready to play','pizza-welcome.png'],
+  [[0,2,false,false,''],'All caught up','pizza-sync-saved.png'],
+  [[1,2,true,true,''],'Saving answers…','pizza-sync-saving.png'],
+  [[1,2,false,true,''],'Answers waiting','pizza-sync-paused.png'],
+  [[1,2,false,true,'Server rejected write'],'Sync paused','pizza-sync-paused.png'],
+  [[1,2,true,false,''],'Connect to sync','pizza-sync-paused.png']
+ ]){
+  const state=ctx.playerSyncStatus(...args);assert.equal(state.title,title);assert.equal(state.art,art);
+ }
  const quota=await ctx.diagnoseSyncFailure({code:'resource-exhausted'},make(2));assert.equal(quota.stop,true);assert.match(quota.message,/temporarily busy/);
  const nav=fs.readFileSync('js/arena-navigation-ranks.js','utf8');
  const navCtx={window:{addEventListener(){}},history:{pushState(){}},document:{title:''},location:{href:'https://example.test/'},localStorage:{getItem:()=>null,setItem(){}}};

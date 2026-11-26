@@ -67,6 +67,7 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
  // Picture + username update uses one transaction and keeps points.
  t=setup();r=await api.save(input(t,{name:'player2',avatar}));
  assert.equal(r.detailsSaved,true);
+ assert.equal(r.profile.uid,sample.uid,'Editing a legacy profile must retain the authenticated UID used by Sync');
  assert.equal(t.records.get('users/user-1').username,'player2');
  assert.equal(t.records.get('users/user-1').avatar,avatar);
  assert.equal(t.records.get('users/user-1').totalPoints,340);
@@ -123,11 +124,11 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
  assert(profileRender.indexOf('box.append(footer)')<bottom);
  assert(profileRender.includes('syncStatus.append(status,syncButton)'));
  assert(html.includes('css/player-card-v42.css?v=4.2.0'));
- assert(html.includes('js/account-profile-save.js?v=4.2.0'));
+ assert(html.includes('js/account-profile-save.js?v=4.7.16'));
  assert(css.includes('.arena-profile-mode')&&css.includes('.arena-account-mode'));
  assert(css.includes('prefers-reduced-motion'));
  assert(sw.includes('css/player-card-v42.css?v=4.2.0'));
- assert(sw.includes('js/account-profile-save.js?v=4.2.0'));
+ assert(sw.includes('js/account-profile-save.js?v=4.7.16'));
  assert.match(version,/^4\.7\.\d+-arena$/);
  assert(app.includes("const APP_VERSION='"+version+"'"));
 
@@ -156,8 +157,8 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
   F:Fsession,db:{},auth:{currentUser:{uid:'u-return'}},
   A:{signOut:async()=>{},signInWithEmailAndPassword:async()=>{loginCalls++;}},
   user:null,profile:null,admins:false,active:null,unsubscribe:null,unsubscribeAdmin:null,unsubscribeProfile:null,
-  syncIssue:'',note:m=>notes.push(m),close:()=>closed++,gate:(...args)=>{gateError=args;},
-  celebrateAchievements:()=>{},restoreCloudSession:()=>{},sync:async()=>{syncCalls++;},
+  syncIssue:'',syncTask:null,getQueue:()=>[{uid:'u-return'}],note:m=>notes.push(m),close:()=>closed++,gate:(...args)=>{gateError=args;},
+  celebrateAchievements:()=>{},restoreCloudSession:()=>{},sync:async()=>{syncCalls++;if(offlineCtx.navigator.onLine)offlineCtx.getQueue=()=>[];},
   listen:()=>{},akey:()=> 'active',console
  };
  vm.createContext(offlineCtx);
@@ -187,6 +188,10 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
  offlineCtx.navigator.onLine=true;offlineCtx.syncIssue='';
  assert.equal(await offlineCtx.askSync(),true);
  assert.equal(syncCalls,beforeManualSync+1);
+ offlineCtx.navigator.onLine=false;
+ assert.equal(await offlineCtx.askSync(),true,'An empty queue is already saved even when offline');
+ assert.equal(syncCalls,beforeManualSync+1);
+ offlineCtx.navigator.onLine=true;
  await offlineCtx.passwordSignIn('ReturningPlayer','secret');
  assert.equal(loginCalls,1);
  assert.ok(onlineReads>=1);

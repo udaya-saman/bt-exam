@@ -267,3 +267,8 @@ The previous “Can’t sync yet” message is emitted only for Firestore permis
 3. Reopen the updated app and tap Sync. Retained answers within the 72-hour window are eligible for automatic recovery. Older results require individual review; do not delete browser data or alter the recorded answer timestamps.
 
 The sync and rank-change PNGs now have distinct context-specific artwork. The update mascot appears only when an app update is available.
+
+## v4.7.15 — reliable queue reconciliation and Player Card polish
+Confirmed defect: 4.7.14 skipped a locally retained receipt once its age exceeded 72 hours, even if the server had already accepted it. Sync now reads the immutable receipt first in that case, removes only confirmed results and never credits them twice. It also drains answers arriving during the final profile refresh and updates the open card's status automatically. Actual browser queue code is exercised against the real Firestore emulator. An actually unsaved answer older than 72 hours remains protected for admin review; the acceptance window and scoring rules are not changed.
+
+No additional rule changes are required if the complete v4.7.14 rules are already published. If the app still reports a scoring-setup error, verify those rules in Firebase Console; a GitHub deploy does not publish Firestore rules. The authorized key administrator can repair a detected missing key during Sync or use Manage > Check Saved Answers > Repair answer keys. Existing keys and pending answers are not deleted. Production access and the affected device are required to establish the exact cause of any remaining rejection.

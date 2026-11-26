@@ -99,6 +99,63 @@ async function run(){
   const otherDb=env.authenticatedContext('test-second-player').firestore();
   await assert.rejects(()=>setDoc(doc(otherDb,'rankedClaims','test-second-player_'+d+'_paper1'),{uid:'test-second-player',paper:'paper1',dayKey:d,attemptId,startedAt:Timestamp.fromDate(now)}),/permission-denied|PERMISSION_DENIED/,'Old clients cannot create whole-paper claims');
   console.log('Legacy same-day migration and obsolete paper claims verified.');
+
+  // Run the real application queue processor with an authenticated emulator SDK.
+  // The older test above constructs an independent transaction; it cannot catch
+  // bugs in browser queue reconciliation or skipped sync calls.
+  const F=require('firebase/firestore');
+  const app=fs.readFileSync('js/bt-spark.js','utf8');
+  const recoveryUid='test-real-queue',recoveryOutlet='Matara';
+  const db=env.authenticatedContext(recoveryUid,{email:'bt-queue@example.test'}).firestore();
+  const oldDate=new Date(now.getTime()-96*3600000);
+  const queued=(index,when=now,overrides={})=>({uid:recoveryUid,id:'local-'+index+'-'+when.getTime(),paper:'paper1',index,earnedAt:when.getTime(),selected:0,remaining:15,points:25,attemptId:'attempt1234567890',outlet:recoveryOutlet,...overrides});
+  const recovered=queued(0,oldDate),fresh=queued(1),oldId=recoveryUid+'_q_'+day(oldDate)+'_paper1_0';
+  const oldDay=day(oldDate),oldWeek=week(oldDate),oldMonth=oldDay.slice(0,7),oldWk=oldWeek+'__'+recoveryOutlet,oldMk=oldMonth+'__'+recoveryOutlet;
+  const existing={...initial(recoveryUid,'queuetester',recoveryOutlet),lastEventId:oldId,totalPoints:25,totalAnswers:1,correctAnswers:1,dailyActivity:{[oldDay]:1},weeklyPoints:{[oldWeek]:25},monthlyPoints:{[oldMonth]:25},outletPoints:{[recoveryOutlet]:25},outletWeeklyPoints:{[oldWk]:25},outletMonthlyPoints:{[oldMk]:25},outletAnswers:{[recoveryOutlet]:1},outletWeeklyAnswers:{[oldWk]:1},outletMonthlyAnswers:{[oldMk]:1}};
+  await env.withSecurityRulesDisabled(async ctx=>{
+   const privileged=ctx.firestore();
+   await setDoc(doc(privileged,'users',recoveryUid),existing);
+   const {username,usernameLower,totalAnswers,rapidCorrectStreak,reviewSuggested,createdAt,...published}=existing;
+   await setDoc(doc(privileged,'publicRanks',recoveryUid),{...published,name:username});
+   await setDoc(doc(privileged,'scoreEvents',oldId),{uid:recoveryUid,paper:'paper1',index:0,selected:0,remaining:15,points:25,attemptId:recovered.attemptId,dayKey:oldDay,activityDay:oldDay,weekKey:oldWeek,monthKey:oldMonth,outlet:recoveryOutlet,outletWeekKey:oldWk,outletMonthKey:oldMk,earnedAt:Timestamp.fromDate(oldDate)});
+  });
+  const store=new Map([['pending',JSON.stringify([recovered,fresh])]]);
+  let appended=false;
+  const sdk={...F,getDoc:async ref=>{const snap=await F.getDoc(ref);if(ref.path==='users/'+recoveryUid&&!appended){appended=true;const pending=JSON.parse(store.get('pending'));pending.push(queued(2));store.set('pending',JSON.stringify(pending));}return snap;}};
+  let notifications=[];
+  const ctx={F:sdk,db,user:{uid:recoveryUid},profile:existing,auth:{currentUser:{uid:recoveryUid}},active:null,admins:false,syncTask:null,syncTaskUid:null,syncIssue:'',navigator:{onLine:true},day,week,qkey:()=> 'pending',getQueue:()=>JSON.parse(store.get('pending')),localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},recordLastSync:()=>{},note:m=>notifications.push(m),RESERVED:new Set(['udaya','indika']),OFFLINE_SYNC_MESSAGE:'Offline',console,window:{BT_EXAM_PAPERS:{paper1:{qs:Array.from({length:50},()=>({ans:0,opts:['A','B']}))}}}};
+  // The Firestore SDK checks plain-object prototypes. Execute in the same
+  // JavaScript realm as the real SDK, exactly as the browser does.
+  const source=app.slice(app.indexOf('const RULES_REQUIRED_MESSAGE='),app.indexOf('function open(title'))+'\n'+app.slice(app.indexOf('function questionKey('),app.indexOf('function modeBadge('))+'\n'+app.slice(app.indexOf('function legacyAliases('),app.indexOf('window.BTExamBridge='))+'\n'+app.slice(app.indexOf('async function requestSync(){'),app.indexOf('function ranked('));
+  const worker=new Function('ctx','let {F,db,user,profile,auth,active,admins,syncTask,syncTaskUid,syncIssue,navigator,day,week,qkey,getQueue,localStorage,recordLastSync,note,RESERVED,OFFLINE_SYNC_MESSAGE,console,window}=ctx;\n'+source+'\nreturn {sync,requestSync,get issue(){return syncIssue}};')(ctx);
+  // Recreate the reported message on a client using the current SDK against a
+  // server which does not yet accept daily scores or expose the setup check.
+  const outdated=await initializeTestEnvironment({projectId:'demo-bt-exam',firestore:{rules:
+   "rules_version = '2'; service cloud.firestore { match /databases/{db}/documents { match /users/{uid} { allow get: if request.auth.uid == uid; } } }"}});
+  try{
+   assert.equal(await worker.requestSync(),false);
+   assert.match(worker.issue,/blocked until the admin updates the scoring setup/);
+   assert.deepEqual(JSON.parse(store.get('pending')),[recovered,fresh],'Denied receipts stay on the device');
+  }finally{
+   await outdated.cleanup();
+   const restored=await initializeTestEnvironment({projectId:'demo-bt-exam',firestore:{rules:fs.readFileSync('firestore.rules','utf8')}});
+   await restored.cleanup();
+  }
+  assert.equal(await worker.requestSync(),true,'Manual sync resolves only after all eligible entries are saved');
+  const left=JSON.parse(store.get('pending'));
+  const after=(await getDoc(doc(db,'users',recoveryUid))).data();
+  assert.equal(after.totalAnswers,3,'Both fresh answers, including one added during final refresh, were saved');
+  assert.equal(after.totalPoints,75,'Already accepted answer must not be credited twice');
+  assert.equal(left.length,0,'A previously committed answer must clear even after the offline acceptance window');
+  assert.equal((await getDoc(doc(db,'publicRanks',recoveryUid))).data().totalPoints,75);
+  await worker.sync();assert.equal((await getDoc(doc(db,'users',recoveryUid))).data().totalPoints,75);
+  // An actually unsaved expired answer must not be credited or deleted.
+  const expired=queued(2,oldDate);store.set('pending',JSON.stringify([expired]));
+  assert.equal(await worker.requestSync(),false);
+  assert.equal(JSON.parse(store.get('pending')).length,1);
+  assert.match(worker.issue,/72 hours old/);
+  assert.equal((await getDoc(doc(db,'users',recoveryUid))).data().totalPoints,75);
+  console.log('Actual client queue: old confirmed receipt cleared, both fresh answers saved including final-refresh arrival, public/private totals exact, expired unsaved answer retained, and repeat safe.');
   // Only Udaya's administrator account may add or replace answer keys.
   await env.withSecurityRulesDisabled(async ctx=>{
    const db=ctx.firestore();

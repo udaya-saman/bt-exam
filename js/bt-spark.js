@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.14-arena';let latestUpdate=null;
+const APP_VERSION='4.7.16-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -34,7 +34,7 @@ function note(msg){console.info('[BT Spark]',msg);const n=document.createElement
 function award(points,correct,practice=false,timeout=false){
  const old=document.querySelector('.pg-earned-toast');if(old)old.remove();
  const pill=document.createElement('div');pill.className='pg-earned-toast';pill.setAttribute('aria-live','polite');
- const mascot=document.createElement('img');mascot.alt='';mascot.src=timeout?'./images/mascot/pizza-timer.png':correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
+ const mascot=document.createElement('img');mascot.alt='';mascot.src=timeout?'./images/mascot/pizza-timeout.png':correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
  const count=document.createElement('strong');count.textContent=practice?'PRACTICE · NO RANK POINTS':(points>0?'+':'')+points+' PTS';
  pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),4000);
 }
@@ -48,9 +48,10 @@ function statTotals(){
 const RULES_REQUIRED_MESSAGE='Saving is blocked until the admin updates the scoring setup. Please contact admin.';
 const KEY_REQUIRED_MESSAGE='The answer key for this question needs updating. Please contact admin.';
 const ANSWER_REJECTED_MESSAGE='This answer needs checking. Please contact admin.';
-const OLD_ANSWER_MESSAGE='An older answer needs checking. Please contact admin.';
+const OLD_ANSWER_MESSAGE='An unsaved answer is more than 72 hours old and needs admin review.';
 const CLOCK_MESSAGE='Check the date and time on your device, then tap Sync again.';
 const OUTLET_MESSAGE='An answer was saved before your outlet changed. Please contact admin.';
+const ACCOUNT_SYNC_MESSAGE='Your player information needs refreshing. Reopen the app and try Sync.';
 function syncErrorType(err){
  const detail=String(err?.code||'')+' '+String(err?.message||'');
  if(/permission-denied|insufficient permissions/i.test(detail))return 'permission';
@@ -85,8 +86,42 @@ async function diagnoseSyncFailure(err,e){
  }
  return {message:ANSWER_REJECTED_MESSAGE,stop:false};
 }
-function syncMascot(pending,offline){
- return pending||offline?'./images/mascot/pizza-sync-paused.png':'./images/mascot/pizza-correct.png';
+function playerSyncStatus(pending,answered,busy,online,issue){
+ const local=pending+' '+(pending===1?'answer is':'answers are')+' saved on this device.';
+ if(!pending)return answered
+  ? {title:'All caught up',detail:'Your latest answers are saved.',art:'pizza-sync-saved.png',icon:'✓'}
+  : {title:'Ready to play',detail:'Your player card is ready.',art:'pizza-welcome.png',icon:'✓'};
+ if(!online)return {title:'Connect to sync',detail:local+' '+OFFLINE_SYNC_MESSAGE,art:'pizza-sync-paused.png',icon:'!'};
+ if(busy)return {title:'Saving answers…',detail:local,art:'pizza-sync-saving.png',icon:'…'};
+ if(issue)return {title:'Sync paused',detail:local+' '+issue,art:'pizza-sync-paused.png',icon:'!'};
+ return {title:'Answers waiting',detail:local+' Tap Sync to save '+(pending===1?'it.':'them.'),art:'pizza-sync-paused.png',icon:'Ⅱ'};
+}
+function refreshVisiblePlayerCard(){
+ // Updating the actual open card avoids a stale "Sync paused" display after
+ // a background save. Do not navigate, reset scroll or close other screens.
+ if(typeof root==='undefined'||root.hidden||!root.classList.contains('arena-profile-mode')||!profile)return;
+ const totals=statTotals(),pending=totals.syncCount,busy=!!syncTask&&syncTaskUid===user?.uid;
+ const status=root.querySelector('.arena-status-card');
+ if(status){
+  const state=playerSyncStatus(pending,totals.answered,busy,navigator.onLine,syncIssue);
+  status.classList.toggle('has-pending',pending>0);
+  status.classList.toggle('is-synced',!pending);
+  status.classList.toggle('is-syncing',busy&&pending>0&&navigator.onLine);
+  status.querySelector('.arena-status-icon').textContent=state.icon;
+  status.querySelector('.arena-status-copy strong').textContent=state.title;
+  status.querySelector('.arena-status-copy small').textContent=state.detail;
+  const art='./images/mascot/'+state.art,pic=status.querySelector('img');
+  if(pic&&pic.getAttribute('src')!==art)pic.src=art;
+ }
+ const values={Points:totals.points.toLocaleString(),Correct:totals.correct.toLocaleString(),Accuracy:answerAccuracy(totals.correct,totals.answered)};
+ for(const el of root.querySelectorAll('.arena-stat[data-player-stat] strong'))el.textContent=values[el.closest('.arena-stat').dataset.playerStat];
+ const lvl=window.BTRewards?.level(Number(totals.points||0));
+ if(lvl){
+  const badge=root.querySelector('.arena-level-badge'),track=root.querySelector('.arena-level-track'),fill=root.querySelector('.arena-level-fill'),goal=root.querySelector('.arena-level-wrap small');
+  if(badge&&track&&fill&&goal){badge.textContent='Lv. '+lvl.number;track.setAttribute('aria-label','Progress to level '+(lvl.number+1));track.setAttribute('aria-valuemax',String(lvl.required));track.setAttribute('aria-valuenow',String(lvl.current));fill.style.width=lvl.percent+'%';goal.textContent=lvl.current.toLocaleString()+' / '+lvl.required.toLocaleString()+' pts';goal.title=lvl.remaining.toLocaleString()+' points remaining to level '+(lvl.number+1);}
+ }
+ const button=root.querySelector('.arena-sync-action');if(button){button.disabled=busy;button.textContent=busy?'Saving…':'⟳ Sync';}
+ const footer=root.querySelector('.arena-last-updated'),last=lastSyncTime();if(footer&&last)footer.textContent='Last updated: '+new Date(last).toLocaleString();
 }
 function open(title,sub,restore){boardOpen=false;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode','arena-manage-users-layout');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
 function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode','arena-manage-users-layout');root.innerHTML='';boardOpen=false;}
@@ -121,7 +156,7 @@ function errorMessage(e){
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Sign in to keep track of your progress.');
- const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src='./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
+ const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-sync-paused.png':'./images/mascot/pizza-welcome.png';welcome.alt='';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;name.autocomplete='username';
  if(mode==='login')name.value=savedUsername();
@@ -269,25 +304,37 @@ async function restoreCloudSession(){
  }catch(e){console.warn('Resume restore unavailable:',e.code||e);}
 }
 async function requestSync(){
+ const uid=user?.uid;
+ if(!uid)return false;
+ const hasPending=()=>getQueue().some(e=>e.uid===uid);
+ if(!hasPending()){syncIssue='';note('All answers are saved.');return true;}
  if(!navigator.onLine){
   syncIssue=OFFLINE_SYNC_MESSAGE;
   note(OFFLINE_SYNC_MESSAGE);
   return false;
  }
- const uid=user?.uid;
+ const joined=!!syncTask;
  await sync();
  if(user?.uid!==uid)return false;
+ // A tap during an interrupted background save gets one fresh attempt once online.
+ if(joined&&navigator.onLine&&syncIssue===OFFLINE_SYNC_MESSAGE&&hasPending())await sync();
+ if(user?.uid!==uid)return false;
+ const pending=hasPending();
+ if(pending&&!syncIssue)syncIssue='Answers are still waiting. Tap Sync again.';
  if(syncIssue)note(syncIssue);
- return !syncIssue;
+ else note('All answers are saved.');
+ return !pending&&!syncIssue;
 }
 // A manual Sync waits for an already-running automatic save rather than
 // immediately displaying the previous failure. Keep each user's queue isolated.
 function sync(){
- if(!user||!profile||profile.uid!==user.uid||!navigator.onLine)return Promise.resolve();
+ if(!user||!profile||!navigator.onLine)return Promise.resolve();
+ if(profile.uid!==user.uid){syncIssue=ACCOUNT_SYNC_MESSAGE;return Promise.resolve();}
  const uid=user.uid;
  if(syncTask)return syncTaskUid===uid?syncTask:syncTask.then(()=>user?.uid===uid?sync():undefined);
  syncTaskUid=uid;
- syncTask=syncPass(uid).finally(()=>{syncTask=null;syncTaskUid=null;});
+ syncTask=syncPass(uid).finally(()=>{syncTask=null;syncTaskUid=null;refreshVisiblePlayerCard();});
+ refreshVisiblePlayerCard();
  return syncTask;
 }
 async function syncPass(uid){
@@ -297,20 +344,31 @@ async function syncPass(uid){
   const queueKey=qkey(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
   const readQueue=()=>{try{return JSON.parse(localStorage.getItem(queueKey)||'[]')}catch(_){return []}};
   const removeEntry=id=>localStorage.setItem(queueKey,JSON.stringify(readQueue().filter(item=>item.id!==id)));
-  const handled=new Set();
+  const handled=new Set(),repaired=new Set();
+  let refreshedCount=0,stop=false;
+  do{
   while(user?.uid===uid){
    const queued=readQueue().filter(e=>e.uid===uid&&!handled.has(e.id)).sort((a,b)=>a.earnedAt-b.earnedAt)[0];if(!queued)break;
    handled.add(queued.id);
    // Do not silently discard expired or malformed results. Later valid
    // answers can still be saved independently.
    if(!Number.isFinite(queued.earnedAt)){syncIssue=ANSWER_REJECTED_MESSAGE;continue;}
-   if(queued.earnedAt>Date.now()+5*60000){syncIssue=CLOCK_MESSAGE;continue;}
-   if(Date.now()-queued.earnedAt>72*3600000){syncIssue=OLD_ANSWER_MESSAGE;continue;}
    if(!maximum[queued.paper]||!Number.isInteger(queued.index)||queued.index<0||queued.index>=maximum[queued.paper]){syncIssue=ANSWER_REJECTED_MESSAGE;continue;}
    const answerDay=eventDay(queued),e={...queued,id:dailyEventId(uid,answerDay,queued.paper,queued.index),dayKey:answerDay,activityDay:answerDay,weekKey:week(new Date(queued.earnedAt)),monthKey:answerDay.slice(0,7)};
    const er=F.doc(db,'scoreEvents',e.id),ur=F.doc(db,'users',uid);
    try{
-    const outcome=await F.runTransaction(db,async tx=>{
+    let outcome;
+    const outsideWindow=queued.earnedAt>Date.now()+5*60000||Date.now()-queued.earnedAt>72*3600000;
+    if(outsideWindow){
+     // An interruption can leave the local queue entry behind after a successful
+     // commit. Always reconcile an existing server receipt, even after expiry.
+     // Never create an expired/future score or alter its original timestamp.
+     const receipt=await F.getDocFromServer(er);
+     const confirmed=receipt.exists()||await oldDailyEvent({get:ref=>F.getDocFromServer(ref)},e);
+     if(user?.uid!==uid){stop=true;break;}
+     if(!confirmed){syncIssue=queued.earnedAt>Date.now()+5*60000?CLOCK_MESSAGE:OLD_ANSWER_MESSAGE;continue;}
+     outcome='duplicate';
+    }else outcome=await F.runTransaction(db,async tx=>{
      if(user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
      const pr=F.doc(db,'publicRanks',uid),ad=F.doc(db,'admins',uid);
      const [event,u,publicScore,role]=await Promise.all([tx.get(er),tx.get(ur),tx.get(pr),tx.get(ad)]);
@@ -350,17 +408,33 @@ async function syncPass(uid){
     if(user?.uid!==uid)break;
     syncIssue=failure.message;
     console.warn('Sync retained an answer:',e.id,err?.code||'',syncErrorType(err));
-    if(failure.stop)break;
+    // Only the existing, authorized key administrator can repair a missing
+    // key. Firebase enforces that permission; never grant access to players.
+    const key=e.paper+'_'+e.index;
+    if(failure.message===KEY_REQUIRED_MESSAGE&&!repaired.has(key)&&admins&&String(profile?.username||'').toLowerCase()==='udaya'&&user?.uid===uid){
+     repaired.add(key);
+     const answer=window.BT_EXAM_PAPERS?.[e.paper]?.qs?.[e.index]?.ans;
+     if(Number.isInteger(answer)&&answer>=0&&answer<=5){
+      try{
+       await F.setDoc(F.doc(db,'answerKeys',key),{paper:e.paper,index:e.index,answer});
+       if(user?.uid===uid){handled.delete(queued.id);syncIssue='';continue;}
+      }catch(repairError){syncIssue=syncDetail(repairError);}
+     }
+    }
+    if(failure.stop){stop=true;break;}
    }
   }
-  if(done.length&&user?.uid===uid){
-    recordLastSync();
+  if(done.length>refreshedCount&&user?.uid===uid){
+    refreshedCount=done.length;recordLastSync();
     try{
       const refreshed=await F.getDoc(F.doc(db,'users',uid));
-      if(user?.uid===uid&&refreshed.exists())profile=refreshed.data();
+      if(user?.uid===uid&&refreshed.exists())profile={...refreshed.data(),uid};
     }catch(e){console.info('Updated player totals will appear after reconnecting.');}
   }
-  if(user?.uid===uid&&!readQueue().length)syncIssue='';
+  // A new answer can arrive during the final profile read. Drain it before
+  // resolving a manual Sync, but do not loop endlessly over rejected entries.
+  }while(!stop&&user?.uid===uid&&readQueue().some(e=>e.uid===uid&&!handled.has(e.id)));
+  if(user?.uid===uid&&!readQueue().some(e=>e.uid===uid))syncIssue='';
  }catch(err){
   if(user?.uid===uid)syncIssue=syncDetail(err);
   console.warn('Could not complete sync pass:',err?.code||syncErrorType(err));
@@ -557,15 +631,15 @@ async function profilePanel(){
  const totals=statTotals(),pending=totals.syncCount;
  const status=document.createElement('div');status.className='arena-status-card';status.setAttribute('role','status');
  const symbol=document.createElement('span');symbol.className='arena-status-icon';
- symbol.textContent=pending?'!':'✓';
  const statusCopy=document.createElement('div');statusCopy.className='arena-status-copy';
- const offlineHint=!navigator.onLine&&(pending>0||syncIssue===OFFLINE_SYNC_MESSAGE);
- const heading=document.createElement('strong');heading.textContent=offlineHint?'Connect to sync':pending?(syncIssue?'Sync paused':'Answers waiting'):'All caught up';
+ const state=playerSyncStatus(pending,totals.answered,!!syncTask&&syncTaskUid===user.uid,navigator.onLine,syncIssue);
+ symbol.textContent=state.icon;
+ const heading=document.createElement('strong');heading.textContent=state.title;
  const explanation=document.createElement('small');
- explanation.textContent=offlineHint?OFFLINE_SYNC_MESSAGE:pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
- status.classList.add(pending||offlineHint?'has-pending':'is-synced');
+ explanation.textContent=state.detail;
+ status.classList.add(pending?'has-pending':'is-synced');
  statusCopy.append(heading,explanation);
- const statusMascot=document.createElement('img');statusMascot.src=syncMascot(pending,offlineHint);statusMascot.decoding='async';statusMascot.alt='';
+ const statusMascot=document.createElement('img');statusMascot.src='./images/mascot/'+state.art;statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
  const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
@@ -590,14 +664,14 @@ async function profilePanel(){
  levels.append(levelBadge,progress,nextGoal);profileRow.append(avatar,person,levels);body.append(profileRow);
  const stats=document.createElement('div');stats.className='arena-stats-grid';
  for(const [count,word,asset] of [[totals.points,'Points','points'],[totals.correct,'Correct','correct'],[answerAccuracy(totals.correct,totals.answered),'Accuracy','answered']]){
-   const item=document.createElement('div');item.className='arena-stat';if(word==='Correct')item.classList.add('arena-stat-correct');if(word==='Accuracy'){item.classList.add('arena-stat-accuracy');item.title=totals.correct+' correct out of '+totals.answered+' recorded answers';}
+   const item=document.createElement('div');item.className='arena-stat';item.dataset.playerStat=word;if(word==='Correct')item.classList.add('arena-stat-correct');if(word==='Accuracy'){item.classList.add('arena-stat-accuracy');item.title=totals.correct+' correct out of '+totals.answered+' recorded answers';}
    const icon=document.createElement('img');icon.className='arena-stat-art';icon.src='./images/arena/stat-'+asset+'.png';icon.alt='';icon.decoding='async';
    const detail=document.createElement('div');const number=document.createElement('strong');number.textContent=typeof count==='string'?count:Number(count).toLocaleString();
    const label=document.createElement('span');label.textContent=word;detail.append(number,label);item.append(icon,detail);stats.append(item);
  }body.append(stats);
  const actions=document.createElement('div');actions.className='arena-actions';
  const boardButton=btn('Leaderboard',board);const trophy=document.createElement('img');trophy.className='arena-board-trophy';trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='';boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
- const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.remove('pg-btn-red');signoutButton.classList.add('pg-btn-orange','arena-signout-action');
+ const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.remove('pg-btn-red');signoutButton.classList.add('arena-signout-action');
  const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
  actions.append(boardButton,signoutButton,closeAction);body.append(actions);
  const outletRow=document.createElement('button');outletRow.type='button';outletRow.className='arena-outlet-row';
@@ -608,7 +682,7 @@ async function profilePanel(){
  outletRow.append(pencil,copy,arrow);outletRow.onclick=changeOutlet;body.append(outletRow);
  card.append(body);box.append(card);
  const syncStatus=document.createElement('div');syncStatus.className='arena-sync-area';
- const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await requestSync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
+ const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;try{await requestSync();}finally{refreshVisiblePlayerCard();}});syncButton.classList.add('pg-btn-green','arena-sync-action');
  syncStatus.append(status,syncButton);
  // Load a ranking snapshot when the card opens before the leaderboard has been visited.
  // Use the existing shared listener whenever it is available.
@@ -664,8 +738,10 @@ async function profilePanel(){
  const footer=document.createElement('p');footer.className='arena-last-updated';footer.style.cssText='text-align:center;color:#826964;font-size:11px;margin:13px 0 8px';
  footer.textContent=last?'Last updated: '+new Date(last).toLocaleString():'Your answers are stored safely on this device until they can be saved.';
  box.append(footer);
+ refreshVisiblePlayerCard();
  // Sync information belongs at the bottom, after achievements and account controls.
  box.append(syncStatus);
+ refreshVisiblePlayerCard();
 }
 function changeOutlet(){
  if(!profile)return;
@@ -783,6 +859,8 @@ function viewSyncHealth(){
  const pending=getQueue().filter(e=>e.uid===user?.uid);
  const rows=[
   ['Answers waiting',String(pending.length)],
+  ['Oldest waiting answer',pending.length?new Date(Math.min(...pending.map(e=>e.earnedAt))).toLocaleString():'None'],
+  ['App version',APP_VERSION],
   ['Internet',navigator.onLine?'Connected':'Not connected'],
   ['Last updated',lastSyncTime()?new Date(lastSyncTime()).toLocaleString():'Not yet'],
   ['Next step',syncIssue||(pending.length?'Try saving your answers again.':'All answers are saved.')]
@@ -793,6 +871,7 @@ function viewSyncHealth(){
   const val=document.createElement('small');val.textContent=value;
   row.append(key,val);box.append(row);
  }
+ if(norm(profile?.username)==='udaya')box.append(btn('Repair answer keys',async()=>{await seedKeys();viewSyncHealth();},true));
  box.append(btn('Try Sync',async()=>{await requestSync();viewSyncHealth();}),
             btn('Manage',adminPanel),
             btn('Close',close));
@@ -997,13 +1076,13 @@ async function session(u){
   }
   if(!snap.exists()){gate('setup',navigator.onLine?'We could not open your account. Please reopen the app or ask for help.':'Turn on mobile data or connect to Wi-Fi once to load your player card on this device.');return;}
   if(auth?.currentUser?.uid!==u.uid)return;
-  profile=snap.data();rememberUsername(profile.username);
+  profile={...snap.data(),uid:u.uid};rememberUsername(profile.username);
   const adminDocument=await readSessionDoc(F.doc(db,'admins',u.uid),true);
   admins=!!(adminDocument?.exists()&&adminDocument.data().enabled===true);
   if(admins)F.deleteDoc(F.doc(db,'publicRanks',u.uid)).catch(err=>console.warn('Could not hide previous public ranking:',err.code||err));
   if(admins){if(unsubscribeAdmin)unsubscribeAdmin();let sawRequests=false;let previousIds=new Set();unsubscribeAdmin=F.onSnapshot(F.query(F.collection(db,'outletRequests'),F.where('status','==','pending')),s=>{requests=s.docs.map(d=>({id:d.id,...d.data()}));const ids=new Set(requests.map(r=>r.id));if(sawRequests&&requests.some(r=>!previousIds.has(r.id)))note('New outlet-change request requires approval.');if(!sawRequests&&requests.length)note('You have '+requests.length+' pending outlet requests.');previousIds=ids;sawRequests=true;});}
   try{active=JSON.parse(localStorage.getItem(akey())||'null')}catch(_){active=null}
-  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists()&&auth?.currentUser?.uid===u.uid){profile=d.data();rememberUsername(profile.username);if(!d.metadata?.hasPendingWrites&&!d.metadata?.fromCache)celebrateAchievements(profile);}});
+  if(unsubscribeProfile)unsubscribeProfile();unsubscribeProfile=F.onSnapshot(F.doc(db,'users',u.uid),d=>{if(d.exists()&&auth?.currentUser?.uid===u.uid){profile={...d.data(),uid:u.uid};rememberUsername(profile.username);if(!d.metadata?.hasPendingWrites&&!d.metadata?.fromCache)celebrateAchievements(profile);}});
   close();celebrateAchievements(profile);if(typeof checkSavedSession==='function')checkSavedSession();restoreCloudSession();sync();if(!unsubscribe)listen();
  }catch(e){gate('setup',!navigator.onLine?'Turn on mobile data or connect to Wi-Fi once to load your player card on this device.':errorMessage(e));}
 }
@@ -1069,11 +1148,12 @@ window.addEventListener('online',async()=>{
    if(blocked.exists()||!account.exists()){
     await A.signOut(auth);note('This account is no longer available. Please ask for help.');return;
    }
-   profile=account.data();rememberUsername(profile.username);
+   profile={...account.data(),uid};rememberUsername(profile.username);
   }catch(e){console.info('Account access will be checked when the connection is available.',e?.code||e);}
  }
  sync();checkForUpdates();
 });
+window.addEventListener('offline',refreshVisiblePlayerCard);
 setInterval(sync,60000);setInterval(checkForUpdates,1800000);setTimeout(checkForUpdates,20000);
 if(!config||!config.apiKey||config.apiKey.startsWith('REPLACE_')){dock.onclick=()=>gate('setup','The leaderboard is not ready yet. Please try again later.');dock.textContent='🏆 Leaderboard (setup)';return;}
 try{

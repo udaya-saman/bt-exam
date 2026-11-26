@@ -12,6 +12,33 @@ body:has(#study-select.active) #bt-spark-dock {
 
 /* Native active state works even if the interaction-enhancement script is unavailable.
    The transient classes also support touch and keyboard release feedback. */
+/* Share the Account button finish across the app's existing color variants.
+   Preserve layout, type sizes, selected colors and the silhouettes of icon controls. */
+@layer arena-controls {
+  :where(button, [role="button"]) {
+    box-sizing:border-box;
+    font-family:inherit;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  :where(button, [role="button"]) {
+    box-shadow:inset 0 1px 0 #ffffff35,0 2px 0 #0004!important;
+  }
+  :where(button, [role="button"]):not(.arena-header-icon,.pg-podium-item,.pg-leader-card) {
+    border-radius:11px!important;
+    font-weight:850!important;
+  }
+  :where(button,[role="button"]):focus-visible {
+    outline:3px solid #ffdf91!important;
+    outline-offset:2px!important;
+  }
+  :where(button,[role="button"]):is(:disabled,[aria-disabled="true"]) {
+    cursor:default;
+  }
+  :where(button,[role="button"]):not(:disabled,[aria-disabled="true"]):is(:active,.arena-pressing,.arena-pressed) {
+    box-shadow:inset 0 2px 4px #0003,0 1px 0 #0002!important;
+  }
+}
 @media (prefers-reduced-motion:no-preference) {
   body button:not(:disabled):is(:active,.arena-pressing,.arena-pressed),
   body [role="button"]:not([aria-disabled="true"]):is(:active,.arena-pressing,.arena-pressed) {
