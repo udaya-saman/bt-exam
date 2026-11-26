@@ -204,7 +204,11 @@
   const mascot=global.PizzaStudyArt?.image(item.answer,item.heading,id,'pa-study-revision-art',item.i)||make('div','pa-study-step-id','RECALL');
   const progress=make('small','pa-study-step-id',(index+1)+' / '+cards.length);
   const heading=make('h3','',item.heading);
-  const hint=make('p','pa-study-copy','Recall one learning point for this topic.');
+  const point=item.answer.replace(/^\d+\.\s*/,'');
+  const split=point.match(/^(.{1,65}?)(?:\s+[—=]\s+|:\s+)(.+)$/);
+  const words=point.split(/\s+/);
+  const clue=split?split[1]+' …':words.length>=5?words.slice(0,3).join(' ')+' …':'What is learning point '+(item.i+1)+' in this section?';
+  const hint=make('p','pa-study-copy',clue);
   const answer=make('p','pa-study-copy',item.answer);answer.hidden=true;
   const reveal=make('button','pa-study-mark','Reveal learning point');reveal.onclick=()=>{answer.hidden=false;reveal.hidden=true;};
   const next=make('button','pa-study-next','Next card →');next.onclick=()=>{index=(index+1)%cards.length;render();};

@@ -260,5 +260,13 @@ body #paper-select .questions-paper:active,body #paper-select .questions-review-
   #paper-select .questions-paper,#paper-select .questions-review-card{transition:none!important}
 }
 
-:is(#paper-select,#study-select) .questions-library-nav{position:sticky;top:0;z-index:12}
+body :is(#paper-select,#study-select) .questions-library-nav{position:fixed;top:env(safe-area-inset-top,0px);left:max(10px,calc((100vw - 1012px)/2));right:max(10px,calc((100vw - 1012px)/2));width:auto;z-index:12;margin:0!important}
+body #paper-select .questions-library,body #study-select .pa-study{padding-top:calc(78px + env(safe-area-inset-top,0px))!important}
+body #study-select .questions-library-back{margin:0!important}
+@media(max-width:440px){
+ body #study-select .questions-library-nav{gap:5px!important;padding:7px!important}
+ body #study-select .questions-library-nav .questions-library-back{padding:7px 8px!important;font-size:12px}
+ body #study-select .questions-library-nav .questions-nav-brand{gap:4px;font-size:10px;letter-spacing:.04em}
+ body #study-select .questions-library-nav .questions-nav-brand img{width:21px;height:21px}
+}
 #study-select .questions-nav-brand{margin-left:auto}

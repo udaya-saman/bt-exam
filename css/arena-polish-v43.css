@@ -827,6 +827,8 @@ body #bt-spark-root.arena-profile-mode .arena-sync-action:disabled{
 body #bt-spark-root.arena-profile-mode #bt-spark-content>.arena-player-controls{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:2px 0 8px!important}
 body #bt-spark-root.arena-profile-mode .arena-player-controls button{font-size:clamp(15px,3.2vw,18px)!important}
 .arena-player-controls button:first-child{grid-column:1/-1}
+.arena-player-controls button:first-child{display:flex;align-items:center;justify-content:center;gap:7px}
+.arena-player-controls .arena-board-trophy{width:26px;height:26px;object-fit:contain}
 body #bt-spark-root.arena-leaderboard-layout .panel>h2{margin-bottom:4px!important}
 body #bt-spark-root.arena-leaderboard-layout .pg-nav button:last-child{background:#fff!important;color:#252428!important;border-color:#dadada!important}
 .arena-create-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:16px}
