@@ -187,7 +187,7 @@
     const sources=q.sources.map(id=>FILES.find(f=>f.id===id)?.name||id);
     card.append(create('p','aq-note',sources.join(' · ')));
     if(type){
-      const mascot=create('img','bt-answer-mascot');mascot.src='./images/mascot/pizza-'+(timed?'timer':correct?'correct':'wrong')+'.png';mascot.alt='';mascot.setAttribute('aria-hidden','true');card.append(mascot);
+      const mascot=create('img','bt-answer-mascot');mascot.src='./images/mascot/pizza-'+type+'.png';mascot.alt='';mascot.setAttribute('aria-hidden','true');card.append(mascot);
     }
     get('result-area').replaceChildren(card);
     get('next-btn').classList.add('show');

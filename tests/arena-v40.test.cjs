@@ -51,7 +51,7 @@ assert.ok(html.includes('css/questions-v477.css?v=4.7.9')&&sw.includes('css/ques
 
 const pressStyle=get('css/press-feedback-v477.css'),pressLogic=get('js/press-feedback-v477.js');
 assert.doesNotThrow(()=>new vm.Script(pressLogic,{filename:'press-feedback-v477.js'}),'App-wide press logic parses');
-assert.ok(html.includes('css/press-feedback-v477.css?v=4.7.7')&&sw.includes('css/press-feedback-v477.css?v=4.7.7'),'Press CSS loaded and cached for offline use');
+assert.ok(html.includes('css/press-feedback-v477.css?v=4.7.16')&&sw.includes('css/press-feedback-v477.css?v=4.7.16'),'Press CSS loaded and cached for offline use');
 assert.ok(html.includes('js/press-feedback-v477.js?v=4.7.7')&&sw.includes('js/press-feedback-v477.js?v=4.7.7'),'Press keyboard/touch logic loaded and cached');
 for(const page of ['paper-select','study-select','assessment-practice']){
  assert.ok(pressStyle.includes('#'+page+'.active'),'Duplicate bottom-right dock is hidden on '+page);
@@ -73,7 +73,7 @@ assert.ok(app.includes('setTimeout(()=>pill.remove(),4000)'));
 assert.ok(app.includes('10+remaining')&&rules.includes('10 + request.resource.data.remaining'));
 assert.ok(app.includes("status.append(symbol,statusCopy,statusMascot)")&&app.includes('syncStatus.append(status,syncButton)'));
 assert.ok(app.includes('window.BTProfileSave.save({'),'Account Settings Save must delegate to verified profile transaction');
-assert.ok(html.includes('js/account-profile-save.js?v=4.2.0'),'Account transaction module must load');
+assert.ok(html.includes('js/account-profile-save.js?v=4.7.16'),'Account transaction module must load');
 assert.ok(!app.includes("btn('Save Password'"),'Password save must use main Save button');
 assert.ok(app.includes('passwordFields.hidden=true'));
 assert.ok(!app.includes('Save a Copy')&&!app.includes('Save My Progress'));

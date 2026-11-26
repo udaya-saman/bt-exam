@@ -1,5 +1,5 @@
 {
-  "version": "4.7.15-arena",
+  "version": "4.7.16-arena",
   "released": "2026-11-26",
-  "notes": "Reconcile confirmed score receipts even after the 72-hour window; drain answers that arrive during final refresh; refresh visible sync status; bind authenticated profile ID; permit authorized key administrator to repair a missing key on retry. Polish Player Card using the existing leaderboard palette. Existing scoring and Firebase rules unchanged from 4.7.14."
+  "notes": "Recover pending answers and preserve account identity after profile edits. Show distinct saving, paused, saved and time-up mascots. Compact Player Card and podium layout, charcoal Sign Out and consistent button styling."
 }

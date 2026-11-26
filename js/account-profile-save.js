@@ -73,7 +73,7 @@
              tx.update(publicRef,{name:target,avatar,updatedAt:F.serverTimestamp()});
            }
          }
-         return {...current,username:target,usernameLower:targetLower,avatar};
+         return {...current,uid:user.uid,username:target,usernameLower:targetLower,avatar};
        });
        detailsSaved=true;
      }

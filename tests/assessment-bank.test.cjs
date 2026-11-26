@@ -58,8 +58,8 @@ assert.ok(!html.includes('id="assessment-library"')&&!html.includes('BTAssessmen
 assert.ok(html.includes('id="assessment-practice"')&&html.includes('id="assessment-practice-root"'));
 assert.ok(html.includes('window.BTAssessmentPractice?.open()'),'Bilingual practice accessible in Questions');
 assert.ok(html.includes('css/assessment-practice.css?v=4.7.10'));
-assert.ok(html.includes('js/assessment-practice.js?v=4.7.10'));
-for(const file of ['js/assessment-practice.js?v=4.7.10','css/assessment-practice.css?v=4.7.10',
+assert.ok(html.includes('js/assessment-practice.js?v=4.7.16'));
+for(const file of ['js/assessment-practice.js?v=4.7.16','css/assessment-practice.css?v=4.7.10',
  ...[1,2,3,4].map(n=>'assessments/si-part-'+n+'.json'),'assessments/proposed-answers.json']){
  assert(sw.includes(file),'Offline pre-cache includes '+file);
 }
@@ -96,7 +96,7 @@ vm.runInNewContext(practice,sandbox,{filename:'assessment-practice.js'});
  assert.deepEqual(['past2024','questions','paper1','paper2','paper3'].map(k=>papers[k].qs.length),[29,40,50,50,45]);
  assert(!Object.keys(papers).some(k=>k.includes('assessment')),'New proposals are never published as scored paper keys');
  const version=json('version.json').version;
- assert.equal(version,'4.7.15-arena');
+ assert.equal(version,'4.7.16-arena');
  assert(app.includes("const APP_VERSION='"+version+"'"));
  console.log('PASS: 97 source entries, 9 within-source duplicates and 2 existing-paper overlaps -> 86 bilingual practice cards; 86 provisional answer keys; 214 original ranked questions unchanged.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

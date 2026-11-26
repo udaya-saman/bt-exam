@@ -171,19 +171,21 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
   let root=document.querySelector('#bt-spark-root');
   if(!root){root=document.createElement('div');root.id='bt-spark-root';document.body.append(root);}
   root.hidden=false;root.className='arena-profile-mode';
-  root.innerHTML='<div class="panel"><div id="bt-spark-content"><section class="arena-card"><div class="arena-card-heading">MY PLAYER CARD</div><div class="arena-card-body"><div class="arena-profile-top"><img class="arena-avatar" src="./images/default-avatar.png"><div class="arena-person-info"><h3>Udaya</h3><span class="arena-outlet-pill">Other</span></div><div class="arena-level-wrap"><span class="arena-level-badge">Lv. 5</span><div class="arena-level-track" role="progressbar" aria-label="Progress to level 6" aria-valuemin="0" aria-valuemax="500" aria-valuenow="450"><span class="arena-level-fill" style="width:90%"></span></div><small>450 / 500 pts</small></div></div><div class="arena-stats-grid"><div class="arena-stat">2,450 Points</div><div class="arena-stat arena-stat-correct"><img class="arena-stat-art" src="./images/arena/stat-correct.png" alt=""><div><strong>87</strong><span>Correct</span></div></div><div class="arena-stat"><strong>72.5%</strong><span>Accuracy</span></div></div><div class="arena-actions"><button class="pg-btn-green">Leaderboard</button><button class="pg-btn-orange arena-signout-action">Sign Out</button><button class="pg-btn-red">Close</button></div><button class="arena-outlet-row">Change your outlet?</button></div></section><div class="arena-sync-area"><div class="arena-status-card">Answers waiting · 2 saved</div><button class="arena-sync-action">Sync</button></div><section class="arena-achievements-card"><div class="arena-achievements-heading">Achievements</div><div class="arena-rewards-grid">'+Array.from({length:6},(_,i)=>'<div class="arena-reward-item">Badge '+(i+1)+'</div>').join('')+'</div></section></div></div>';
+  root.innerHTML='<div class="panel"><div id="bt-spark-content"><section class="arena-card"><div class="arena-card-heading">MY PLAYER CARD</div><div class="arena-card-body"><div class="arena-profile-top"><img class="arena-avatar" src="./images/default-avatar.png"><div class="arena-person-info"><h3>Udaya</h3><span class="arena-outlet-pill">Other</span></div><div class="arena-level-wrap"><span class="arena-level-badge">Lv. 5</span><div class="arena-level-track" role="progressbar" aria-label="Progress to level 6" aria-valuemin="0" aria-valuemax="500" aria-valuenow="450"><span class="arena-level-fill" style="width:90%"></span></div><small>450 / 500 pts</small></div></div><div class="arena-stats-grid"><div class="arena-stat">2,450 Points</div><div class="arena-stat arena-stat-correct"><img class="arena-stat-art" src="./images/arena/stat-correct.png" alt=""><div><strong>87</strong><span>Correct</span></div></div><div class="arena-stat"><strong>72.5%</strong><span>Accuracy</span></div></div><div class="arena-personal-ranks"><div>Current all-time rank</div><div>Best observed rank</div></div><div class="arena-actions"><button class="pg-btn-green">Leaderboard</button><button class="arena-signout-action">Sign Out</button><button class="pg-btn-red">Close</button></div><button class="arena-outlet-row">Change your outlet?</button></div></section><div class="arena-sync-area"><div class="arena-status-card">Answers waiting · 2 saved</div><button class="arena-sync-action">Sync</button></div><section class="arena-achievements-card"><div class="arena-achievements-heading">Achievements</div><div class="arena-rewards-grid">'+Array.from({length:6},(_,i)=>'<div class="arena-reward-item">Badge '+(i+1)+'</div>').join('')+'</div></section></div></div>';
  });
  const styles=await page.evaluate(()=>{
   const root=document.getElementById('bt-spark-root');
   const signout=root.querySelector('.arena-signout-action');
   const correct=root.querySelector('.arena-stat-correct .arena-stat-art');
   return {topBar:root.querySelectorAll('.arena-page-top').length,
-   orangeBackground:getComputedStyle(signout).backgroundImage,
+   charcoalBackground:getComputedStyle(signout).backgroundImage,
    correctFilter:getComputedStyle(correct).filter,
    cardBorder:getComputedStyle(root.querySelector('.arena-card')).borderColor};
  });
  expect(styles.topBar).toBe(0);
- expect(styles.orangeBackground).toContain('rgb(246, 164, 74)');
+ const rowGap=await page.locator('.arena-personal-ranks').evaluate(el=>el.getBoundingClientRect().top-el.previousElementSibling.getBoundingClientRect().bottom);
+ expect(rowGap).toBeGreaterThanOrEqual(0);expect(rowGap).toBeLessThanOrEqual(8);
+ expect(styles.charcoalBackground).toContain('rgb(69, 72, 77)');
  expect(styles.correctFilter).not.toBe('none');
  await expect(page.locator('#bt-spark-root .arena-level-wrap small')).toHaveText('450 / 500 pts');
  await expect(page.locator('#bt-spark-root .arena-level-track')).toHaveAttribute('aria-valuemax','500');
@@ -334,6 +336,7 @@ test('Assessment practice all 86 questions: mixed formats, score isolation, time
  }
  await page.evaluate(()=>{const original=Date.now;Date.now=()=>original()+61000;});
  await expect(page.locator('#assessment-practice .timeout-card')).toBeVisible({timeout:4000});
+ await expect(page.locator('#assessment-practice .timeout-card img')).toHaveAttribute('src','./images/mascot/pizza-timeout.png');
  await expect(page.locator('#aq-timer-val')).toHaveText('0:00');
  await expect(page.locator('#aq-next-btn')).toBeVisible();
 });
@@ -387,7 +390,10 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
   expect(before.firstName.scrollHeight).toBeLessThanOrEqual(before.firstName.clientHeight+2);
   expect(before.podiumGeometry[0].width).toBeGreaterThanOrEqual(before.podiumGeometry[1].width);
   expect(before.podiumGeometry[0].width).toBeGreaterThanOrEqual(before.podiumGeometry[2].width);
-  expect(before.podiumGeometry[0].height).toBeGreaterThanOrEqual(before.podiumGeometry[1].height-2);
+  for(const runnerUp of before.podiumGeometry.slice(1)){
+   expect(before.podiumGeometry[0].height-runnerUp.height).toBeGreaterThanOrEqual(8);
+   expect(Math.abs(before.podiumGeometry[0].bottom-runnerUp.bottom)).toBeLessThanOrEqual(2);
+  }
   await expect(page.locator('.pg-standings-scroll .pg-place').first()).toHaveText('4');
   expect(before.panelScroll).toBeLessThanOrEqual(before.panelClient+2);
   expect(before.footer.bottom).toBeLessThanOrEqual(740);

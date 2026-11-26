@@ -128,6 +128,19 @@ async function run(){
   // JavaScript realm as the real SDK, exactly as the browser does.
   const source=app.slice(app.indexOf('const RULES_REQUIRED_MESSAGE='),app.indexOf('function open(title'))+'\n'+app.slice(app.indexOf('function questionKey('),app.indexOf('function modeBadge('))+'\n'+app.slice(app.indexOf('function legacyAliases('),app.indexOf('window.BTExamBridge='))+'\n'+app.slice(app.indexOf('async function requestSync(){'),app.indexOf('function ranked('));
   const worker=new Function('ctx','let {F,db,user,profile,auth,active,admins,syncTask,syncTaskUid,syncIssue,navigator,day,week,qkey,getQueue,localStorage,recordLastSync,note,RESERVED,OFFLINE_SYNC_MESSAGE,console,window}=ctx;\n'+source+'\nreturn {sync,requestSync,get issue(){return syncIssue}};')(ctx);
+  // Recreate the reported message on a client using the current SDK against a
+  // server which does not yet accept daily scores or expose the setup check.
+  const outdated=await initializeTestEnvironment({projectId:'demo-bt-exam',firestore:{rules:
+   "rules_version = '2'; service cloud.firestore { match /databases/{db}/documents { match /users/{uid} { allow get: if request.auth.uid == uid; } } }"}});
+  try{
+   assert.equal(await worker.requestSync(),false);
+   assert.match(worker.issue,/blocked until the admin updates the scoring setup/);
+   assert.deepEqual(JSON.parse(store.get('pending')),[recovered,fresh],'Denied receipts stay on the device');
+  }finally{
+   await outdated.cleanup();
+   const restored=await initializeTestEnvironment({projectId:'demo-bt-exam',firestore:{rules:fs.readFileSync('firestore.rules','utf8')}});
+   await restored.cleanup();
+  }
   assert.equal(await worker.requestSync(),true,'Manual sync resolves only after all eligible entries are saved');
   const left=JSON.parse(store.get('pending'));
   const after=(await getDoc(doc(db,'users',recoveryUid))).data();

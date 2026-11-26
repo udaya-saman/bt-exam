@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.15-arena';let latestUpdate=null;
+const APP_VERSION='4.7.16-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -34,7 +34,7 @@ function note(msg){console.info('[BT Spark]',msg);const n=document.createElement
 function award(points,correct,practice=false,timeout=false){
  const old=document.querySelector('.pg-earned-toast');if(old)old.remove();
  const pill=document.createElement('div');pill.className='pg-earned-toast';pill.setAttribute('aria-live','polite');
- const mascot=document.createElement('img');mascot.alt='';mascot.src=timeout?'./images/mascot/pizza-timer.png':correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
+ const mascot=document.createElement('img');mascot.alt='';mascot.src=timeout?'./images/mascot/pizza-timeout.png':correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
  const count=document.createElement('strong');count.textContent=practice?'PRACTICE · NO RANK POINTS':(points>0?'+':'')+points+' PTS';
  pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),4000);
 }
@@ -86,23 +86,31 @@ async function diagnoseSyncFailure(err,e){
  }
  return {message:ANSWER_REJECTED_MESSAGE,stop:false};
 }
-function syncMascot(pending,offline){
- return pending||offline?'./images/mascot/pizza-sync-paused.png':'./images/mascot/pizza-correct.png';
+function playerSyncStatus(pending,answered,busy,online,issue){
+ const local=pending+' '+(pending===1?'answer is':'answers are')+' saved on this device.';
+ if(!pending)return answered
+  ? {title:'All caught up',detail:'Your latest answers are saved.',art:'pizza-sync-saved.png',icon:'✓'}
+  : {title:'Ready to play',detail:'Your player card is ready.',art:'pizza-welcome.png',icon:'✓'};
+ if(!online)return {title:'Connect to sync',detail:local+' '+OFFLINE_SYNC_MESSAGE,art:'pizza-sync-paused.png',icon:'!'};
+ if(busy)return {title:'Saving answers…',detail:local,art:'pizza-sync-saving.png',icon:'…'};
+ if(issue)return {title:'Sync paused',detail:local+' '+issue,art:'pizza-sync-paused.png',icon:'!'};
+ return {title:'Answers waiting',detail:local+' Tap Sync to save '+(pending===1?'it.':'them.'),art:'pizza-sync-paused.png',icon:'Ⅱ'};
 }
 function refreshVisiblePlayerCard(){
  // Updating the actual open card avoids a stale "Sync paused" display after
  // a background save. Do not navigate, reset scroll or close other screens.
  if(typeof root==='undefined'||root.hidden||!root.classList.contains('arena-profile-mode')||!profile)return;
  const totals=statTotals(),pending=totals.syncCount,busy=!!syncTask&&syncTaskUid===user?.uid;
- const status=root.querySelector('.arena-status-card'),offlineHint=!navigator.onLine&&(pending>0||syncIssue===OFFLINE_SYNC_MESSAGE);
+ const status=root.querySelector('.arena-status-card');
  if(status){
-  status.classList.toggle('has-pending',pending>0||offlineHint||busy);
-  status.classList.toggle('is-synced',!pending&&!offlineHint&&!busy);
-  status.classList.toggle('is-syncing',busy);
-  status.querySelector('.arena-status-icon').textContent=busy?'…':pending||offlineHint?'!':'✓';
-  status.querySelector('.arena-status-copy strong').textContent=busy?'Saving answers…':offlineHint?'Connect to sync':pending?(syncIssue?'Sync paused':'Answers waiting'):'All caught up';
-  status.querySelector('.arena-status-copy small').textContent=busy?'Saving your answers.':offlineHint?OFFLINE_SYNC_MESSAGE:pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
-  const art=syncMascot(pending||busy,offlineHint),pic=status.querySelector('img');
+  const state=playerSyncStatus(pending,totals.answered,busy,navigator.onLine,syncIssue);
+  status.classList.toggle('has-pending',pending>0);
+  status.classList.toggle('is-synced',!pending);
+  status.classList.toggle('is-syncing',busy&&pending>0&&navigator.onLine);
+  status.querySelector('.arena-status-icon').textContent=state.icon;
+  status.querySelector('.arena-status-copy strong').textContent=state.title;
+  status.querySelector('.arena-status-copy small').textContent=state.detail;
+  const art='./images/mascot/'+state.art,pic=status.querySelector('img');
   if(pic&&pic.getAttribute('src')!==art)pic.src=art;
  }
  const values={Points:totals.points.toLocaleString(),Correct:totals.correct.toLocaleString(),Accuracy:answerAccuracy(totals.correct,totals.answered)};
@@ -148,7 +156,7 @@ function errorMessage(e){
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Sign in to keep track of your progress.');
- const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src='./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
+ const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-sync-paused.png':'./images/mascot/pizza-welcome.png';welcome.alt='';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;name.autocomplete='username';
  if(mode==='login')name.value=savedUsername();
@@ -296,15 +304,22 @@ async function restoreCloudSession(){
  }catch(e){console.warn('Resume restore unavailable:',e.code||e);}
 }
 async function requestSync(){
+ const uid=user?.uid;
+ if(!uid)return false;
+ const hasPending=()=>getQueue().some(e=>e.uid===uid);
+ if(!hasPending()){syncIssue='';note('All answers are saved.');return true;}
  if(!navigator.onLine){
   syncIssue=OFFLINE_SYNC_MESSAGE;
   note(OFFLINE_SYNC_MESSAGE);
   return false;
  }
- const uid=user?.uid;
+ const joined=!!syncTask;
  await sync();
  if(user?.uid!==uid)return false;
- const pending=getQueue().some(e=>e.uid===uid);
+ // A tap during an interrupted background save gets one fresh attempt once online.
+ if(joined&&navigator.onLine&&syncIssue===OFFLINE_SYNC_MESSAGE&&hasPending())await sync();
+ if(user?.uid!==uid)return false;
+ const pending=hasPending();
  if(pending&&!syncIssue)syncIssue='Answers are still waiting. Tap Sync again.';
  if(syncIssue)note(syncIssue);
  else note('All answers are saved.');
@@ -616,15 +631,15 @@ async function profilePanel(){
  const totals=statTotals(),pending=totals.syncCount;
  const status=document.createElement('div');status.className='arena-status-card';status.setAttribute('role','status');
  const symbol=document.createElement('span');symbol.className='arena-status-icon';
- symbol.textContent=pending?'!':'✓';
  const statusCopy=document.createElement('div');statusCopy.className='arena-status-copy';
- const offlineHint=!navigator.onLine&&(pending>0||syncIssue===OFFLINE_SYNC_MESSAGE);
- const heading=document.createElement('strong');heading.textContent=offlineHint?'Connect to sync':pending?(syncIssue?'Sync paused':'Answers waiting'):'All caught up';
+ const state=playerSyncStatus(pending,totals.answered,!!syncTask&&syncTaskUid===user.uid,navigator.onLine,syncIssue);
+ symbol.textContent=state.icon;
+ const heading=document.createElement('strong');heading.textContent=state.title;
  const explanation=document.createElement('small');
- explanation.textContent=offlineHint?OFFLINE_SYNC_MESSAGE:pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
- status.classList.add(pending||offlineHint?'has-pending':'is-synced');
+ explanation.textContent=state.detail;
+ status.classList.add(pending?'has-pending':'is-synced');
  statusCopy.append(heading,explanation);
- const statusMascot=document.createElement('img');statusMascot.src=syncMascot(pending,offlineHint);statusMascot.decoding='async';statusMascot.alt='';
+ const statusMascot=document.createElement('img');statusMascot.src='./images/mascot/'+state.art;statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
  const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
@@ -656,7 +671,7 @@ async function profilePanel(){
  }body.append(stats);
  const actions=document.createElement('div');actions.className='arena-actions';
  const boardButton=btn('Leaderboard',board);const trophy=document.createElement('img');trophy.className='arena-board-trophy';trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='';boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
- const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.remove('pg-btn-red');signoutButton.classList.add('pg-btn-orange','arena-signout-action');
+ const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.remove('pg-btn-red');signoutButton.classList.add('arena-signout-action');
  const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
  actions.append(boardButton,signoutButton,closeAction);body.append(actions);
  const outletRow=document.createElement('button');outletRow.type='button';outletRow.className='arena-outlet-row';
@@ -667,7 +682,7 @@ async function profilePanel(){
  outletRow.append(pencil,copy,arrow);outletRow.onclick=changeOutlet;body.append(outletRow);
  card.append(body);box.append(card);
  const syncStatus=document.createElement('div');syncStatus.className='arena-sync-area';
- const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;await requestSync();profilePanel();});syncButton.classList.add('pg-btn-green','arena-sync-action');
+ const syncButton=btn('⟳ Sync',async()=>{syncButton.disabled=true;try{await requestSync();}finally{refreshVisiblePlayerCard();}});syncButton.classList.add('pg-btn-green','arena-sync-action');
  syncStatus.append(status,syncButton);
  // Load a ranking snapshot when the card opens before the leaderboard has been visited.
  // Use the existing shared listener whenever it is available.
@@ -723,6 +738,7 @@ async function profilePanel(){
  const footer=document.createElement('p');footer.className='arena-last-updated';footer.style.cssText='text-align:center;color:#826964;font-size:11px;margin:13px 0 8px';
  footer.textContent=last?'Last updated: '+new Date(last).toLocaleString():'Your answers are stored safely on this device until they can be saved.';
  box.append(footer);
+ refreshVisiblePlayerCard();
  // Sync information belongs at the bottom, after achievements and account controls.
  box.append(syncStatus);
  refreshVisiblePlayerCard();
