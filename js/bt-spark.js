@@ -283,7 +283,7 @@ async function requestSync(){
 // A manual Sync waits for an already-running automatic save rather than
 // immediately displaying the previous failure. Keep each user's queue isolated.
 function sync(){
- if(!user||!profile||!navigator.onLine)return Promise.resolve();
+ if(!user||!profile||profile.uid!==user.uid||!navigator.onLine)return Promise.resolve();
  const uid=user.uid;
  if(syncTask)return syncTaskUid===uid?syncTask:syncTask.then(()=>user?.uid===uid?sync():undefined);
  syncTaskUid=uid;

@@ -118,3 +118,75 @@ console.log('Pizza Arena redesigned screens, accessible actions, PNG assets and 
  assert.equal(await ctx.oldDailyEvent(tx,e),true);refs.set('scoreEvents/two_legacy_paper1_0',{activityDay:prev});assert.equal(await ctx.oldDailyEvent(tx,e),false);
  console.log('Daily scoring: resets, repeat, wrong/timeout, aliases, legacy resume, Sri Lanka midnight and user isolation passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+(async()=>{
+ const vm=require('node:vm');
+ const appText=app;
+ const uid='sync-player',now=Date.now(),date='2026-11-26',wk='2026-11-23';
+ const make=(index,id='answer'+index)=>({uid,id,paper:'paper1',index,earnedAt:now,selected:0,remaining:20,points:30,attemptId:'attempt1234567890',outlet:'Matara'});
+ let profile={uid,username:'player',outlet:'Matara',totalAnswers:0,totalPoints:0,correctAnswers:0},queue=[make(0),make(1)];
+ let rulesInstalled=false,key0=false,attempts=[],committed=new Map(),notes=[],refreshes=0;
+ const permission=()=>Object.assign(Error('Missing or insufficient permissions'),{code:'permission-denied'});
+ const snapshot=v=>({exists:()=>v!==undefined&&v!==null,data:()=>v});
+ const F={
+  doc:(_db,c,id)=>c+'/'+id,
+  Timestamp:{fromMillis:v=>v},serverTimestamp:()=>now,
+  getDocFromServer:async ref=>{
+    if(!rulesInstalled||ref==='syncKeyChecks/paper1_0'&&!key0)throw permission();
+    return snapshot(undefined);
+  },
+  getDoc:async()=>snapshot(profile),
+  runTransaction:async(_db,fn)=>{
+   let pendingEvent,update;const tx={
+    get:async ref=>ref.startsWith('scoreEvents/')?snapshot(committed.get(ref)):ref.startsWith('users/')?snapshot(profile):snapshot(undefined),
+    set:(ref,data)=>{if(ref.startsWith('scoreEvents/'))pendingEvent={ref,data}},
+    update:(_ref,data)=>{update=data}
+   };
+   const result=await fn(tx);
+   if(result==='duplicate')return result;
+   attempts.push(pendingEvent.data.index);
+   if(!rulesInstalled||pendingEvent.data.index===0&&!key0)throw permission();
+   committed.set(pendingEvent.ref,pendingEvent.data);profile={...profile,...update};
+   return result;
+  }
+ };
+ const ctx={F,db:{},user:{uid},profile,admins:false,syncTask:null,syncTaskUid:null,syncIssue:'',navigator:{onLine:true},note:x=>notes.push(x),
+  qkey:()=> 'pending',localStorage:{getItem:()=>JSON.stringify(queue),setItem:(_k,v)=>{queue=JSON.parse(v)}},
+  day:()=>date,week:()=>wk,eventDay:()=>date,dailyEventId:(u,d,p,i)=>u+'_q_'+d+'_'+p+'_'+i,
+  oldDailyEvent:async()=>false,recordLastSync:()=>refreshes++,markQuestion:()=>{},questionKey:(p,i)=>p+'_'+i,RESERVED:new Set(),
+  console:{warn:()=>{},info:()=>{}},OFFLINE_SYNC_MESSAGE:'Offline. Turn on mobile data.'};
+ vm.createContext(ctx);
+ const helpers=appText.slice(appText.indexOf('const RULES_REQUIRED_MESSAGE='),appText.indexOf('function open(title'));
+ const syncSource=appText.slice(appText.indexOf('async function requestSync(){'),appText.indexOf('function ranked('));
+ vm.runInContext(helpers+'\n'+syncSource,ctx);
+ const first=ctx.sync(),second=ctx.sync();
+ assert.equal(first,second,'Concurrent manual and automatic sync share one task');
+ await first;assert.deepEqual(attempts,[0]);assert.equal(queue.length,2);
+ assert.match(ctx.syncIssue,/updates the scoring setup/);
+ rulesInstalled=true;
+ await ctx.sync();assert.deepEqual(attempts,[0,0,1]);assert.equal(queue.length,1);assert.equal(queue[0].index,0);assert.equal(profile.totalAnswers,1);assert.equal(profile.totalPoints,30);
+ assert.match(ctx.syncIssue,/answer key/);
+ key0=true;await ctx.sync();assert.equal(queue.length,0);assert.equal(profile.totalAnswers,2);assert.equal(profile.totalPoints,60);assert.equal(ctx.syncIssue,'');assert.equal(refreshes,2);
+ await ctx.sync();assert.equal(profile.totalAnswers,2,'No duplicate increment after retry');
+ ctx.navigator.onLine=false;assert.equal(await ctx.requestSync(),false);assert.equal(ctx.syncIssue,ctx.OFFLINE_SYNC_MESSAGE);
+ assert.equal(ctx.syncMascot(1,false),'./images/mascot/pizza-sync-paused.png');
+ assert.equal(ctx.syncMascot(0,true),'./images/mascot/pizza-sync-paused.png');
+ assert.equal(ctx.syncMascot(0,false),'./images/mascot/pizza-correct.png');
+ const quota=await ctx.diagnoseSyncFailure({code:'resource-exhausted'},make(2));assert.equal(quota.stop,true);assert.match(quota.message,/temporarily busy/);
+ const nav=fs.readFileSync('js/arena-navigation-ranks.js','utf8');
+ const navCtx={window:{addEventListener(){}},history:{pushState(){}},document:{title:''},location:{href:'https://example.test/'},localStorage:{getItem:()=>null,setItem(){}}};
+ vm.runInNewContext(nav,navCtx);
+ const rank=navCtx.window.ArenaRankHistory.change;
+ for(const [before,after,filename] of [[2,1,'pizza-crown.png'],[1,2,'pizza-chasing-crown.png'],[4,3,'pizza-rank-up.png'],[3,4,'pizza-rank-down.png']]){
+  assert.equal(rank(before,after).mascot,filename);
+  assert.ok(fs.existsSync('images/mascot/'+filename));
+ }
+ for(const file of ['pizza-sync-paused.png','pizza-rank-down.png','pizza-chasing-crown.png']){
+  const data=fs.readFileSync('images/mascot/'+file);assert.equal(data.readUInt32BE(16),640);assert.equal(data.readUInt32BE(20),720);assert.equal(data.readUInt8(25),6);assert.ok(sw.includes(file));
+ }
+ for(const source of [app,nav,index,fs.readFileSync('js/assessment-practice.js','utf8')]){
+  for(const match of source.matchAll(/pizza-[a-z-]+\.png/g))assert.ok(fs.existsSync('images/mascot/'+match[0]),'Mascot exists: '+match[0]);
+ }
+ assert.equal((app.match(/pizza-update\.png/g)||[]).length,1,'Update artwork is used only for the actual update prompt');
+ console.log('Sync recovery: rule/key diagnostics, rejected-item isolation, shared concurrent sync, safe retries, quota/offline and context-specific transparent mascot PNGs passed.');
+})().catch(err=>{console.error(err);process.exitCode=1});
