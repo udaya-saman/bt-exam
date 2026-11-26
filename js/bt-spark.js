@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.13-arena';let latestUpdate=null;
+const APP_VERSION='4.7.14-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -26,15 +26,15 @@ async function readSessionDoc(ref,optional=false){
 const valid=name=>/^[A-Za-z0-9._-]{3,24}$/.test(name);
 const $=selector=>document.querySelector(selector);
 const clean=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,unsubscribeProfile=null,syncing=false,syncIssue='',previousRank=null,boardOpen=false,showAllPlayers=false,rankNotice='';
+let A,F,auth,db,user=null,profile=null,admins=false,active=null,users=[],requests=[],unsubscribe=null,unsubscribeAdmin=null,unsubscribeProfile=null,syncTask=null,syncTaskUid=null,syncIssue='',previousRank=null,boardOpen=false,showAllPlayers=false,rankNotice='';
 const root=document.createElement('div');root.id='bt-spark-root';root.hidden=true;document.body.append(root);
 const style=document.createElement('style');style.textContent='#bt-spark-root{position:fixed;inset:0;z-index:2147483000;background:#0a163ab8;display:grid;place-items:center;padding:12px;box-sizing:border-box;font:15px Arial,sans-serif;color:#26344a}#bt-spark-root[hidden]{display:none}#bt-spark-root .panel{background:white;border-radius:17px;width:min(100%,540px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px;box-sizing:border-box;box-shadow:0 15px 50px #0003}#bt-spark-root h2{font-size:22px;color:#21306b;margin:0 0 8px}#bt-spark-root p{font-size:13px;color:#63748b;line-height:1.45}#bt-spark-root label{display:block;font-weight:700;margin:12px 0 4px;font-size:12px}#bt-spark-root input,#bt-spark-root select{display:block;padding:11px;border-radius:10px;border:1px solid #cbd6e3;width:100%;box-sizing:border-box;font:inherit}#bt-spark-root button{padding:10px 13px;margin:6px 4px 4px 0;background:#0b71b4;color:white;border:0;border-radius:9px;font-weight:750;cursor:pointer}#bt-spark-root button.alt{background:#e8f0f9;color:#21306b}#bt-spark-root .err{color:#c00}#bt-spark-root .entry{padding:11px 0;border-bottom:1px solid #e5eaf0;display:flex;justify-content:space-between;gap:12px}#bt-spark-dock{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147482000;background:#21306b;color:white;border:0;border-radius:30px;padding:11px 14px;font-weight:800}';document.head.append(style);
 const dock=document.createElement('button');dock.id='bt-spark-dock';dock.textContent='🏆 Leaderboard';dock.onclick=()=>show('board');document.body.append(dock);
 function note(msg){console.info('[BT Spark]',msg);const n=document.createElement('div');n.textContent=msg;n.className='pg-toast';document.body.append(n);setTimeout(()=>n.remove(),3200);}
-function award(points,correct,practice=false){
+function award(points,correct,practice=false,timeout=false){
  const old=document.querySelector('.pg-earned-toast');if(old)old.remove();
  const pill=document.createElement('div');pill.className='pg-earned-toast';pill.setAttribute('aria-live','polite');
- const mascot=document.createElement('img');mascot.alt='';mascot.src=correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
+ const mascot=document.createElement('img');mascot.alt='';mascot.src=timeout?'./images/mascot/pizza-timer.png':correct?'./images/mascot/pizza-correct.png':'./images/mascot/pizza-wrong.png';
  const count=document.createElement('strong');count.textContent=practice?'PRACTICE · NO RANK POINTS':(points>0?'+':'')+points+' PTS';
  pill.append(mascot,count);document.body.append(pill);setTimeout(()=>pill.remove(),4000);
 }
@@ -45,13 +45,48 @@ function statTotals(){
  correct:Number(profile?.correctAnswers||0)+pending.filter(e=>e.points>0).length,
  syncCount:pending.length};
 }
+const RULES_REQUIRED_MESSAGE='Saving is blocked until the admin updates the scoring setup. Please contact admin.';
+const KEY_REQUIRED_MESSAGE='The answer key for this question needs updating. Please contact admin.';
+const ANSWER_REJECTED_MESSAGE='This answer needs checking. Please contact admin.';
+const OLD_ANSWER_MESSAGE='An older answer needs checking. Please contact admin.';
+const CLOCK_MESSAGE='Check the date and time on your device, then tap Sync again.';
+const OUTLET_MESSAGE='An answer was saved before your outlet changed. Please contact admin.';
+function syncErrorType(err){
+ const detail=String(err?.code||'')+' '+String(err?.message||'');
+ if(/permission-denied|insufficient permissions/i.test(detail))return 'permission';
+ if(/resource-exhausted|quota/i.test(detail))return 'quota';
+ if(/unauthenticated/i.test(detail))return 'auth';
+ if(/unavailable|network|deadline-exceeded|offline/i.test(detail))return 'offline';
+ if(/OUTLET_CHANGED/.test(detail))return 'outlet';
+ if(/ACCOUNT_CHANGED/.test(detail))return 'account';
+ return 'other';
+}
 function syncDetail(err){
- const code=String(err?.code||''),detail=String(err?.message||'');
- if(/permission-denied|insufficient permissions/i.test(code+' '+detail))
-   return 'Can’t sync yet. Please contact admin.';
- if(/unavailable|network|deadline-exceeded/i.test(code+' '+detail))
-   return OFFLINE_SYNC_MESSAGE;
- return 'Sync didn’t work. Try again or ask for help.';
+ switch(syncErrorType(err)){
+  case 'permission':return ANSWER_REJECTED_MESSAGE;
+  case 'offline':return OFFLINE_SYNC_MESSAGE;
+  case 'quota':return 'Saving is temporarily busy. Try again later. Your answers are safe.';
+  case 'auth':return 'Please sign in again to save your answers.';
+  case 'outlet':return OUTLET_MESSAGE;
+  default:return 'Could not save this answer. Please contact admin.';
+ }
+}
+// These read-only probes do not disclose answers, modify data or require
+// a stored document. Old rules deny the first path; a missing key denies only
+// the second path. Probe only after a real score transaction is rejected.
+async function diagnoseSyncFailure(err,e){
+ const type=syncErrorType(err);
+ if(type!=='permission')return {message:syncDetail(err),stop:['offline','quota','auth','account'].includes(type)};
+ try{await F.getDocFromServer(F.doc(db,'syncChecks','daily-v4714'));}
+ catch(probe){return {message:syncErrorType(probe)==='permission'?RULES_REQUIRED_MESSAGE:syncDetail(probe),stop:true};}
+ try{await F.getDocFromServer(F.doc(db,'syncKeyChecks',e.paper+'_'+e.index));}
+ catch(probe){
+  return {message:syncErrorType(probe)==='permission'?KEY_REQUIRED_MESSAGE:syncDetail(probe),stop:syncErrorType(probe)!=='permission'};
+ }
+ return {message:ANSWER_REJECTED_MESSAGE,stop:false};
+}
+function syncMascot(pending,offline){
+ return pending||offline?'./images/mascot/pizza-sync-paused.png':'./images/mascot/pizza-correct.png';
 }
 function open(title,sub,restore){boardOpen=false;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode','arena-manage-users-layout');if(restore)window.ArenaNav?.visit('panel:'+title,restore);root.hidden=false;root.innerHTML='<div class="panel"><h2>'+clean(title)+'</h2><p>'+clean(sub||'')+'</p><div id="bt-spark-content"></div></div>';return $('#bt-spark-content');}
 function close(){window.ArenaNav?.removePanels();root.hidden=true;root.classList.remove('arena-profile-mode','arena-account-mode','arena-board-mode','arena-leaderboard-layout','arena-player-details-mode','arena-manage-users-layout');root.innerHTML='';boardOpen=false;}
@@ -86,7 +121,7 @@ function errorMessage(e){
 function gate(mode='login',message){
  boardOpen=false;if(unsubscribe){unsubscribe();unsubscribe=null;}
  const box=open(mode==='register'?'Create your account':mode==='setup'?'App setup needed':'Welcome back',mode==='setup'?message:'Sign in to keep track of your progress.');
- const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src=mode==='setup'?'./images/mascot/pizza-update.png':'./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
+ const welcome=document.createElement('img');welcome.className='pg-celebration';welcome.src='./images/mascot/pizza-welcome.png';welcome.alt='Friendly pizza mascot';welcome.style.maxHeight='115px';box.append(welcome);
  if(mode==='setup')return;
  const form=document.createElement('form');const name=field(form,'Username');name.maxLength=24;name.autocomplete='username';
  if(mode==='login')name.value=savedUsername();
@@ -142,7 +177,7 @@ function questionKey(paper,index){
  return key==='questions_14'?'past2024_22':key==='paper1_9'?'questions_7':key;
 }
 function dailyEventId(uid,answerDay,paper,index){return uid+'_q_'+answerDay+'_'+questionKey(paper,index);}
-function eventDay(e){return day(new Date(e.earnedAt));}
+function eventDay(e){return Number.isFinite(e.earnedAt)?day(new Date(e.earnedAt)):'invalid-'+String(e.id||'answer');}
 function seenKey(uid,answerDay){return 'bt_spark_seen_questions_'+uid+'_'+answerDay;}
 function seenQuestion(uid,answerDay,key){
  try{return JSON.parse(localStorage.getItem(seenKey(uid,answerDay))||'[]').includes(key);}catch(_){return false;}
@@ -181,13 +216,13 @@ async function onAnswer(a){
  const uid=user.uid,earnedAt=Date.now(),earnedDate=new Date(earnedAt),answerDay=day(earnedDate),key=questionKey(paper,index);
  const id=dailyEventId(uid,answerDay,paper,index),q=getQueue();
  if(seenQuestion(uid,answerDay,key)||q.some(x=>x.uid===uid&&dailyEventId(uid,eventDay(x),x.paper,x.index)===id)){
-  modeBadge(true);award(0,Boolean(a.correct),true);return;
+  modeBadge(true);award(0,Boolean(a.correct),true,selected===-1);return;
  }
  const correct=selected===question.ans;
  const remaining=correct?Math.max(0,Math.min(60,Math.floor(Number(a.remainingSeconds)||0))):0;
  const entry={id,uid,paper,index,selected,remaining,points:correct?10+remaining:0,attemptId:active.id,dayKey:answerDay,weekKey:week(earnedDate),monthKey:answerDay.slice(0,7),activityDay:answerDay,outlet:profile.outlet,earnedAt};
  q.push(entry);saveQueue(q);markQuestion(uid,answerDay,key);modeBadge();
- award(entry.points,entry.points>0);sync();
+ award(entry.points,entry.points>0,false,selected===-1);sync();
 }
 // Old clients stored attempt-scoped events. Preserve their queued answers and
 // recognize an already committed legacy event during the migration.
@@ -239,23 +274,40 @@ async function requestSync(){
   note(OFFLINE_SYNC_MESSAGE);
   return false;
  }
+ const uid=user?.uid;
  await sync();
+ if(user?.uid!==uid)return false;
  if(syncIssue)note(syncIssue);
  return !syncIssue;
 }
-async function sync(){
- if(!user||!profile||syncing||!navigator.onLine)return;syncing=true;
+// A manual Sync waits for an already-running automatic save rather than
+// immediately displaying the previous failure. Keep each user's queue isolated.
+function sync(){
+ if(!user||!profile||profile.uid!==user.uid||!navigator.onLine)return Promise.resolve();
+ const uid=user.uid;
+ if(syncTask)return syncTaskUid===uid?syncTask:syncTask.then(()=>user?.uid===uid?sync():undefined);
+ syncTaskUid=uid;
+ syncTask=syncPass(uid).finally(()=>{syncTask=null;syncTaskUid=null;});
+ return syncTask;
+}
+async function syncPass(uid){
  try{
-  const uid=user.uid,queueKey=qkey(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
+  if(user?.uid!==uid)return;
+  syncIssue='';
+  const queueKey=qkey(),done=[],maximum={past2024:29,questions:40,paper1:50,paper2:50,paper3:45};
   const readQueue=()=>{try{return JSON.parse(localStorage.getItem(queueKey)||'[]')}catch(_){return []}};
   const removeEntry=id=>localStorage.setItem(queueKey,JSON.stringify(readQueue().filter(item=>item.id!==id)));
   const handled=new Set();
   while(user?.uid===uid){
    const queued=readQueue().filter(e=>e.uid===uid&&!handled.has(e.id)).sort((a,b)=>a.earnedAt-b.earnedAt)[0];if(!queued)break;
    handled.add(queued.id);
+   // Do not silently discard expired or malformed results. Later valid
+   // answers can still be saved independently.
+   if(!Number.isFinite(queued.earnedAt)){syncIssue=ANSWER_REJECTED_MESSAGE;continue;}
+   if(queued.earnedAt>Date.now()+5*60000){syncIssue=CLOCK_MESSAGE;continue;}
+   if(Date.now()-queued.earnedAt>72*3600000){syncIssue=OLD_ANSWER_MESSAGE;continue;}
+   if(!maximum[queued.paper]||!Number.isInteger(queued.index)||queued.index<0||queued.index>=maximum[queued.paper]){syncIssue=ANSWER_REJECTED_MESSAGE;continue;}
    const answerDay=eventDay(queued),e={...queued,id:dailyEventId(uid,answerDay,queued.paper,queued.index),dayKey:answerDay,activityDay:answerDay,weekKey:week(new Date(queued.earnedAt)),monthKey:answerDay.slice(0,7)};
-   if(Date.now()-e.earnedAt>72*3600000){syncIssue='Some older answers need help from an administrator.';continue;}
-   if(!maximum[e.paper]||!Number.isInteger(e.index)||e.index<0||e.index>=maximum[e.paper]){syncIssue='An answer could not be matched. Please ask an administrator for help.';continue;}
    const er=F.doc(db,'scoreEvents',e.id),ur=F.doc(db,'users',uid);
    try{
     const outcome=await F.runTransaction(db,async tx=>{
@@ -293,8 +345,12 @@ async function sync(){
     done.push(queued.id);removeEntry(queued.id);markQuestion(uid,e.activityDay,questionKey(e.paper,e.index));
     if(outcome==='duplicate'&&user?.uid===uid&&active?.id===e.attemptId)note('This question has already been answered today. No extra points were added.');
    }catch(err){
-    const message=errorMessage(err);
-    syncIssue=syncDetail(err);console.warn('Sync paused, result retained:',e.id,message);break;
+    if(user?.uid!==uid)break;
+    const failure=await diagnoseSyncFailure(err,e);
+    if(user?.uid!==uid)break;
+    syncIssue=failure.message;
+    console.warn('Sync retained an answer:',e.id,err?.code||'',syncErrorType(err));
+    if(failure.stop)break;
    }
   }
   if(done.length&&user?.uid===uid){
@@ -305,7 +361,10 @@ async function sync(){
     }catch(e){console.info('Updated player totals will appear after reconnecting.');}
   }
   if(user?.uid===uid&&!readQueue().length)syncIssue='';
- }finally{syncing=false;}
+ }catch(err){
+  if(user?.uid===uid)syncIssue=syncDetail(err);
+  console.warn('Could not complete sync pass:',err?.code||syncErrorType(err));
+ }
 }
 function ranked(period='weekly',outletView=false){
  let list=[];const w=week();
@@ -500,13 +559,13 @@ async function profilePanel(){
  const symbol=document.createElement('span');symbol.className='arena-status-icon';
  symbol.textContent=pending?'!':'✓';
  const statusCopy=document.createElement('div');statusCopy.className='arena-status-copy';
- const offlineHint=syncIssue===OFFLINE_SYNC_MESSAGE&&!navigator.onLine;
+ const offlineHint=!navigator.onLine&&(pending>0||syncIssue===OFFLINE_SYNC_MESSAGE);
  const heading=document.createElement('strong');heading.textContent=offlineHint?'Connect to sync':pending?(syncIssue?'Sync paused':'Answers waiting'):'All caught up';
  const explanation=document.createElement('small');
  explanation.textContent=offlineHint?OFFLINE_SYNC_MESSAGE:pending?pending+' '+(pending===1?'answer is':'answers are')+' saved on this device. '+(syncIssue||'Tap Sync to save them.'):(totals.answered?'Your latest answers are saved.':'Your player card is ready.');
  status.classList.add(pending||offlineHint?'has-pending':'is-synced');
  statusCopy.append(heading,explanation);
- const statusMascot=document.createElement('img');statusMascot.src=pending?'./images/mascot/pizza-update.png':'./images/mascot/pizza-correct.png';statusMascot.decoding='async';statusMascot.alt='';
+ const statusMascot=document.createElement('img');statusMascot.src=syncMascot(pending,offlineHint);statusMascot.decoding='async';statusMascot.alt='';
  status.append(symbol,statusCopy,statusMascot);
  const card=document.createElement('section');card.className='arena-card';
  const cardHeader=document.createElement('div');cardHeader.className='arena-card-heading';cardHeader.textContent='MY PLAYER CARD';card.append(cardHeader);
@@ -726,7 +785,7 @@ function viewSyncHealth(){
   ['Answers waiting',String(pending.length)],
   ['Internet',navigator.onLine?'Connected':'Not connected'],
   ['Last updated',lastSyncTime()?new Date(lastSyncTime()).toLocaleString():'Not yet'],
-  ['Next step',syncIssue||'Try saving your answers again.']
+  ['Next step',syncIssue||(pending.length?'Try saving your answers again.':'All answers are saved.')]
  ];
  for(const [name,value] of rows){
   const row=document.createElement('div');row.className='pg-leader-card';
@@ -923,6 +982,7 @@ async function seedKeys(){
 }
 function show(view){if(!user||!profile){gate();return;}if(view==='board')board();else if(view==='admin'&&admins)adminPanel();else profilePanel();}
 async function session(u){
+ if(user?.uid!==u?.uid)syncIssue='';
  user=u; if(!u){if(unsubscribe){unsubscribe();unsubscribe=null;}if(unsubscribeAdmin){unsubscribeAdmin();unsubscribeAdmin=null;}if(unsubscribeProfile){unsubscribeProfile();unsubscribeProfile=null;}profile=null;active=null;users=[];requests=[];admins=false;previousRank=null;rankSnapshotReady=false;cloudRank.clear();rankCloudUnavailable=false;gate();return;}
  try{
   // Offline access is only for the authenticated Firebase user restored by persistence.

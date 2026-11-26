@@ -20,10 +20,15 @@ async function run(){
  const env=await initializeTestEnvironment({projectId:'demo-bt-exam',firestore:{rules:fs.readFileSync('firestore.rules','utf8')}});
  try{
   const now=new Date(),yesterday=new Date(now.getTime()-86400000);
-  const profiles=[['test-udaya-private','udaya','Other',false],['test-matara-player','tester','Matara',true],['test-second-player','tester2','Matara',true]];
+  const profiles=[['test-udaya-private','udaya','Other',false],['test-matara-player','tester','Matara',true],['test-second-player','tester2','Matara',true],['test-legacy-player','legacy','Matara',true]];
   await env.withSecurityRulesDisabled(async ctx=>{
    const db=ctx.firestore();
-   for(const [uid,username,outlet] of profiles)await setDoc(doc(db,'users',uid),initial(uid,username,outlet));
+   for(const [uid,username,outlet] of profiles){
+    const p=initial(uid,username,outlet);
+    if(uid==='test-legacy-player'){delete p.outletMonthlyAnswers;delete p.outletMonthlyPoints;delete p.outletWeeklyAnswers;}
+    await setDoc(doc(db,'users',uid),p);
+   }
+   await setDoc(doc(db,'publicRanks','test-legacy-player'),{uid:'test-legacy-player',name:'legacy',outlet:'Matara',avatar:'',lastEventId:'',totalPoints:0,correctAnswers:0,weeklyPoints:{},monthlyPoints:{},outletPoints:{},outletWeeklyPoints:{},outletAnswers:{},dailyActivity:{},updatedAt:Timestamp.now()});
    for(const [paper,index,answer] of [['paper1',0,0],['paper1',1,0],['paper1',2,0],['paper1',9,0],['questions',7,0],['past2024',22,2],['questions',14,2]])await setDoc(doc(db,'answerKeys',paper+'_'+index),{paper,index,answer});
   });
   const write=async(uid,paper,index,selected,date,attemptId='attempt1234567890',force=false,overrideId=null)=>{
@@ -34,7 +39,7 @@ async function run(){
    const right=selected===(paper==='past2024'||index===14?2:0),points=right?25:0;
    const e={uid,paper,index,selected,remaining:right?15:0,points,attemptId,dayKey,weekKey,monthKey,outlet,outletWeekKey:weekKey+'__'+outlet,
     outletMonthKey:monthKey+'__'+outlet,activityDay:dayKey,earnedAt:at};
-   const inc=(m,k,n)=>({...m,[k]:Number(m[k]||0)+n});
+   const inc=(m,k,n)=>({...m,[k]:Number((m||{})[k]||0)+n});
    return runTransaction(db,async tx=>{
     const userRef=doc(db,'users',uid),eventRef=doc(db,'scoreEvents',eid),pubRef=doc(db,'publicRanks',uid);
     const [existing,profile,pub]=await Promise.all([tx.get(eventRef),tx.get(userRef),tx.get(pubRef)]);
@@ -61,6 +66,12 @@ async function run(){
     return 'saved';
    });
   };
+  const checkDb=env.authenticatedContext('test-matara-player').firestore();
+  const missing=await getDoc(doc(checkDb,'syncChecks','daily-v4714'));assert.equal(missing.exists(),false);
+  assert.equal((await getDoc(doc(checkDb,'syncKeyChecks','paper1_0'))).exists(),false);
+  await assert.rejects(()=>getDoc(doc(checkDb,'syncKeyChecks','paper1_49')),/permission-denied|PERMISSION_DENIED/);
+  await assert.rejects(()=>getDoc(doc(checkDb,'answerKeys','paper1_0')),/permission-denied|PERMISSION_DENIED/);
+  await assert.rejects(()=>getDoc(doc(env.unauthenticatedContext().firestore(),'syncChecks','daily-v4714')),/permission-denied|PERMISSION_DENIED/);
   for(const [uid,username,outlet,publicRank] of profiles){
    assert.equal(await write(uid,'paper1',0,0,now),'saved');
    assert.equal(await write(uid,'paper1',1,0,now,'attempt2222222222'),'saved','Unanswered question counts on a restarted paper');

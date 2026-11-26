@@ -258,3 +258,12 @@ Publish the complete new `firestore.rules` in Firebase Console before live scori
 
 ## v4.7.13 — accuracy and release verification
 My Player Card and opened player details display recorded-answer accuracy. The level badge height is 19px and sync permission errors direct players to contact admin. No new Firestore rules are required beyond v4.7.12. After deployment, verify the hosted version.json matches main. Do not clear local site data while answers are waiting to sync.
+
+## v4.7.14 — diagnose and repair sync rejections (publish rules)
+The previous “Can’t sync yet” message is emitted only for Firestore permission errors, not simply mobile-data disconnection. The app now identifies an unpublished scoring-rules revision, missing answer key, connection/quota/session problems, expired/future results, and outlet changes. A rejected individual result remains in the original device queue while later eligible results can be saved; concurrent manual/automatic sync calls share the active operation. Missing historical counter maps start from an empty map without replacing existing totals. No score-event ID, points formula, 72-hour limit, or access restrictions have been relaxed.
+
+1. Publish the complete repository firestore.rules to Firebase Console > btexam-c1e63 > Firestore Database > Rules. GitHub Pages cannot publish it.
+2. If the app reports a missing answer key, the authorized administrator should run Manage > Seed answer keys; it writes the existing bank's 214 keys. Never change or disclose the keys to ordinary players.
+3. Reopen the updated app and tap Sync. Retained answers within the 72-hour window are eligible for automatic recovery. Older results require individual review; do not delete browser data or alter the recorded answer timestamps.
+
+The sync and rank-change PNGs now have distinct context-specific artwork. The update mascot appears only when an app update is available.

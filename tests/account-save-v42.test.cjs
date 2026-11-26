@@ -134,7 +134,7 @@ function input(base,overrides={}){return {...base,name:profile.username,avatar:'
  // Simulate a returning authenticated player with mobile data turned off.
  const offlineStart=app.indexOf('const LAST_USERNAME_KEY='),offlineEnd=app.indexOf('const valid=name=>',offlineStart);
  const sessionStart=app.indexOf('async function session(u){'),sessionEnd=app.indexOf('\nasync function checkForUpdates()',sessionStart);
- const syncStart=app.indexOf('async function requestSync(){'),syncEnd=app.indexOf('\nasync function sync(){',syncStart);
+ const syncStart=app.indexOf('async function requestSync(){'),syncEnd=app.indexOf('\n// A manual Sync waits',syncStart);
  const loginStart=app.indexOf('async function login(name,password){'),loginEnd=app.indexOf('\nconst qkey=',loginStart);
  assert(offlineStart>=0&&offlineEnd>offlineStart&&sessionStart>=0&&sessionEnd>sessionStart);
  assert(syncStart>=0&&syncEnd>syncStart&&loginStart>=0&&loginEnd>loginStart);
