@@ -1,5 +1,5 @@
 {
-  "version": "4.7.13-arena",
-  "released": "2026-11-25",
-  "notes": "Replace Answered with accuracy on My Player Card and show accuracy in every opened player details card. Use recorded personal or published ranked answer counts with consistent rounding, including zero-answer handling. Halve level badge height and change the sync message to contact admin. Preserve scoring, permissions, layouts and previous palette."
+  "version": "4.7.14-arena",
+  "released": "2026-11-26",
+  "notes": "Distinguish rejected saves from connection errors, check current scoring rules and answer-key availability without revealing answers, keep rejected results while saving later eligible answers, wait for concurrent syncs, support legacy missing counter maps, and correct sync, timeout, rank-down, dethroned and first-place PNG mascot assignments. Publish updated firestore.rules before testing live scoring."
 }

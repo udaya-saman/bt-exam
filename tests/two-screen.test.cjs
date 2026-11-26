@@ -37,6 +37,8 @@ assert.match(app,/function openNotifications\(\)/,'Notifications working');
 assert.match(app,/BTExamUI=\{/,'Home actions attached');
 assert.match(app,/role','status'/,'Accessible status card');
 assert.match(app,/recordLastSync\(\)/,'Recent synced status');
+assert.ok(profileSource.includes('syncMascot(pending,offlineHint)'));
+assert.ok(!profileSource.includes('pizza-update.png'),'Version update artwork not used for sync');
 assert.match(app,/function getQueue\(\)/,'Offline pending answers remain account-specific');
 const loginSection=app.slice(app.indexOf("function gate(mode='login'"),app.indexOf("const qkey=()"));
 assert.ok(loginSection.includes("if(mode==='login')name.value=savedUsername()"),'Returning username is pre-filled');
@@ -68,7 +70,8 @@ for(const source of [index,app,css,sw,fs.readFileSync('manifest.json','utf8')]){
 }
 for(const filename of [
  'pizza-welcome.png','pizza-correct.png','pizza-rank-up.png','pizza-overtaken.png',
- 'pizza-timer.png','pizza-private.png','pizza-crown.png','pizza-monthly.png'
+ 'pizza-timer.png','pizza-private.png','pizza-crown.png','pizza-monthly.png',
+ 'pizza-sync-paused.png','pizza-rank-down.png','pizza-chasing-crown.png'
 ]){
  const file='images/mascot/'+filename;
  const buf=fs.readFileSync(file);
