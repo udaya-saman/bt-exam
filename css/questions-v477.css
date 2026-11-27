@@ -260,8 +260,8 @@ body #paper-select .questions-paper:active,body #paper-select .questions-review-
   #paper-select .questions-paper,#paper-select .questions-review-card{transition:none!important}
 }
 
-body :is(#paper-select,#study-select) .questions-library-nav{position:fixed;top:env(safe-area-inset-top,0px);left:max(10px,calc((100vw - 1012px)/2));right:max(10px,calc((100vw - 1012px)/2));width:auto;z-index:12;margin:0!important}
-body #paper-select .questions-library,body #study-select .pa-study{padding-top:calc(78px + env(safe-area-inset-top,0px))!important}
+body :is(#paper-select,#study-select) .questions-library-nav{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:max(10px,calc((100vw - 1012px)/2));right:max(10px,calc((100vw - 1012px)/2));width:auto;z-index:12;margin:0!important}
+body #paper-select .questions-library,body #study-select .pa-study{padding-top:calc(86px + env(safe-area-inset-top,0px))!important}
 body #study-select .questions-library-back{margin:0!important}
 @media(max-width:440px){
  body #study-select .questions-library-nav{gap:5px!important;padding:7px!important}
@@ -270,3 +270,10 @@ body #study-select .questions-library-back{margin:0!important}
  body #study-select .questions-library-nav .questions-nav-brand img{width:21px;height:21px}
 }
 #study-select .questions-nav-brand{margin-left:auto}
+
+#home .arena-path-mascot{display:block;width:clamp(62px,9vw,84px);height:auto;aspect-ratio:1;object-fit:contain;margin-bottom:10px}
+#paper-select .questions-hero-mascot{width:27%;max-width:200px;height:auto;aspect-ratio:1;object-fit:contain}
+#paper-select .questions-papers-section{margin-top:24px}
+body #paper-select .paper-card.questions-paper{min-height:0!important}
+.translate-btn::before{content:"";display:inline-block;flex:none;width:1.45em;height:1.1em;background:url("../images/flags/lk.png") center/contain no-repeat}
+.translate-btn.active::before{background-image:url("../images/flags/england.png")}

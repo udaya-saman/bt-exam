@@ -174,6 +174,57 @@ async function run(){
     'Indika must not edit answer keys'
   );
   console.log('Answer-key seeding permitted only for Udaya.');
+  const transferCode=app.slice(app.indexOf('function outletPointReset('),app.indexOf('function adminChangeOutlet('));
+  const move=(database,from,to,zero)=>runTransaction(database,tx=>{
+   const transfer=new Function('F','db','OUTLETS','RESERVED','norm',transferCode+';return transferOutlet;')(
+    F,database,['Galle','Matara','Other'],new Set(['indika','udaya']),name=>name.toLowerCase());
+   return transfer(tx,recoveryUid,from,to,zero);
+  });
+  const account=doc(udayaDb,'users',recoveryUid),rank=doc(udayaDb,'publicRanks',recoveryUid);
+  const original=(await getDoc(account)).data(),publicBefore=(await getDoc(rank)).data();
+  assert.ok(original.outletPoints.Matara>0);
+  await move(udayaDb,'Matara','Galle',false);
+  assert.deepEqual((await getDoc(rank)).data().outletPoints,publicBefore.outletPoints);
+  await move(udayaDb,'Galle','Matara',true);
+  assert.equal((await getDoc(account)).data().outletPoints.Matara,original.outletPoints.Matara);
+  await move(udayaDb,'Matara','Other',false);
+  assert.equal((await getDoc(rank)).exists(),false);
+  await move(udayaDb,'Other','Matara',false);
+  assert.deepEqual((await getDoc(rank)).data().outletWeeklyPoints,publicBefore.outletWeeklyPoints);
+  await move(udayaDb,'Matara','Galle',true);
+  for(const ref of [account,rank]){
+   const updated=(await getDoc(ref)).data(),before=ref===rank?publicBefore:original;
+   assert.equal(updated.outlet,'Galle');
+   assert.equal(updated.outletPoints.Matara,0);
+   for(const field of ['outletWeeklyPoints','outletMonthlyPoints']){
+    for(const k of Object.keys(before[field]))assert.equal(updated[field][k],k.endsWith('__Matara')?0:before[field][k]);
+   }
+   for(const field of ['totalPoints','correctAnswers','weeklyPoints','monthlyPoints','dailyActivity','outletAnswers'])
+    assert.deepEqual(updated[field],before[field]);
+  }
+  console.log('Verified direct outlet moves with both point options, private membership and restored public credit.');
+  // The first answer predates the Matara reset. Only personal points can be added.
+  store.set('pending',JSON.stringify([queued(0,now)]));
+  assert.equal(await worker.requestSync(),true,worker.issue);
+  for(const ref of [account,rank]){
+   const p=(await getDoc(ref)).data();
+   assert.equal(p.totalPoints,original.totalPoints+25);
+   assert.equal(p.outletPoints.Matara,0);
+  }
+  // The second was earned in Galle. Sync while private, then restore the preserved rank.
+  const galleAnswer=queued(9,new Date(),{outlet:'Galle'});
+  await move(udayaDb,'Galle','Other',false);
+  store.set('pending',JSON.stringify([galleAnswer]));
+  assert.equal(await worker.requestSync(),true,worker.issue);
+  assert.equal((await getDoc(rank)).exists(),false);
+  await move(udayaDb,'Other','Matara',false);
+  for(const ref of [account,rank]){
+   const p=(await getDoc(ref)).data();
+   assert.equal(p.totalPoints,original.totalPoints+50);
+   assert.equal(p.outletPoints.Matara,0);
+   assert.equal(p.outletPoints.Galle,25);
+  }
+
   const resetSource=app.slice(app.indexOf('async function resetScores('),app.indexOf('async function confirmUserRemoval'));
   const resetAs=async(db,uid)=>{
     const messages=[];

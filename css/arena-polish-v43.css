@@ -659,6 +659,11 @@ body #bt-spark-root.arena-manage-users-layout .pg-users-scroll{
 }
 body #bt-spark-root.arena-manage-users-layout .pg-users-scroll .pg-review-item{min-width:0}
 body #bt-spark-root.arena-manage-users-layout .pg-users-scroll .pg-review-item>div{min-width:0;overflow-wrap:anywhere}
+body #bt-spark-root.arena-manage-users-layout .pg-user-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+body #bt-spark-root.arena-manage-users-layout .pg-user-actions button{margin:0;min-width:0;padding:8px 4px;font-size:12px;line-height:1.2;min-height:44px;overflow-wrap:anywhere}
+@media(max-width:600px){
+ body #bt-spark-root.arena-manage-users-layout .pg-users-scroll .pg-review-item{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+}
 body #bt-spark-root.arena-manage-users-layout .pg-users-footer{
  flex:0 0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
  gap:8px;width:100%;margin-top:3px;align-items:stretch;

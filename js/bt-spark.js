@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.17-arena';let latestUpdate=null;
+const APP_VERSION='4.7.18-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -377,23 +377,35 @@ async function syncPass(uid){
      outcome=await F.runTransaction(db,async tx=>{
      if(user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
      const pr=F.doc(db,'publicRanks',uid),ad=F.doc(db,'admins',uid);
-     const [event,u,publicScore,role]=await Promise.all([tx.get(er),tx.get(ur),tx.get(pr),tx.get(ad)]);
+     const [event,u,liveRank,role]=await Promise.all([tx.get(er),tx.get(ur),tx.get(pr),tx.get(ad)]);
      if(event.exists())return 'duplicate';
      if(await oldDailyEvent(tx,e))return 'duplicate';
      if(user?.uid!==uid)throw Error('ACCOUNT_CHANGED');
-     if(!u.exists()||u.data().outlet!==e.outlet)throw Error('OUTLET_CHANGED');
+     if(!u.exists())throw Error('ACCOUNT_CHANGED');
      const p=u.data();if(e.earnedAt<=(p.scoreResetAt?.toMillis?.()||0))return 'reset';
+     let assignment={};
+     e.outlet=p.outlet;
+     if(p.outletSince&&e.earnedAt<p.outletSince.toMillis()){
+       const period=Object.entries(p.outletHistory||{}).find(([,entry])=>entry.since.toMillis()<=e.earnedAt&&e.earnedAt<entry.until.toMillis());
+       if(!period)throw Error('OUTLET_CHANGED');
+       e.outlet=period[1].outlet;assignment={outletPeriod:period[0]};
+     }else if(!p.outletSince&&queued.outlet!==p.outlet)throw Error('OUTLET_CHANGED');
+     const outletCredit=e.earnedAt<(p.outletResetTimes?.[e.outlet]?.toMillis()||0)?0:e.points;
+     if(outletCredit!==e.points)assignment.outletCredit=outletCredit;
+     const publish=e.outlet!=='Other'&&!RESERVED.has(String(p.username||'').toLowerCase())&&!(role.exists()&&role.data().enabled===true);
+     const archived=publish&&p.outlet==='Other';
+     const rankRef=archived?F.doc(db,'outletRankArchives',uid):pr;
+     const publicScore=archived?await tx.get(rankRef):liveRank;
      const change=(m,k,v)=>Object.assign({},m||{},{[k]:Number((m||{})[k]||0)+v}),wk=e.weekKey+'__'+e.outlet;
      const rapid=e.points>=68?Number(p.rapidCorrectStreak||0)+1:0;
      const review=Boolean(p.reviewSuggested)||rapid>=7;
-     tx.set(er,{uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,outletMonthKey:e.monthKey+'__'+e.outlet,activityDay:e.activityDay||day(new Date(e.earnedAt)),earnedAt:F.Timestamp.fromMillis(e.earnedAt)});
-     const publish=p.outlet!=='Other'&&!RESERVED.has(String(p.username||'').toLowerCase())&&!(role.exists()&&role.data().enabled===true);
+     tx.set(er,{...assignment,uid:e.uid,paper:e.paper,index:e.index,selected:e.selected,remaining:e.remaining,points:e.points,attemptId:e.attemptId,dayKey:e.dayKey,weekKey:e.weekKey,monthKey:e.monthKey,outlet:e.outlet,outletWeekKey:wk,outletMonthKey:e.monthKey+'__'+e.outlet,activityDay:e.activityDay||day(new Date(e.earnedAt)),earnedAt:F.Timestamp.fromMillis(e.earnedAt)});
      tx.update(ur,{lastEventId:e.id,totalPoints:Number(p.totalPoints||0)+e.points,totalAnswers:Number(p.totalAnswers||0)+1,
       correctAnswers:Number(p.correctAnswers||0)+(e.points>0?1:0),dailyActivity:change(p.dailyActivity,e.activityDay||day(new Date(e.earnedAt)),1),
       rapidCorrectStreak:rapid,reviewSuggested:review,
       weeklyPoints:change(p.weeklyPoints,e.weekKey,e.points),monthlyPoints:change(p.monthlyPoints,e.monthKey,e.points),
-      outletPoints:change(p.outletPoints,e.outlet,e.points),outletWeeklyPoints:change(p.outletWeeklyPoints,wk,e.points),
-      outletMonthlyPoints:change(p.outletMonthlyPoints,e.monthKey+'__'+e.outlet,e.points),
+      outletPoints:change(p.outletPoints,e.outlet,outletCredit),outletWeeklyPoints:change(p.outletWeeklyPoints,wk,outletCredit),
+      outletMonthlyPoints:change(p.outletMonthlyPoints,e.monthKey+'__'+e.outlet,outletCredit),
       outletMonthlyAnswers:change(p.outletMonthlyAnswers,e.monthKey+'__'+e.outlet,1),
       outletAnswers:change(p.outletAnswers,e.outlet,1),outletWeeklyAnswers:change(p.outletWeeklyAnswers,wk,1),updatedAt:F.serverTimestamp()});
      if(publish){
@@ -402,11 +414,11 @@ async function syncPass(uid){
          const base=previous?.[key]||{answered:0,correct:0};
          return {...previous,[key]:{answered:base.answered+1,correct:base.correct+(e.points>0?1:0)}};
        };
-       tx.set(pr,{...(accuracySupported?{...(p.scoreResetAt?{scoreResetAt:p.scoreResetAt}:{}),outletAccuracy:accuracyMap(b.outletAccuracy,e.outlet),weeklyAccuracy:accuracyMap(b.weeklyAccuracy,wk)}:{}),uid,name:p.username,outlet:p.outlet,avatar:p.avatar||'',lastEventId:e.id,totalPoints:Number(b.totalPoints||0)+e.points,
+       tx.set(rankRef,{...(accuracySupported?{...(p.scoreResetAt?{scoreResetAt:p.scoreResetAt}:{}),outletAccuracy:accuracyMap(b.outletAccuracy,e.outlet),weeklyAccuracy:accuracyMap(b.weeklyAccuracy,wk)}:{}),uid,name:p.username,outlet:p.outlet,avatar:p.avatar||'',lastEventId:e.id,totalPoints:Number(b.totalPoints||0)+e.points,
         correctAnswers:Number(b.correctAnswers||0)+(e.points>0?1:0),dailyActivity:change(b.dailyActivity,e.activityDay||day(new Date(e.earnedAt)),1),
         weeklyPoints:change(b.weeklyPoints,e.weekKey,e.points),monthlyPoints:change(b.monthlyPoints,e.monthKey,e.points),
-        outletPoints:change(b.outletPoints,e.outlet,e.points),outletWeeklyPoints:change(b.outletWeeklyPoints,wk,e.points),
-        outletMonthlyPoints:change(b.outletMonthlyPoints,mk,e.points),outletAnswers:change(b.outletAnswers,e.outlet,1),
+        outletPoints:change(b.outletPoints,e.outlet,outletCredit),outletWeeklyPoints:change(b.outletWeeklyPoints,wk,outletCredit),
+        outletMonthlyPoints:change(b.outletMonthlyPoints,mk,outletCredit),outletAnswers:change(b.outletAnswers,e.outlet,1),
         outletWeeklyAnswers:change(b.outletWeeklyAnswers,wk,1),outletMonthlyAnswers:change(b.outletMonthlyAnswers,mk,1),updatedAt:F.serverTimestamp()});
      }
      return 'saved';
@@ -978,9 +990,11 @@ async function manageUsers(){
     detail.append(label,sub);line.append(detail);
     const reserved=RESERVED.has(norm(item.username));
     const blocked=item.uid===user.uid||reserved||item.isAdmin;
-    line.append(btn('Reset scores',()=>resetScores(item),true));
-    line.append(btn(blocked?'PROTECTED':'DELETE',()=>confirmUserRemoval(item),blocked));
-    if(blocked)line.lastChild.disabled=true;
+    const actions=document.createElement('div');actions.className='pg-user-actions';
+    actions.append(btn('Change outlet',()=>adminChangeOutlet(item),true));
+    actions.append(btn('Reset scores',()=>resetScores(item),true));
+    const remove=btn(blocked?'PROTECTED':'DELETE',()=>confirmUserRemoval(item),blocked);
+    remove.disabled=blocked;actions.append(remove);line.append(actions);
     list.append(line);
    });
  };
@@ -995,13 +1009,88 @@ async function manageUsers(){
   search.addEventListener('input',render);render();
  }catch(err){if(box.isConnected)status.textContent='Could not load users: '+errorMessage(err);}
 }
+// Point resets affect only the departing outlet's credit. Answer history and personal scores stay intact.
+function outletPointReset(record, from){
+ const reset={};
+ for(const field of ['outletPoints','outletWeeklyPoints','outletMonthlyPoints']){
+  if(!record[field])continue;
+  const balances={...record[field]};
+  for(const key of Object.keys(balances)){
+   if(field==='outletPoints'?key===from:key.endsWith('__'+from))balances[key]=0;
+  }
+  reset[field]=balances;
+ }
+ return reset;
+}
+async function transferOutlet(tx,uid,from,to,zero){
+ if(!OUTLETS.includes(to)||from===to)throw Error('Choose a different outlet.');
+ const accountRef=F.doc(db,'users',uid),rankRef=F.doc(db,'publicRanks',uid);
+ const archiveRef=F.doc(db,'outletRankArchives',uid);
+ const [account,rank]=await Promise.all([tx.get(accountRef),tx.get(rankRef)]);
+ if(!account.exists()||account.data().outlet!==from)throw Error('The outlet changed. Reopen Manage Users and try again.');
+ const player=account.data();
+ const since=player.outletSince||F.Timestamp.fromMillis(0);
+ // Retain every assignment that could contain a receipt in the 72-hour sync window.
+ const history=Object.fromEntries(Object.entries(player.outletHistory||{}).filter(([,entry])=>entry.until.toMillis()>=since.toMillis()-72*3600000));
+ const key=since.seconds+'_'+since.nanoseconds;
+ history[key]={outlet:from,since,until:F.serverTimestamp()};
+ let restore;
+ if(from==='Other'){
+  const [archive,role]=await Promise.all([tx.get(archiveRef),tx.get(F.doc(db,'admins',uid))]);
+  const saved=archive.data();
+  if(saved&&!role.data()?.enabled&&!RESERVED.has(norm(player.username))&&
+     (saved.scoreResetAt?.toMillis()||0)===(player.scoreResetAt?.toMillis()||0))restore=saved;
+ }
+ const assignment={outlet:to,outletSince:F.serverTimestamp(),outletHistory:history,updatedAt:F.serverTimestamp()};
+ if(zero){
+  Object.assign(assignment,outletPointReset(player,from));
+  assignment.outletResetTimes={...player.outletResetTimes,[from]:F.serverTimestamp()};
+ }
+ tx.update(accountRef,assignment);
+ if(from==='Other'){
+  if(restore)tx.set(rankRef,{...restore,name:player.username,avatar:player.avatar||'',outlet:to,updatedAt:F.serverTimestamp()});
+  tx.delete(archiveRef);
+ }else if(rank.exists()){
+  const balances=zero?outletPointReset(rank.data(),from):{};
+  if(to==='Other'){
+   tx.set(archiveRef,{...rank.data(),...balances});
+   tx.delete(rankRef);
+  }else tx.update(rankRef,{outlet:to,...balances});
+ }
+}
+function adminChangeOutlet(person){
+ if(!admins)return;
+ const box=open('CHANGE OUTLET',person.username+' · '+person.outlet,()=>adminChangeOutlet(person));
+ const target=sel(box,'New outlet');target.setAttribute('aria-label','New outlet');
+ target.querySelectorAll('option').forEach(option=>{if(option.value===person.outlet)option.remove();});
+ target.selectedIndex=-1;
+ const balances=document.createElement('select');balances.setAttribute('aria-label','Points earned for '+person.outlet);
+ balances.add(new Option('Keep outlet points','keep'));
+ balances.add(new Option('Reset outlet points to zero','zero'));
+ label(box,'Points earned for '+person.outlet,balances);
+ const help=document.createElement('p');help.textContent='Personal scores, answers and credit earned for other outlets are preserved.';
+ const status=document.createElement('p');status.setAttribute('role','status');box.append(help,status);
+ const save=btn('Change outlet',async()=>{
+  const to=target.value,zero=balances.value==='zero';
+  if(!to){status.textContent='Choose a new outlet.';return;}
+  if(zero&&!confirm('Move '+person.username+' to '+to+' and permanently reset their points for '+person.outlet+' to zero?'))return;
+  save.disabled=true;target.disabled=true;balances.disabled=true;
+  try{
+   await F.runTransaction(db,tx=>transferOutlet(tx,person.uid,person.outlet,to,zero));
+   note('Outlet changed to '+to+'.');await manageUsers();
+  }catch(err){status.textContent=err.code?errorMessage(err):err.message;}
+  finally{save.disabled=false;target.disabled=false;balances.disabled=false;}
+ });
+ box.append(btn('Back to users',manageUsers,true),save);
+}
+
 async function resetScores(person){
  if(!admins||!confirm('Reset all points, answers, accuracy, achievements and ranking history for '+person.username+'? This cannot be undone.'))return;
  try{
    const uid=person.uid;
    const batch=F.writeBatch(db);
    batch.update(F.doc(db,'users',uid),{totalPoints:0,totalAnswers:0,correctAnswers:0,lastEventId:'',dailyActivity:{},rapidCorrectStreak:0,reviewSuggested:false,weeklyPoints:{},monthlyPoints:{},outletPoints:{},outletWeeklyPoints:{},outletMonthlyPoints:{},outletAnswers:{},outletWeeklyAnswers:{},outletMonthlyAnswers:{},scoreResetAt:F.serverTimestamp(),updatedAt:F.serverTimestamp()});
-   batch.delete(F.doc(db,'publicRanks',uid));batch.delete(F.doc(db,'rankHistory',uid));
+   batch.delete(F.doc(db,'publicRanks',uid));batch.delete(F.doc(db,'rankHistory',uid));batch.delete(F.doc(db,'outletRankArchives',uid));
    await batch.commit();note('Scores reset for '+person.username+'.');manageUsers();
  }catch(e){note(errorMessage(e));}
 }
@@ -1036,7 +1125,7 @@ async function confirmUserRemoval(person){
        throw Error('User is already removed or protected.');
     if(!registry.exists()||registry.data().uid!==person.uid)throw Error('Username registry mismatch. Nothing was removed.');
     tx.set(blockRef,{uid:person.uid,username:account.data().username,blockedBy:user.uid,blockedAt:F.serverTimestamp(),reason:'admin_removed'});
-    tx.delete(personRef);tx.delete(regRef);if(rank.exists())tx.delete(rankRef);
+    tx.delete(personRef);tx.delete(regRef);if(rank.exists())tx.delete(rankRef);tx.delete(F.doc(db,'outletRankArchives',person.uid));
    });
    box.replaceChildren();
    const ok=document.createElement('div');ok.className='pg-private';
@@ -1070,7 +1159,15 @@ async function reviewActivityFlags(){
  box.append(btn('BACK TO ADMIN',adminPanel,true),btn('CLOSE',close,true));
 }
 async function decide(req,yes){
- try{await F.runTransaction(db,async tx=>{const r=F.doc(db,'outletRequests',req.id),u=F.doc(db,'users',req.uid),p=F.doc(db,'publicRanks',req.uid);const [a,b,pub]=await Promise.all([tx.get(r),tx.get(u),tx.get(p)]);if(!a.exists()||a.data().status!=='pending'||!b.exists()||b.data().outlet!==a.data().from)throw Error('Request no longer pending');tx.update(r,{status:yes?'approved':'rejected',reviewedBy:user.uid,reviewedAt:F.serverTimestamp()});if(yes){tx.update(u,{outlet:req.to,updatedAt:F.serverTimestamp()});if(pub.exists()){if(req.to==='Other')tx.delete(p);else tx.update(p,{outlet:req.to});}}});note('Request processed.');}
+ try{
+  await F.runTransaction(db,async tx=>{
+   const ref=F.doc(db,'outletRequests',req.id),snapshot=await tx.get(ref);
+   if(!snapshot.exists()||snapshot.data().status!=='pending')throw Error('Request no longer pending.');
+   const pending=snapshot.data();
+   if(yes)await transferOutlet(tx,pending.uid,pending.from,pending.to,false);
+   tx.update(ref,{status:yes?'approved':'rejected',reviewedBy:user.uid,reviewedAt:F.serverTimestamp()});
+  });note('Request processed.');
+ }
  catch(e){note(errorMessage(e));}
 }
 async function seedKeys(){

@@ -168,7 +168,7 @@
     });
     const btn=get('translate-btn');
     btn.classList.toggle('active',translated);
-    btn.textContent=translated?'🔄 English':'🇱🇰 සිංහල';
+    btn.textContent=translated?'English':'සිංහල';
     btn.setAttribute('aria-pressed',String(translated));
     const action=get('opts').querySelector('.aq-action');
     if(action)action.textContent=gradable(q)?(translated?'පිළිතුරු පරීක්ෂා කරන්න':'Check selected answers'):(translated?'යෝජිත පිළිතුර බලන්න':'Show suggested answer');

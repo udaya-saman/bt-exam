@@ -118,3 +118,20 @@
 .pa-study-lesson-footer,.pa-revision-card{margin-bottom:max(32px,env(safe-area-inset-bottom))}
 .pa-revision-card{display:grid;justify-items:start;gap:12px}
 @media(max-width:440px){#study-select .questions-library-nav{gap:5px!important;padding:7px!important}#study-select .questions-library-back{padding:7px 9px!important}#study-select .questions-nav-brand{font-size:10px;gap:4px}#study-select .questions-nav-brand img{width:22px;height:22px}}
+
+.pa-study-library,.pa-study-lesson-footer{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.pa-study-lesson-intro p,.pa-study .pa-study-cue{margin:0}
+.pa-study .pa-study-cue{color:#ffdfb9;margin-top:4px}
+@media(max-width:480px){#study-select .pa-study-lesson-hero{row-gap:4px}}
+.pa-study-language{display:flex;justify-content:center;padding:16px}
+.pa-study-memory,.pa-study-memory .pa-study-bullets li{background:transparent;border:0;border-radius:0;text-align:left}
+.pa-study-memory{padding:0}.pa-study-memory .pa-study-bullets{padding:0}
+.pa-study-memory .pa-study-bullets li{padding:4px 0 4px 28px}.pa-study-memory .pa-study-bullets li:before{left:0;top:6px}
+#study-select .pa-study-stages li{padding:4px 0;justify-items:start;text-align:left}
+.pa-study-tip-detail[hidden]{display:none}
+.pa-study-tip-picture{display:block;width:96px;height:96px;object-fit:contain;margin:16px auto}
+.pa-study-tip-detail .pa-study-tip-value{padding-bottom:0}
+.pa-revision-title{font-size:1rem;line-height:1.4;margin:0;padding:18px 0 16px}
+.pa-study-lesson-footer.pa-revision-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;width:100%;margin:4px 0 0;padding:0}
+.pa-revision-actions button{margin:0;min-width:0;padding:9px 8px}
+.pa-revision-actions .pa-study-next{grid-column:2}

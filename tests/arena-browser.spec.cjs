@@ -51,17 +51,15 @@ for(const width of widths){
   await expect(page.locator('#paper-select.active')).toBeVisible();
  await expect(page.locator('#bt-spark-dock')).toBeHidden();
   await expect(page.locator('#paper-select #questions-title')).toContainText('Your next challenge');
-  await expect(page.locator('#paper-select .questions-quick-stats')).toContainText('214');
+  await expect(page.locator('#paper-select .questions-quick-stats')).toHaveCount(0);
   await expect(page.locator('#paper-select .pa-assessment-entry')).toHaveCount(0);
   await expect(page.locator('#paper-select .questions-assessment-paper')).toHaveCount(1);
   await expect(page.locator('#paper-select.active .paper-card')).toHaveCount(6);
   await expect(page.locator('#paper-select .questions-paper')).toHaveCount(6);
   const ids=await page.locator('#paper-select .questions-paper').evaluateAll(cards=>cards.map(card=>card.dataset.paper));
   expect(ids).toEqual(['past2024','questions','paper1','paper2','paper3','assessment-practice']);
-  const questions=await page.locator('#paper-select .questions-paper-count').allTextContents();
-  expect(questions).toEqual(['29 QUESTIONS','40 QUESTIONS','50 QUESTIONS','50 QUESTIONS','45 QUESTIONS','86 UNIQUE QUESTIONS']);
-  await expect.poll(()=>page.locator('#paper-select .questions-paper-icon img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
-  await expect.poll(()=>page.locator('#paper-select .questions-intro-art').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+  await expect(page.locator('#paper-select .questions-paper-count, #paper-select .questions-paper-icon, #paper-select .questions-paper-action')).toHaveCount(0);
+  await expect.poll(()=>page.locator('#paper-select .questions-hero-mascot').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
   const columns=await page.locator('#all-question-papers').evaluate(grid=>getComputedStyle(grid).gridTemplateColumns.split(' ').length);
   expect(columns).toBe(width<=680?1:2);
   const papers=await dimensions(page,'#paper-select .paper-card');
@@ -135,7 +133,7 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;openStudy();});
  await expect(page.locator('#study-select.active .pa-study-card')).toHaveCount(57,{timeout:12000});
  await expect(page.locator('#bt-spark-dock')).toBeHidden();
- await expect(page.locator('.pa-study-hero h1')).toContainText('Study Academy');
+ await expect(page.locator('#study-select .pa-study-hero h1')).toContainText('Study Academy');
  await page.locator('.pa-study-card').first().click();
  await expect(page.locator('.pa-study-lesson-hero h1')).toContainText('Pizza Hut');
  await page.setViewportSize({width:320,height:740});
@@ -144,8 +142,14 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
   const nav=screen.querySelector('nav');
   return {top:nav.getBoundingClientRect().top,width:screen.scrollWidth,scroll:screen.scrollTop};
  });
- expect(pinned.scroll).toBeGreaterThan(0);expect(pinned.top).toBe(0);expect(pinned.width).toBeLessThanOrEqual(320);
- await expect(page.locator('.pa-study-source')).toHaveCount(0);
+ expect(pinned.scroll).toBeGreaterThan(0);expect(pinned.top).toBe(8);expect(pinned.width).toBeLessThanOrEqual(320);
+ await expect(page.locator('.pa-study-source,.pa-edition-ref')).toHaveCount(0);
+ const language=page.locator('#study-app > .pa-study-language button');
+ await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','si');
+ await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','en');
+ const tip=page.locator('.pa-study-tip').first();await tip.locator('.pa-study-tip-toggle').click();
+ await expect(tip.locator('img')).toBeVisible();
+ await tip.locator('.translate-btn').click();await expect(tip.locator('.pa-study-tip-value')).toHaveAttribute('lang','si');
  await expect(page.locator('.pa-study-memory')).not.toHaveCount(0);
  await expect(page.locator('.pa-study-lesson-art img').first()).toBeVisible();
  await expect.poll(()=>page.locator('.pa-study-lesson-art img').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
@@ -464,13 +468,15 @@ test('Manage Users search and all three equal-width actions stay fixed during li
   await page.waitForTimeout(250);
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');root.hidden=false;root.className='arena-manage-users-layout';
-   root.innerHTML='<div class="panel"><h2>MANAGE USERS</h2><p>Create and manage player accounts.</p><div id="bt-spark-content"><p class="pg-muted pg-users-status">Showing up to 250 users. Administrator accounts are protected.</p><input type="search" class="pg-users-search" aria-label="Search username or outlet"><div class="pg-users-scroll">'+Array.from({length:60},(_,i)=>'<div class="pg-review-item"><div><strong>Player '+i+' · Matara</strong><small>200 pts · User code abcdefgh…</small></div><button>DELETE</button></div>').join('')+'</div><div class="pg-users-footer"><button class="pg-btn-green">Create User</button><button class="alt">Back</button><button class="pg-btn-red">Close</button></div></div></div>';
+   root.innerHTML='<div class="panel"><h2>MANAGE USERS</h2><p>Create and manage player accounts.</p><div id="bt-spark-content"><p class="pg-muted pg-users-status">Showing up to 250 users. Administrator accounts are protected.</p><input type="search" class="pg-users-search" aria-label="Search username or outlet"><div class="pg-users-scroll">'+Array.from({length:60},(_,i)=>'<div class="pg-review-item"><div><strong>Player '+i+' · Matara</strong><small>200 pts · User code abcdefgh…</small></div><div class="pg-user-actions"><button>Change outlet</button><button>Reset scores</button><button>DELETE</button></div></div>').join('')+'</div><div class="pg-users-footer"><button class="pg-btn-green">Create User</button><button class="alt">Back</button><button class="pg-btn-red">Close</button></div></div></div>';
   });
   const bounds=()=>page.evaluate(()=>{
    const panel=document.querySelector('#bt-spark-root .panel'),list=document.querySelector('.pg-users-scroll'),footer=document.querySelector('.pg-users-footer'),search=document.querySelector('.pg-users-search');
    const rect=x=>x.getBoundingClientRect().toJSON();
    return {panel:rect(panel),search:rect(search),list:rect(list),footer:rect(footer),buttons:[...footer.children].map(rect),overflow:getComputedStyle(list).overflowY,panelOverflow:getComputedStyle(panel).overflowY,range:list.scrollHeight-list.clientHeight,top:list.scrollTop,horizontal:panel.scrollWidth-panel.clientWidth};
   });
+  const row=await page.locator('.pg-review-item').first().evaluate(el=>({overflow:el.scrollWidth-el.clientWidth,label:el.firstElementChild.offsetWidth}));
+  expect(row.overflow).toBeLessThanOrEqual(2);expect(row.label).toBeGreaterThan(50);
   const before=await bounds();
   expect(before.overflow).toBe('auto');expect(before.panelOverflow).toBe('hidden');
   expect(before.range).toBeGreaterThan(0);expect(before.list.height).toBeGreaterThan(100);
