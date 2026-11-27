@@ -166,9 +166,11 @@ button { outline: none; border: none; font-family: inherit; }
 
 .q-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .q-badge { background: var(--card-bg); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--text-main); }
-.translate-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--card-bg); border: 1.5px solid var(--corp-blue); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--corp-blue); cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+.translate-btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1.5px solid var(--corp-blue); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--corp-blue); cursor: pointer; transition: transform 0.2s; }
 .translate-btn:active { transform: scale(0.96); }
-.translate-btn.active { background: var(--corp-blue); color: #FFFFFF; }
+@layer arena-controls {
+  button.translate-btn, button.translate-btn:is(:active,.arena-pressing,.arena-pressed) { box-shadow: none !important; }
+}
 
 .q-text { font-size: clamp(17px, 5vw, 22px); font-weight: 800; line-height: 1.5; color: var(--text-main); margin-bottom: 20px; }
 .timer-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
@@ -277,10 +279,10 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./css/pizza-reference.css?v=3.9">
 <link rel="stylesheet" href="./css/pizza-arena-v40.css?v=4.0.1">
 <link rel="stylesheet" href="./css/player-card-v42.css?v=4.2.0">
-<link rel="stylesheet" href="./study/lesson-player.css?v=4.7.18">
+<link rel="stylesheet" href="./study/lesson-player.css?v=4.7.19">
 <link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.7.18">
 <link rel="stylesheet" href="./css/assessment-practice.css?v=4.7.10">
-<link rel="stylesheet" href="./css/questions-v477.css?v=4.7.18">
+<link rel="stylesheet" href="./css/questions-v477.css?v=4.7.19">
 <link rel="stylesheet" href="./css/press-feedback-v477.css?v=4.7.16">
 </head>
 <body>
@@ -327,13 +329,13 @@ button { outline: none; border: none; font-family: inherit; }
 
     <div class="arena-paths" role="group" aria-label="Choose your activity">
       <button type="button" class="arena-path-card arena-path-questions" onclick="openQuestions()" aria-label="Questions, choose an exam paper">
-        <img class="arena-path-mascot" src="./images/mascot/home-questions.png" width="80" height="80" alt="">
+        <img class="arena-path-mascot" src="./images/mascot/home-questions.png" width="120" height="120" alt="">
         <span class="arena-path-name">Questions</span>
         <span class="arena-path-desc">Choose a paper, answer questions and earn points.</span>
         <span class="arena-path-action">CHOOSE QUESTIONS <span aria-hidden="true">→</span></span>
       </button>
       <button type="button" class="arena-path-card arena-path-study" onclick="openStudy()" aria-label="Study, review the learning materials">
-        <img class="arena-path-mascot" src="./images/mascot/home-study.png" width="80" height="80" alt="">
+        <img class="arena-path-mascot" src="./images/mascot/home-study.png" width="120" height="120" alt="">
         <span class="arena-path-name">Study</span>
         <span class="arena-path-desc">Explore lessons from official training materials.</span>
         <span class="arena-path-action">START STUDYING <span aria-hidden="true">→</span></span>

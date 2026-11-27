@@ -271,7 +271,7 @@ body #study-select .questions-library-back{margin:0!important}
 }
 #study-select .questions-nav-brand{margin-left:auto}
 
-#home .arena-path-mascot{display:block;width:clamp(62px,9vw,84px);height:auto;aspect-ratio:1;object-fit:contain;margin-bottom:10px}
+#home .arena-path-mascot{display:block;width:clamp(93px,13.5vw,126px);height:auto;aspect-ratio:1;object-fit:contain;margin-bottom:10px}
 #paper-select .questions-hero-mascot{width:27%;max-width:200px;height:auto;aspect-ratio:1;object-fit:contain}
 #paper-select .questions-papers-section{margin-top:24px}
 body #paper-select .paper-card.questions-paper{min-height:0!important}

@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.18-arena';let latestUpdate=null;
+const APP_VERSION='4.7.19-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -986,8 +986,7 @@ async function manageUsers(){
    entries.forEach(item=>{
     const line=document.createElement('div');line.className='pg-review-item';
     const detail=document.createElement('div');const label=document.createElement('strong');label.textContent=item.username+' · '+item.outlet;
-    const sub=document.createElement('small');sub.textContent=(item.totalPoints||0)+' pts · User code '+item.uid.slice(0,8)+'…';
-    detail.append(label,sub);line.append(detail);
+    detail.append(label);line.append(detail);
     const reserved=RESERVED.has(norm(item.username));
     const blocked=item.uid===user.uid||reserved||item.isAdmin;
     const actions=document.createElement('div');actions.className='pg-user-actions';

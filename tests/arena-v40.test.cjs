@@ -47,7 +47,7 @@ assert.ok(library.includes('pa-study-hero')&&library.includes('home-questions.pn
 assert.ok(!library.includes('pa-assessment-entry')&&!html.includes('id="assessment-library"'),'Old standalone Assessment Bank section removed');
 assert.ok(library.includes('Assessment Practice')&&!library.includes('questions-paper-action'),'New bilingual practice card has no secondary CTA');
 assert.ok(html.includes('id="assessment-practice"')&&html.includes('assessment-practice-root'),'Bilingual practice page present');
-assert.ok(html.includes('css/questions-v477.css?v=4.7.18')&&sw.includes('css/questions-v477.css?v=4.7.18'),'Questions styling enabled and cached offline');
+assert.ok(html.includes('css/questions-v477.css?v=4.7.19')&&sw.includes('css/questions-v477.css?v=4.7.19'),'Questions styling enabled and cached offline');
 
 const pressStyle=get('css/press-feedback-v477.css'),pressLogic=get('js/press-feedback-v477.js');
 assert.doesNotThrow(()=>new vm.Script(pressLogic,{filename:'press-feedback-v477.js'}),'App-wide press logic parses');
