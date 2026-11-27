@@ -990,10 +990,11 @@ async function manageUsers(){
     detail.append(label,sub);line.append(detail);
     const reserved=RESERVED.has(norm(item.username));
     const blocked=item.uid===user.uid||reserved||item.isAdmin;
-    line.append(btn('Change outlet',()=>adminChangeOutlet(item),true));
-    line.append(btn('Reset scores',()=>resetScores(item),true));
-    line.append(btn(blocked?'PROTECTED':'DELETE',()=>confirmUserRemoval(item),blocked));
-    if(blocked)line.lastChild.disabled=true;
+    const actions=document.createElement('div');actions.className='pg-user-actions';
+    actions.append(btn('Change outlet',()=>adminChangeOutlet(item),true));
+    actions.append(btn('Reset scores',()=>resetScores(item),true));
+    const remove=btn(blocked?'PROTECTED':'DELETE',()=>confirmUserRemoval(item),blocked);
+    remove.disabled=blocked;actions.append(remove);line.append(actions);
     list.append(line);
    });
  };

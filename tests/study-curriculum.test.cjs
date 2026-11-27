@@ -31,6 +31,17 @@ docs.forEach((name,i)=>{
  }
 });
 assert.equal(all.length,57);
+const sinhala=JSON.parse(read('study/content/si.json'));
+assert.deepEqual(Object.keys(sinhala).sort(),Array.from(ids).sort());
+for(const lesson of all){
+ const local=sinhala[lesson.id];assert(local.title&&local.summary&&local.cue);
+ assert.equal(local.sections.length,lesson.sections.length);
+ lesson.sections.forEach((section,i)=>{
+  const copy=local.sections[i];assert(copy.heading&&copy.body);
+  assert.equal(copy.keyPoints.length,section.keyPoints.length);
+  if(section.memoryTip)assert(copy.memoryTip);
+ });
+}
 const index=read('index.html');
 assert.equal((index.match(/id="study-select"/g)||[]).length,1);
 assert.doesNotMatch(index,/id="study-reader"/);

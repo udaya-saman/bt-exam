@@ -16,8 +16,8 @@ assert.match(src,/place\.textContent=String\(places\.get\(r\)\)/);
 assert.match(css,/\.pg-standings-scroll\{[^}]*overflow-y:auto/);
 assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
-assert.ok(html.includes('arena-polish-v43.css?v=4.7.17'));
-assert.ok(sw.includes('arena-polish-v43.css?v=4.7.17'));
+assert.ok(html.includes('arena-polish-v43.css?v=4.7.18'));
+assert.ok(sw.includes('arena-polish-v43.css?v=4.7.18'));
 assert.doesNotMatch(src,/The crown is waiting!/,'The empty crown waiting panel is removed');
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
@@ -165,10 +165,11 @@ console.log('Podium name wrapping, quicker animation, Pizza Hut red, admin-only 
  assert.deepEqual(Array.from(footer.children,b=>b.textContent),['Back','Create User','Close']);
  footer.children.forEach(b=>b.click());assert.deepEqual([created,backed,closed],[1,1,1]);
  assert.equal(list.children.length,5);
- assert.deepEqual(Array.from(list.children,r=>!!r.lastChild.disabled),[true,true,false,true,false]);
+ assert.deepEqual(Array.from(list.children[0].lastChild.children,b=>b.textContent),['Change outlet','Reset scores','PROTECTED']);
+ assert.deepEqual(Array.from(list.children,r=>!!r.lastChild.lastChild.disabled),[true,true,false,true,false]);
  search.value='  MATARA ';search.input();
- assert.equal(list.children.length,2);assert.equal(list.children[0].lastChild.textContent,'PROTECTED');
- assert.equal(list.children[1].lastChild.textContent,'DELETE');list.children[1].lastChild.click();
+ assert.equal(list.children.length,2);assert.equal(list.children[0].lastChild.lastChild.textContent,'PROTECTED');
+ assert.equal(list.children[1].lastChild.lastChild.textContent,'DELETE');list.children[1].lastChild.lastChild.click();
  assert.deepEqual(removed,['u-player']);
  search.value='player two';search.input();assert.equal(list.children.length,1);assert.match(list.children[0].children[0].children[0].textContent,/Player Two/);
  search.value='nothing matches';search.input();assert.equal(list.children[0].className,'pg-empty');

@@ -468,13 +468,15 @@ test('Manage Users search and all three equal-width actions stay fixed during li
   await page.waitForTimeout(250);
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');root.hidden=false;root.className='arena-manage-users-layout';
-   root.innerHTML='<div class="panel"><h2>MANAGE USERS</h2><p>Create and manage player accounts.</p><div id="bt-spark-content"><p class="pg-muted pg-users-status">Showing up to 250 users. Administrator accounts are protected.</p><input type="search" class="pg-users-search" aria-label="Search username or outlet"><div class="pg-users-scroll">'+Array.from({length:60},(_,i)=>'<div class="pg-review-item"><div><strong>Player '+i+' · Matara</strong><small>200 pts · User code abcdefgh…</small></div><button>DELETE</button></div>').join('')+'</div><div class="pg-users-footer"><button class="pg-btn-green">Create User</button><button class="alt">Back</button><button class="pg-btn-red">Close</button></div></div></div>';
+   root.innerHTML='<div class="panel"><h2>MANAGE USERS</h2><p>Create and manage player accounts.</p><div id="bt-spark-content"><p class="pg-muted pg-users-status">Showing up to 250 users. Administrator accounts are protected.</p><input type="search" class="pg-users-search" aria-label="Search username or outlet"><div class="pg-users-scroll">'+Array.from({length:60},(_,i)=>'<div class="pg-review-item"><div><strong>Player '+i+' · Matara</strong><small>200 pts · User code abcdefgh…</small></div><div class="pg-user-actions"><button>Change outlet</button><button>Reset scores</button><button>DELETE</button></div></div>').join('')+'</div><div class="pg-users-footer"><button class="pg-btn-green">Create User</button><button class="alt">Back</button><button class="pg-btn-red">Close</button></div></div></div>';
   });
   const bounds=()=>page.evaluate(()=>{
    const panel=document.querySelector('#bt-spark-root .panel'),list=document.querySelector('.pg-users-scroll'),footer=document.querySelector('.pg-users-footer'),search=document.querySelector('.pg-users-search');
    const rect=x=>x.getBoundingClientRect().toJSON();
    return {panel:rect(panel),search:rect(search),list:rect(list),footer:rect(footer),buttons:[...footer.children].map(rect),overflow:getComputedStyle(list).overflowY,panelOverflow:getComputedStyle(panel).overflowY,range:list.scrollHeight-list.clientHeight,top:list.scrollTop,horizontal:panel.scrollWidth-panel.clientWidth};
   });
+  const row=await page.locator('.pg-review-item').first().evaluate(el=>({overflow:el.scrollWidth-el.clientWidth,label:el.firstElementChild.offsetWidth}));
+  expect(row.overflow).toBeLessThanOrEqual(2);expect(row.label).toBeGreaterThan(50);
   const before=await bounds();
   expect(before.overflow).toBe('auto');expect(before.panelOverflow).toBe('hidden');
   expect(before.range).toBeGreaterThan(0);expect(before.list.height).toBeGreaterThan(100);
