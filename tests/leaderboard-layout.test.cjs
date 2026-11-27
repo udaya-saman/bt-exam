@@ -165,6 +165,7 @@ console.log('Podium name wrapping, quicker animation, Pizza Hut red, admin-only 
  assert.deepEqual(Array.from(footer.children,b=>b.textContent),['Back','Create User','Close']);
  footer.children.forEach(b=>b.click());assert.deepEqual([created,backed,closed],[1,1,1]);
  assert.equal(list.children.length,5);
+ for(const row of list.children)assert.equal(row.children[0].children.length,1,'Each account shows only its username and outlet');
  assert.deepEqual(Array.from(list.children[0].lastChild.children,b=>b.textContent),['Change outlet','Reset scores','PROTECTED']);
  assert.deepEqual(Array.from(list.children,r=>!!r.lastChild.lastChild.disabled),[true,true,false,true,false]);
  search.value='  MATARA ';search.input();

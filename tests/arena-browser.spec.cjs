@@ -1,4 +1,9 @@
 const {test,expect}=require('@playwright/test');
+async function expectOutline(button){
+ await expect(button).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+ await expect(button).toHaveCSS('box-shadow','none');
+ await expect(button).toHaveCSS('border-top-style','solid');
+}
 const widths=[320,375,430,768,1280];
 async function dimensions(page,selector){
  return page.locator(selector).evaluateAll(elements=>elements.map(el=>{
@@ -39,6 +44,13 @@ for(const width of widths){
   expect(Math.abs(heroBefore-heroAfter)).toBeLessThan(1);
 
   const modes=await dimensions(page,'#home .arena-path-card');
+  const mascots=await dimensions(page,'#home .arena-path-mascot');
+  expect(mascots).toHaveLength(2);
+  for(const mascot of mascots){
+   const expected=1.5*Math.min(84,Math.max(62,width*.09));
+   expect(Math.abs(mascot.width-expected)).toBeLessThan(1);
+   expect(Math.abs(mascot.height-expected)).toBeLessThan(1);
+  }
   expect(modes).toHaveLength(2);
   noOverlap(modes,width,'Home mode cards');
   const source=await page.locator('.arena-hero-mascot img').evaluate(node=>({
@@ -77,6 +89,9 @@ for(const width of widths){
   await model.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('#quiz.active')).toBeVisible();
+  const quizLanguage=page.locator('#translate-btn');
+  await expectOutline(quizLanguage);await quizLanguage.click();
+  await expectOutline(quizLanguage);await quizLanguage.click();
   await expect(page.locator('#quiz-paper-label')).toContainText('Intermediate');
   await expect(page.locator('#quiz-q-info')).toHaveText('Question 1 of 50');
   await expect(page.locator('#quiz .opt-btn')).toHaveCount(4);
@@ -145,11 +160,21 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  expect(pinned.scroll).toBeGreaterThan(0);expect(pinned.top).toBe(8);expect(pinned.width).toBeLessThanOrEqual(320);
  await expect(page.locator('.pa-study-source,.pa-edition-ref')).toHaveCount(0);
  const language=page.locator('#study-app > .pa-study-language button');
+ for(const width of [320,1280,320]){
+  await page.setViewportSize({width,height:740});
+  const rightGap=await language.evaluate(el=>el.parentElement.getBoundingClientRect().right-el.getBoundingClientRect().right);
+  expect(Math.abs(rightGap)).toBeLessThan(1);
+ }
+ await expectOutline(language);
  await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','si');
+ await expectOutline(language);
  await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','en');
  const tip=page.locator('.pa-study-tip').first();await tip.locator('.pa-study-tip-toggle').click();
  await expect(tip.locator('img')).toBeVisible();
+ await expect(tip.locator('.pa-study-language')).toHaveCSS('justify-content','center');
+ await expectOutline(tip.locator('.translate-btn'));
  await tip.locator('.translate-btn').click();await expect(tip.locator('.pa-study-tip-value')).toHaveAttribute('lang','si');
+ await expectOutline(tip.locator('.translate-btn'));
  await expect(page.locator('.pa-study-memory')).not.toHaveCount(0);
  await expect(page.locator('.pa-study-lesson-art img').first()).toBeVisible();
  await expect.poll(()=>page.locator('.pa-study-lesson-art img').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
@@ -265,7 +290,9 @@ for(const width of [320,375,430,768]){
   await expect(practice.locator('#aq-timer-val')).toHaveText(/^0:5[0-9]$|^1:00$/);
   const first=await page.evaluate(()=>BTAssessmentPractice.getQuestions()[0]);
   await expect(practice.locator('#aq-q-text')).toHaveText(first.q);
+  await expectOutline(practice.locator('#aq-translate-btn'));
   await practice.locator('#aq-translate-btn').click();
+  await expectOutline(practice.locator('#aq-translate-btn'));
   await expect(practice.locator('#aq-q-text')).toHaveText(first.siQ);
   await expect(practice.locator('.opt-text').first()).toHaveText(first.siOpts[0]);
   await practice.locator('#aq-translate-btn').click();
@@ -468,7 +495,7 @@ test('Manage Users search and all three equal-width actions stay fixed during li
   await page.waitForTimeout(250);
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');root.hidden=false;root.className='arena-manage-users-layout';
-   root.innerHTML='<div class="panel"><h2>MANAGE USERS</h2><p>Create and manage player accounts.</p><div id="bt-spark-content"><p class="pg-muted pg-users-status">Showing up to 250 users. Administrator accounts are protected.</p><input type="search" class="pg-users-search" aria-label="Search username or outlet"><div class="pg-users-scroll">'+Array.from({length:60},(_,i)=>'<div class="pg-review-item"><div><strong>Player '+i+' · Matara</strong><small>200 pts · User code abcdefgh…</small></div><div class="pg-user-actions"><button>Change outlet</button><button>Reset scores</button><button>DELETE</button></div></div>').join('')+'</div><div class="pg-users-footer"><button class="pg-btn-green">Create User</button><button class="alt">Back</button><button class="pg-btn-red">Close</button></div></div></div>';
+   root.innerHTML='<div class="panel"><h2>MANAGE USERS</h2><p>Create and manage player accounts.</p><div id="bt-spark-content"><p class="pg-muted pg-users-status">Showing up to 250 users. Administrator accounts are protected.</p><input type="search" class="pg-users-search" aria-label="Search username or outlet"><div class="pg-users-scroll">'+Array.from({length:60},(_,i)=>'<div class="pg-review-item"><div><strong>Player '+i+' · Matara</strong></div><div class="pg-user-actions"><button>Change outlet</button><button>Reset scores</button><button>DELETE</button></div></div>').join('')+'</div><div class="pg-users-footer"><button class="pg-btn-green">Create User</button><button class="alt">Back</button><button class="pg-btn-red">Close</button></div></div></div>';
   });
   const bounds=()=>page.evaluate(()=>{
    const panel=document.querySelector('#bt-spark-root .panel'),list=document.querySelector('.pg-users-scroll'),footer=document.querySelector('.pg-users-footer'),search=document.querySelector('.pg-users-search');

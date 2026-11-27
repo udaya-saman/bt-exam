@@ -124,6 +124,7 @@
 .pa-study .pa-study-cue{color:#ffdfb9;margin-top:4px}
 @media(max-width:480px){#study-select .pa-study-lesson-hero{row-gap:4px}}
 .pa-study-language{display:flex;justify-content:center;padding:16px}
+#study-app > .pa-study-language{justify-content:flex-end;padding-inline-end:0}
 .pa-study-memory,.pa-study-memory .pa-study-bullets li{background:transparent;border:0;border-radius:0;text-align:left}
 .pa-study-memory{padding:0}.pa-study-memory .pa-study-bullets{padding:0}
 .pa-study-memory .pa-study-bullets li{padding:4px 0 4px 28px}.pa-study-memory .pa-study-bullets li:before{left:0;top:6px}
