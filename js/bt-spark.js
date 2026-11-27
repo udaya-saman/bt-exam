@@ -2,7 +2,7 @@
 (async()=>{
 'use strict';
 const config=window.BT_FIREBASE_CONFIG,VERSION='13.2.0';
-const APP_VERSION='4.7.19-arena';let latestUpdate=null;
+const APP_VERSION='4.7.20-arena';let latestUpdate=null;
 const OUTLETS=['Akuressa','Aluthgama','Ambalangoda','Embilipitiya','Galle','Karapitiya','Matara','Matara 02','Megalle','Monaragala','Tangalle','Unawatuna','Welipenna A','Welipenna B','Other'];
 const RESERVED=new Set(['indika','udaya']);
 const rankEligible=p=>p&&p.outlet!=='Other'&&!RESERVED.has(String(p.username||p.name||'').toLowerCase())&&!p.isAdmin;
@@ -560,7 +560,7 @@ function board(keepScroll=false){
  const records=ranked(period,outletView);const places=new Map(records.map((entry,index)=>[entry,index+1]));const winners=outletView?records.filter(v=>v.people>=2).slice(0,3):records.slice(0,3);
  let podium=null;
  if(winners.length){const group=document.createElement('div');podium=group;group.className='pg-podium';for(const [i,r] of winners.entries()){
-  const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+(i+1)+(outletView?'':' arena-player-podium');attachPlayerDetails(cell,r);if(i===0){const first=document.createElement('span');first.className='arena-first-rank';first.textContent='1';first.setAttribute('aria-hidden','true');cell.append(first);}const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[i+1]||'';badge.style.fontSize='23px';cell.append(badge);
+  const cell=document.createElement('div');cell.className='pg-podium-item arena-rank-'+(i+1)+(outletView?'':' arena-player-podium');attachPlayerDetails(cell,r);if(outletView&&i===0&&r.score>0)cell.classList.add('arena-outlet-champion');if(i===0){const first=document.createElement('span');first.className='arena-first-rank';first.textContent='1';first.setAttribute('aria-hidden','true');cell.append(first);}const badge=document.createElement('div');badge.textContent=({1:'🥇',2:'🥈',3:'🥉'})[i+1]||'';badge.style.fontSize='23px';cell.append(badge);
   if(!outletView){const picture=document.createElement('img');picture.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');picture.alt='';picture.onerror=()=>picture.src='./images/default-avatar.png';cell.append(picture);}
   const who=document.createElement('strong');who.textContent=r.name;const points=document.createElement('small');points.textContent=r.score+' PTS';cell.append(who,points);group.append(cell);
  }box.append(group);}
@@ -580,7 +580,7 @@ function board(keepScroll=false){
  const own=records.find(r=>r.uid===user?.uid);
  if(!query&&!outletView&&!showAllPlayers&&own&&!winners.includes(own)&&!shown.some(r=>r.uid===own.uid))shown.push(own);
  for(const r of shown){
-  const card=document.createElement('div');card.className='pg-leader-card '+(outletView?'arena-rank-'+r.rank:'arena-player-standing');attachPlayerDetails(card,r);if(outletView&&r===winners[0])card.classList.add('arena-crown-row');if(r.uid===user?.uid)card.classList.add('pg-you');
+  const card=document.createElement('div');card.className='pg-leader-card '+(outletView?'arena-rank-'+r.rank:'arena-player-standing');attachPlayerDetails(card,r);if(outletView&&r.score>0&&(r===records[0]||r===winners[0]))card.classList.add('arena-outlet-champion');if(r.uid===user?.uid)card.classList.add('pg-you');
   const place=document.createElement('span');place.className='pg-place';place.textContent=String(places.get(r));card.append(place);
   if(!outletView){const pic=document.createElement('img');pic.className='pg-avatar';pic.src=(typeof r.avatar==='string'&&r.avatar.startsWith('data:image/png')?r.avatar:'./images/default-avatar.png');pic.alt='';pic.onerror=()=>pic.src='./images/default-avatar.png';card.append(pic);}
   const who=document.createElement('div');who.className='pg-person';const title=document.createElement('strong');title.textContent=r.name+(r.uid===user?.uid?' · YOU':'');const caption=document.createElement('small');caption.textContent=outletView?r.people+' active players':r.outlet;who.append(title,caption);card.append(who);
@@ -625,11 +625,17 @@ function playerDetails(uid){
  loadBest(uid).then(()=>{if(panel.isConnected){const n=readBest(uid);stats.lastElementChild.firstElementChild.textContent=n?String(n):'Not recorded';}});
 }
 function outletDetails(name){
- const entry=ranked(period,true).find(r=>r.name===name);if(!entry)return;
+ const records=ranked(period,true);
+ const entry=records.find(r=>r.name===name);if(!entry)return;
  const box=open('OUTLET DETAILS','',()=>outletDetails(name));root.classList.add('arena-board-mode','arena-player-details-mode');root.querySelector('.panel>p')?.remove();
  const panel=document.createElement('div');panel.className='arena-player-detail';
  const ribbon=document.createElement('div');ribbon.className='arena-detail-ribbon';ribbon.textContent=period==='weekly'?'THIS WEEK':'ALL TIME';
  const title=document.createElement('h3');title.textContent=name;
+ if(entry.score>0&&(entry===records[0]||entry===records.find(r=>r.people>=2))){
+  panel.classList.add('arena-outlet-champion');
+  const trophy=document.createElement('img');trophy.className='arena-outlet-trophy arena-weekly-champion';
+  trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='First-place outlet';title.prepend(trophy);
+ }
  const stats=document.createElement('div');stats.className='arena-detail-stats';
  const weekly=period==='weekly',key=weekly?week()+'__'+name:name;
  const rates=[];
@@ -718,7 +724,7 @@ async function profilePanel(){
  const actions=document.createElement('div');actions.className='arena-actions';
  const boardButton=btn('Leaderboard',board);const trophy=document.createElement('img');trophy.className='arena-board-trophy';trophy.src='./images/arena/leaderboard-trophy.png';trophy.alt='';boardButton.prepend(trophy);boardButton.classList.add('pg-btn-green');
  const signoutButton=btn('Sign Out',async()=>{await A.signOut(auth);});signoutButton.classList.remove('pg-btn-red');signoutButton.classList.add('arena-signout-action');
- const closeAction=btn('✕ Close',close);closeAction.classList.add('pg-btn-red');
+ const closeAction=btn('Close',close);closeAction.classList.add('pg-btn-red');
  actions.append(boardButton,signoutButton,closeAction);
  card.append(body);box.append(card,actions);actions.classList.add('arena-player-controls');
  const syncStatus=document.createElement('div');syncStatus.className='arena-sync-area';

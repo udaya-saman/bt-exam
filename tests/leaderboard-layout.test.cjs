@@ -16,8 +16,8 @@ assert.match(src,/place\.textContent=String\(places\.get\(r\)\)/);
 assert.match(css,/\.pg-standings-scroll\{[^}]*overflow-y:auto/);
 assert.match(css,/\.pg-board-footer\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/\.panel\{[^}]*overflow:hidden!important/);
-assert.ok(html.includes('arena-polish-v43.css?v=4.7.18'));
-assert.ok(sw.includes('arena-polish-v43.css?v=4.7.18'));
+assert.ok(html.includes('arena-polish-v43.css?v=4.7.20'));
+assert.ok(sw.includes('arena-polish-v43.css?v=4.7.20'));
 assert.doesNotMatch(src,/The crown is waiting!/,'The empty crown waiting panel is removed');
 assert.ok(app.includes('if(boardOpen&&!root.hidden)board(true);'));
 function el(tag='div'){
@@ -72,9 +72,13 @@ vm.runInContext('outletView=true;board();',ctx);
 assert.equal(rows()[0].children[0].textContent,'4');
 assert.equal(find('pg-board-footer').children.length,2);
 assert.ok(find('pg-private'),'Qualified outlet still displays its Crown leader');
+assert(find('pg-podium').children[0].classList.contains('arena-outlet-champion'));
+assert(!find('pg-podium').children[1].classList.contains('arena-outlet-champion'));
 ctx.ranked=(period,isOutlet)=>isOutlet?records.map(x=>({...x,people:1})):records;
 vm.runInContext('board();',ctx);
 assert.ok(!find('pg-private'),'No crown-waiting panel shown when no outlet qualifies');
+assert(rows()[0].classList.contains('arena-outlet-champion'),'First scoring outlet also glows in the table');
+assert(!rows()[1].classList.contains('arena-outlet-champion'));
 assert.equal(find('pg-board-footer').children.length,2,'Outlet Arena navigation retained without a crown');
 
 const nav=fs.readFileSync('js/arena-navigation-ranks.js','utf8');

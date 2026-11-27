@@ -10,7 +10,7 @@
    handbook:{title:'Employee Handbook',label:'Workplace & Employee Guide',icon:'📘',description:'Employment, welfare, development and safety'}
  };
  let lessons=[],byId=new Map(),ready=false,loading=null,current=null,scope='all',term='';
- let translations={};
+ let translations={},lessonSinhala=false;
  let done={};
  try{done=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(_){done={};}
  const $=(id)=>document.getElementById(id);
@@ -37,12 +37,12 @@
    if(loading)return loading;
    loading=(async()=>{
      const files=await Promise.all(FILES.map(async(name)=>{
-       const response=await fetch(BASE+name,{cache:'default'});
+       const response=await fetch(BASE+name+(name==='training.json'?'?v=4.7.20':''),{cache:'default'});
        if(!response.ok)throw Error('Could not load '+name);
        return response.json();
      }));
      try{
-       const response=await fetch(BASE+'si.json');
+       const response=await fetch(BASE+'si.json?v=4.7.20');
        if(response.ok)translations=await response.json();
      }catch(_){/* English lessons remain available if the translation file is offline. */}
      const combined=files.flatMap((file,i)=>safeLesson(file,FILES[i].replace('.json','')));
@@ -175,9 +175,10 @@
    }
    box.append(flow);return box;
  }
- function languageButton(onChange){
-   const button=make('button','translate-btn','සිංහල');button.type='button';
-   button.setAttribute('aria-pressed','false');
+ function languageButton(onChange,active=false){
+   const button=make('button','translate-btn',active?'English':'සිංහල');button.type='button';
+   button.classList.toggle('active',active);
+   button.setAttribute('aria-pressed',String(active));
    button.onclick=()=>{
      const active=button.classList.toggle('active');
      button.textContent=active?'English':'සිංහල';
@@ -185,10 +186,20 @@
    };
    return button;
  }
+ function memoryImage(id,index,heading,className){
+   const image=make('img',className);
+   image.src='./study/art/memory/'+id+'-'+(index+1)+'.jpg';
+   image.width=480;image.height=320;image.alt=heading;image.decoding='async';
+   return image;
+ }
+ function setReaderNavigation(root,sinhala,revision){
+   root.querySelector('.pa-study-home').textContent=sinhala?'← මුල් පිටුව':'← Home';
+   root.querySelector('.pa-study-back').textContent=revision?(sinhala?'← පාඩම':'← Lesson'):(sinhala?'සියලු පාඩම්':'All lessons');
+ }
  function renderSection(section,art,index,id,english){
    const block=make('section','pa-study-section');
    const header=make('div','pa-study-section-title');
-   append(header,make('span','pa-study-step-id','STEP '+(index+1)),
+   append(header,make('span','pa-study-step-id',(lessonSinhala?'පියවර ':'STEP ')+(index+1)),
      make('h3','',section.heading));block.append(header);
    block.append(make('p','pa-study-copy',section.body));
    if(section.keyPoints.length){
@@ -196,45 +207,64 @@
    }
    if(english.memoryTip){
      const tip=make('div','pa-study-tip');
-     const button=make('button','pa-study-tip-toggle','💡 Memory trick');
+     const button=make('button','pa-study-tip-toggle',lessonSinhala?'💡 මතක ඉඟිය':'💡 Memory trick');
      button.type='button';button.setAttribute('aria-expanded','false');
      const detail=make('div','pa-study-tip-detail');detail.hidden=true;
-     const picture=make('img','pa-study-tip-picture');picture.src='./images/mascot/home-study.png';picture.alt='';picture.loading='lazy';
-     const value=make('p','pa-study-tip-value',english.memoryTip);value.lang='en';
-     const actions=make('div','pa-study-language');
-     if(translations[id]?.sections[index]?.memoryTip)actions.append(languageButton(active=>{
-       value.textContent=active?translations[id].sections[index].memoryTip:english.memoryTip;
-       value.lang=active?'si':'en';
-     }));
-     append(detail,picture,value,actions);
-     button.onclick=()=>{detail.hidden=!detail.hidden;button.setAttribute('aria-expanded',String(!detail.hidden));};
-     append(tip,button,detail);block.append(tip);
+     const picture=memoryImage(id,index,section.heading,'pa-study-tip-picture');picture.loading='lazy';
+     const value=make('p','pa-study-tip-value',section.memoryTip);value.lang=lessonSinhala?'si':'en';
+     const row=make('div','pa-study-tip-header');row.append(button);
+     const copy=translations[id]?.sections[index];
+     let language;
+     if(copy?.memoryTip){
+       language=languageButton(active=>{
+         value.textContent=active?copy.memoryTip:english.memoryTip;
+         value.lang=active?'si':'en';
+         picture.alt=active?copy.heading:english.heading;
+       },lessonSinhala);
+       language.hidden=true;row.append(language);
+     }
+     detail.id='memory-'+id+'-'+index;button.setAttribute('aria-controls',detail.id);
+     append(detail,picture,value);
+     button.onclick=()=>{
+       detail.hidden=!detail.hidden;
+       if(language)language.hidden=detail.hidden;
+       button.setAttribute('aria-expanded',String(!detail.hidden));
+     };
+     append(tip,row,detail);block.append(tip);
    }
    return block;
  }
  function revision(id){
  const lesson=byId.get(id);if(!lesson)return;
- const cards=lesson.sections.flatMap(section=>section.keyPoints.map((point,i)=>({heading:section.heading,answer:point,i})));
+ const cards=lesson.sections.flatMap((section,sectionIndex)=>section.keyPoints.map((_,i)=>({sectionIndex,i})));
  if(!cards.length)return;
  global.ArenaNav?.visit('study:revision:'+id,()=>revision(id));
  const root=userSelection();navBar(root,'lesson');
- const title=make('h1','pa-revision-title',lesson.title+' · Quick revision');root.append(title);
+ const title=make('h1','pa-revision-title');
+ const titleRow=make('div','pa-revision-header');titleRow.append(title);
+ if(translations[id])titleRow.append(languageButton(active=>{lessonSinhala=active;render();},lessonSinhala));
+ root.append(titleRow);
  const card=make('section','pa-study-section pa-revision-card');root.append(card);
  let index=0;
  function render(){
   card.replaceChildren();
-  const item=cards[index];
-  const mascot=global.PizzaStudyArt?.image(item.answer,item.heading,id,'pa-study-revision-art',item.i)||make('div','pa-study-step-id','RECALL');
+  const {sectionIndex,i}=cards[index];
+  const si=lessonSinhala&&translations[id];
+  const copy=si||lesson,section=copy.sections[sectionIndex];
+  setReaderNavigation(root,si,true);
+  title.textContent=copy.title+' · '+(si?'ඉක්මන් පුනරීක්ෂණය':'Quick revision');
+  title.lang=card.lang=si?'si':'en';
+  const mascot=memoryImage(id,sectionIndex,section.heading,'pa-study-revision-art');
   const progress=make('small','pa-study-step-id',(index+1)+' / '+cards.length);
-  const heading=make('h3','',item.heading);
-  const point=item.answer.replace(/^\d+\.\s*/,'');
+  const heading=make('h3','',section.heading);
+  const point=section.keyPoints[i].replace(/^\d+\.\s*/,'');
   const split=point.match(/^(.{1,65}?)(?:\s+[—=]\s+|:\s+)(.+)$/);
   const words=point.split(/\s+/);
-  const clue=split?split[1]+' …':words.length>=5?words.slice(0,3).join(' ')+' …':'What is learning point '+(item.i+1)+' in this section?';
+  const clue=split?split[1]+' …':words.length>=5?words.slice(0,3).join(' ')+' …':(si?'මෙම කොටසේ '+(i+1)+' වැනි කරුණ කුමක්ද?':'What is learning point '+(i+1)+' in this section?');
   const hint=make('p','pa-study-copy',clue);
-  const answer=make('p','pa-study-copy',item.answer);answer.hidden=true;
-  const reveal=make('button','pa-study-mark','Reveal learning point');reveal.onclick=()=>{answer.hidden=false;reveal.hidden=true;};
-  const next=make('button','pa-study-next','Next card →');next.onclick=()=>{index=(index+1)%cards.length;render();};
+  const answer=make('p','pa-study-copy',section.keyPoints[i]);answer.hidden=true;
+  const reveal=make('button','pa-study-mark',si?'කරුණ පෙන්වන්න':'Reveal learning point');reveal.onclick=()=>{answer.hidden=false;reveal.hidden=true;};
+  const next=make('button','pa-study-next',si?'ඊළඟ කාඩ්පත →':'Next card →');next.onclick=()=>{index=(index+1)%cards.length;render();};
   const actions=make('div','pa-study-lesson-footer pa-revision-actions');append(actions,reveal,next);
   append(card,mascot,progress,heading,hint,answer,actions);
  }
@@ -255,19 +285,28 @@
    const cue=make('p','pa-study-cue',global.PizzaStudyArt.cue(id));text.append(cue);append(hero,text,art);root.append(hero);
    const sections=make('div','pa-study-reader');
    function display(translated){
+     lessonSinhala=translated;
      const copy=translated?translations[id]:lesson;
      const lang=translated?'si':'en';
+     setReaderNavigation(root,translated,false);
      text.querySelector('h1').textContent=copy.title;
      text.querySelector('p').textContent=copy.summary;
      cue.textContent=translated?copy.cue:global.PizzaStudyArt.cue(id);
      text.lang=lang;sections.lang=lang;
+     const category=categories[lesson.sourceId];
+     const titles={training:'මෙහෙයුම් හා පුහුණුව',values:'Gamma සාරධර්ම හා ප්‍රතිපත්ති',handbook:'සේවක අත්පොත'};
+     text.querySelector('.pa-study-tag').textContent=category.icon+' '+(translated?titles[lesson.sourceId]:category.title);
+     mark.textContent=done[id]?(translated?'✓ පාඩම සම්පූර්ණයි':'✓ Lesson completed'):(translated?'✓ ඉගෙනගත් බව සලකුණු කරන්න':'✓ Mark as learned');
+     prev.textContent=translated?'← පෙර පාඩම':'← Previous';
+     next.textContent=translated?'ඊළඟ පාඩම →':'Next lesson →';
+     revise.textContent=translated?'ඉක්මන් පුනරීක්ෂණය':'Quick revision';
      sections.replaceChildren(...lesson.sections.map((english,i)=>renderSection(copy.sections[i],lesson.art,i,id,english)));
    }
-   const language=make('div','pa-study-language');if(translations[id])language.append(languageButton(display));
-   root.append(language,sections);display(false);
+   const language=make('div','pa-study-language');if(translations[id])language.append(languageButton(display,lessonSinhala));
+   root.append(language,sections);
    const footer=make('div','pa-study-lesson-footer');
    const mark=make('button','pa-study-mark',done[id]?'✓ Lesson completed':'✓ Mark as learned');
-   mark.type='button';mark.onclick=()=>{done[id]=true;save();mark.textContent='✓ Lesson completed';mark.classList.add('is-complete');};
+   mark.type='button';mark.onclick=()=>{done[id]=true;save();mark.textContent=lessonSinhala?'✓ පාඩම සම්පූර්ණයි':'✓ Lesson completed';mark.classList.add('is-complete');};
    if(done[id])mark.classList.add('is-complete');
    const index=lessons.findIndex(l=>l.id===id);
    const prev=make('button','pa-study-prev','← Previous');
@@ -275,7 +314,7 @@
    const next=make('button','pa-study-next','Next lesson →');
    next.type='button';next.disabled=index>=lessons.length-1;
    next.onclick=()=>openLesson(lessons[index+1].id);
-   const revise=make('button','pa-study-next','Quick revision');revise.onclick=()=>revision(id);append(footer,mark,prev,next,revise);root.append(footer);
+   const revise=make('button','pa-study-next','Quick revision');revise.onclick=()=>revision(id);append(footer,mark,prev,next,revise);root.append(footer);display(Boolean(lessonSinhala&&translations[id]));
 
    const screen=$('study-select');if(screen)screen.scrollTop=0;
    global.scrollTo?.({top:0,behavior:'instant'});

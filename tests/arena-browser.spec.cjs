@@ -169,9 +169,11 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','si');
  await expectOutline(language);
  await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','en');
- const tip=page.locator('.pa-study-tip').first();await tip.locator('.pa-study-tip-toggle').click();
+ const tip=page.locator('.pa-study-tip').first();await expect(tip.locator('.translate-btn')).toBeHidden();await tip.locator('.pa-study-tip-toggle').click();
  await expect(tip.locator('img')).toBeVisible();
- await expect(tip.locator('.pa-study-language')).toHaveCSS('justify-content','center');
+ await expect(tip.locator('.pa-study-tip-header .translate-btn')).toBeVisible();
+ await expect(tip.locator('.pa-study-tip-detail .translate-btn')).toHaveCount(0);
+ const trickImage=await tip.locator('img').getAttribute('src');
  await expectOutline(tip.locator('.translate-btn'));
  await tip.locator('.translate-btn').click();await expect(tip.locator('.pa-study-tip-value')).toHaveAttribute('lang','si');
  await expectOutline(tip.locator('.translate-btn'));
@@ -180,6 +182,7 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await expect.poll(()=>page.locator('.pa-study-lesson-art img').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
  await page.getByRole('button',{name:'Quick revision'}).click();
  await expect(page.locator('.pa-revision-card')).toBeVisible();
+ await expect(page.locator('.pa-study-revision-art')).toHaveAttribute('src',trickImage);
  await page.getByRole('button',{name:'Reveal learning point'}).click();
  await expect(page.locator('.pa-revision-card p').last()).toBeVisible();
  await page.getByRole('button',{name:'← Lesson'}).click();
