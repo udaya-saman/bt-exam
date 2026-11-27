@@ -10,6 +10,7 @@
    handbook:{title:'Employee Handbook',label:'Workplace & Employee Guide',icon:'📘',description:'Employment, welfare, development and safety'}
  };
  let lessons=[],byId=new Map(),ready=false,loading=null,current=null,scope='all',term='';
+ let translations={};
  let done={};
  try{done=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(_){done={};}
  const $=(id)=>document.getElementById(id);
@@ -40,6 +41,10 @@
        if(!response.ok)throw Error('Could not load '+name);
        return response.json();
      }));
+     try{
+       const response=await fetch(BASE+'si.json');
+       if(response.ok)translations=await response.json();
+     }catch(_){/* English lessons remain available if the translation file is offline. */}
      const combined=files.flatMap((file,i)=>safeLesson(file,FILES[i].replace('.json','')));
      const ids=new Set();
      for(const lesson of combined){if(ids.has(lesson.id))throw Error('Duplicate lesson');ids.add(lesson.id);}
@@ -170,7 +175,17 @@
    }
    box.append(flow);return box;
  }
- function renderSection(section,art,index,id){
+ function languageButton(onChange){
+   const button=make('button','translate-btn','සිංහල');button.type='button';
+   button.setAttribute('aria-pressed','false');
+   button.onclick=()=>{
+     const active=button.classList.toggle('active');
+     button.textContent=active?'English':'සිංහල';
+     button.setAttribute('aria-pressed',String(active));onChange(active);
+   };
+   return button;
+ }
+ function renderSection(section,art,index,id,english){
    const block=make('section','pa-study-section');
    const header=make('div','pa-study-section-title');
    append(header,make('span','pa-study-step-id','STEP '+(index+1)),
@@ -179,13 +194,21 @@
    if(section.keyPoints.length){
      const visual=mnemonic(section,art,id);if(visual)block.append(visual);
    }
-   if(section.memoryTip){
+   if(english.memoryTip){
      const tip=make('div','pa-study-tip');
-     const button=make('button','pa-study-tip-toggle','💡 Memory trick — tap to reveal');
+     const button=make('button','pa-study-tip-toggle','💡 Memory trick');
      button.type='button';button.setAttribute('aria-expanded','false');
-     const value=make('p','pa-study-tip-value',section.memoryTip);value.hidden=true;
-     button.onclick=()=>{value.hidden=!value.hidden;button.setAttribute('aria-expanded',String(!value.hidden));};
-     append(tip,button,value);block.append(tip);
+     const detail=make('div','pa-study-tip-detail');detail.hidden=true;
+     const picture=make('img','pa-study-tip-picture');picture.src='./images/mascot/home-study.png';picture.alt='';picture.loading='lazy';
+     const value=make('p','pa-study-tip-value',english.memoryTip);value.lang='en';
+     const actions=make('div','pa-study-language');
+     if(translations[id]?.sections[index]?.memoryTip)actions.append(languageButton(active=>{
+       value.textContent=active?translations[id].sections[index].memoryTip:english.memoryTip;
+       value.lang=active?'si':'en';
+     }));
+     append(detail,picture,value,actions);
+     button.onclick=()=>{detail.hidden=!detail.hidden;button.setAttribute('aria-expanded',String(!detail.hidden));};
+     append(tip,button,detail);block.append(tip);
    }
    return block;
  }
@@ -212,7 +235,8 @@
   const answer=make('p','pa-study-copy',item.answer);answer.hidden=true;
   const reveal=make('button','pa-study-mark','Reveal learning point');reveal.onclick=()=>{answer.hidden=false;reveal.hidden=true;};
   const next=make('button','pa-study-next','Next card →');next.onclick=()=>{index=(index+1)%cards.length;render();};
-  append(card,mascot,progress,heading,hint,reveal,answer,next);
+  const actions=make('div','pa-study-lesson-footer pa-revision-actions');append(actions,reveal,next);
+  append(card,mascot,progress,heading,hint,answer,actions);
  }
  render();
 }
@@ -228,10 +252,19 @@
      make('p','',lesson.summary));
    const art=make('div','pa-study-lesson-art');
    const cover=global.PizzaStudyArt?.image(lesson.title,lesson.sections[0]?.heading,lesson.id,'pa-study-topic-cover');if(cover)art.append(cover);
-   const cue=make('p','pa-study-cue',global.PizzaStudyArt.cue(id));text.append(cue,make('small','pa-edition-ref',sourceName(lesson)+' · pp. '+lesson.pages));append(hero,text,art);root.append(hero);
+   const cue=make('p','pa-study-cue',global.PizzaStudyArt.cue(id));text.append(cue);append(hero,text,art);root.append(hero);
    const sections=make('div','pa-study-reader');
-   lesson.sections.forEach((section,i)=>sections.append(renderSection(section,lesson.art,i,lesson.id)));
-   root.append(sections);
+   function display(translated){
+     const copy=translated?translations[id]:lesson;
+     const lang=translated?'si':'en';
+     text.querySelector('h1').textContent=copy.title;
+     text.querySelector('p').textContent=copy.summary;
+     cue.textContent=translated?copy.cue:global.PizzaStudyArt.cue(id);
+     text.lang=lang;sections.lang=lang;
+     sections.replaceChildren(...lesson.sections.map((english,i)=>renderSection(copy.sections[i],lesson.art,i,id,english)));
+   }
+   const language=make('div','pa-study-language');if(translations[id])language.append(languageButton(display));
+   root.append(language,sections);display(false);
    const footer=make('div','pa-study-lesson-footer');
    const mark=make('button','pa-study-mark',done[id]?'✓ Lesson completed':'✓ Mark as learned');
    mark.type='button';mark.onclick=()=>{done[id]=true;save();mark.textContent='✓ Lesson completed';mark.classList.add('is-complete');};

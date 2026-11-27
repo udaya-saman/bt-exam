@@ -28,6 +28,7 @@ service cloud.firestore {
   function scoringUpdate(uid) {
     let id = request.resource.data.lastEventId;
     let e = getAfter(eventPath(id)).data;
+    let credit=e.get('outletCredit',e.points);
     return id is string && id.size() <= 210
       && !exists(eventPath(id))
       && e.uid == uid
@@ -45,11 +46,11 @@ service cloud.firestore {
       && request.resource.data.monthlyPoints.diff(resource.data.get('monthlyPoints',{})).affectedKeys().hasOnly([e.monthKey])
       && request.resource.data.monthlyPoints[e.monthKey] == resource.data.get('monthlyPoints',{}).get(e.monthKey,0) + e.points
       && request.resource.data.outletPoints.diff(resource.data.get('outletPoints',{})).affectedKeys().hasOnly([e.outlet])
-      && request.resource.data.outletPoints[e.outlet] == resource.data.get('outletPoints',{}).get(e.outlet,0) + e.points
+      && request.resource.data.outletPoints[e.outlet] == resource.data.get('outletPoints',{}).get(e.outlet,0) + credit
       && request.resource.data.outletWeeklyPoints.diff(resource.data.get('outletWeeklyPoints',{})).affectedKeys().hasOnly([e.outletWeekKey])
-      && request.resource.data.outletWeeklyPoints[e.outletWeekKey] == resource.data.get('outletWeeklyPoints',{}).get(e.outletWeekKey,0) + e.points
+      && request.resource.data.outletWeeklyPoints[e.outletWeekKey] == resource.data.get('outletWeeklyPoints',{}).get(e.outletWeekKey,0) + credit
       && request.resource.data.outletMonthlyPoints.diff(resource.data.get('outletMonthlyPoints',{})).affectedKeys().hasOnly([e.outletMonthKey])
-      && request.resource.data.outletMonthlyPoints[e.outletMonthKey] == resource.data.get('outletMonthlyPoints',{}).get(e.outletMonthKey,0) + e.points
+      && request.resource.data.outletMonthlyPoints[e.outletMonthKey] == resource.data.get('outletMonthlyPoints',{}).get(e.outletMonthKey,0) + credit
       && request.resource.data.outletMonthlyAnswers.diff(resource.data.get('outletMonthlyAnswers',{})).affectedKeys().hasOnly([e.outletMonthKey])
       && request.resource.data.outletMonthlyAnswers[e.outletMonthKey] == resource.data.get('outletMonthlyAnswers',{}).get(e.outletMonthKey,0) + 1
       && request.resource.data.outletAnswers.diff(resource.data.get('outletAnswers',{})).affectedKeys().hasOnly([e.outlet])
@@ -57,7 +58,7 @@ service cloud.firestore {
       && request.resource.data.outletWeeklyAnswers.diff(resource.data.get('outletWeeklyAnswers',{})).affectedKeys().hasOnly([e.outletWeekKey])
       && request.resource.data.outletWeeklyAnswers[e.outletWeekKey] == resource.data.get('outletWeeklyAnswers',{}).get(e.outletWeekKey,0) + 1;
   }
-  match /admins/{uid} { allow get: if mine(uid); allow list: if false; allow write: if false; }
+  match /admins/{uid} { allow get: if mine(uid) || admin(); allow list: if false; allow write: if false; }
   match /usernames/{name} {
     allow get: if true;
     allow list: if false;
@@ -80,9 +81,44 @@ service cloud.firestore {
       && d.weeklyPoints == {} && d.monthlyPoints == {} && d.outletPoints == {} && d.outletWeeklyPoints == {} && d.outletMonthlyPoints == {}
       && d.outletAnswers == {} && d.outletWeeklyAnswers == {} && d.outletMonthlyAnswers == {};
   }
+  function adminOutletChange(before, after) {
+    return admin() && validOutlet(after.outlet) && before.outlet != after.outlet
+      && after.diff(before).affectedKeys().hasOnly(['outlet','updatedAt','outletPoints','outletWeeklyPoints','outletMonthlyPoints'])
+      && outletBalancesOnly(before,after);
+  }
+  function outletBalancesOnly(before,after) {
+    let old = before.get('outletPoints',{});
+    let next = after.get('outletPoints',{});
+    return next.diff(old).affectedKeys().hasOnly([before.outlet])
+      && (next == old || next.get(before.outlet,-1) == 0)
+      && after.get('outletWeeklyPoints',{}) is map && after.get('outletMonthlyPoints',{}) is map;
+  }
+  function archivePath(uid) { return /databases/$(database)/documents/outletRankArchives/$(uid); }
+  match /outletRankArchives/{uid} {
+    allow get: if mine(uid) || admin();
+    allow delete: if admin();
+    allow create, update: if mine(uid) && getAfter(userPath(uid)).data.outlet == 'Other'
+      && request.resource.data.outlet == 'Other' && !(request.resource.data.name.lower() in ['indika','udaya'])
+      && request.resource.data.name == getAfter(userPath(uid)).data.username && !admin()
+      && publicFieldsOk(uid) && publicIncrement(resource == null ? zeroRank() : resource.data,uid);
+    allow create, update: if admin() && getAfter(userPath(uid)).data.outlet == 'Other'
+      && request.resource.data.diff(get(/databases/$(database)/documents/publicRanks/$(uid)).data).affectedKeys().hasOnly(['outletPoints','outletWeeklyPoints','outletMonthlyPoints'])
+      && outletBalancesOnly(get(/databases/$(database)/documents/publicRanks/$(uid)).data,request.resource.data);
+  }
+  function restorePublicRank(uid) {
+    let person=getAfter(userPath(uid)).data;
+    let saved=get(archivePath(uid)).data;
+    let role=/databases/$(database)/documents/admins/$(uid);
+    return admin() && get(userPath(uid)).data.outlet == 'Other' && person.outlet != 'Other'
+      && !(person.usernameLower in ['indika','udaya']) && (!exists(role) || !get(role).data.enabled)
+      && request.resource.data.diff(saved).affectedKeys().hasOnly(['outlet','name','avatar','updatedAt'])
+      && request.resource.data.outlet == person.outlet && request.resource.data.name == person.username
+      && request.resource.data.avatar == person.avatar && saved.get('scoreResetAt',null) == person.get('scoreResetAt',null);
+  }
   match /users/{uid} {
     allow read: if mine(uid) || admin();
     allow create: if mine(uid)
+      && !request.resource.data.keys().hasAny(['outletHistory','outletSince','outletResetTimes','scoreResetAt'])
       && request.resource.data.keys().hasAll(['uid','username','usernameLower','outlet','avatar','totalPoints','totalAnswers','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','rapidCorrectStreak','reviewSuggested','lastEventId','createdAt','updatedAt'])
       && request.resource.data.uid == uid
       && validOutlet(request.resource.data.outlet)
@@ -98,8 +134,10 @@ service cloud.firestore {
       && request.resource.data.lastEventId == ''
       && getAfter(usernamePath(request.resource.data.usernameLower)).data.uid == uid;
     allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasAny(['scoreResetAt']) && resetScoresOnly()) || (mine(uid) && (profileEdit() || scoringUpdate(uid)))
-      || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet','updatedAt'])
-      && validOutlet(request.resource.data.outlet))
+      || (admin() && validOutlet(request.resource.data.outlet) && resource.data.outlet != request.resource.data.outlet
+        && request.resource.data.outletSince == request.time && request.resource.data.outletHistory is map
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet','updatedAt','outletSince','outletHistory','outletResetTimes','outletPoints','outletWeeklyPoints','outletMonthlyPoints'])
+        && outletBalancesOnly(resource.data,request.resource.data))
       || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reviewSuggested','updatedAt'])
       && request.resource.data.reviewSuggested == false);
     // Delete only after a permitted admin has simultaneously blocked the UID.
@@ -138,11 +176,12 @@ service cloud.firestore {
       && request.resource.data.avatar == getAfter(userPath(uid)).data.avatar
       && request.resource.data.lastEventId == getAfter(userPath(uid)).data.lastEventId
       && e.uid == uid
-      && e.outlet == request.resource.data.outlet
+      && e.outlet != 'Other'
       && e.points >= 0 && e.points <= 70;
   }
   function publicIncrement(prev, uid) {
     let e=publicEvent(uid);
+    let credit=e.get('outletCredit',e.points);
     return validBucket(prev,'outletAccuracy',e.outlet,e.points) && validBucket(prev,'weeklyAccuracy',e.outletWeekKey,e.points)
       && !exists(eventPath(request.resource.data.lastEventId))
       && request.resource.data.totalPoints == prev.totalPoints + e.points
@@ -154,11 +193,11 @@ service cloud.firestore {
       && request.resource.data.monthlyPoints.diff(prev.get('monthlyPoints',{})).affectedKeys().hasOnly([e.monthKey])
       && request.resource.data.monthlyPoints[e.monthKey] == prev.get('monthlyPoints',{}).get(e.monthKey, 0) + e.points
       && request.resource.data.outletPoints.diff(prev.get('outletPoints',{})).affectedKeys().hasOnly([e.outlet])
-      && request.resource.data.outletPoints[e.outlet] == prev.get('outletPoints',{}).get(e.outlet, 0) + e.points
+      && request.resource.data.outletPoints[e.outlet] == prev.get('outletPoints',{}).get(e.outlet, 0) + credit
       && request.resource.data.outletWeeklyPoints.diff(prev.get('outletWeeklyPoints',{})).affectedKeys().hasOnly([e.outletWeekKey])
-      && request.resource.data.outletWeeklyPoints[e.outletWeekKey] == prev.get('outletWeeklyPoints',{}).get(e.outletWeekKey, 0) + e.points
+      && request.resource.data.outletWeeklyPoints[e.outletWeekKey] == prev.get('outletWeeklyPoints',{}).get(e.outletWeekKey, 0) + credit
       && request.resource.data.outletMonthlyPoints.diff(prev.get('outletMonthlyPoints',{})).affectedKeys().hasOnly([e.outletMonthKey])
-      && request.resource.data.outletMonthlyPoints[e.outletMonthKey] == prev.get('outletMonthlyPoints',{}).get(e.outletMonthKey, 0) + e.points
+      && request.resource.data.outletMonthlyPoints[e.outletMonthKey] == prev.get('outletMonthlyPoints',{}).get(e.outletMonthKey, 0) + credit
       && request.resource.data.outletAnswers.diff(prev.get('outletAnswers',{})).affectedKeys().hasOnly([e.outlet])
       && request.resource.data.outletAnswers[e.outlet] == prev.get('outletAnswers',{}).get(e.outlet, 0) + 1
       && request.resource.data.outletWeeklyAnswers.diff(prev.get('outletWeeklyAnswers',{})).affectedKeys().hasOnly([e.outletWeekKey])
@@ -193,7 +232,7 @@ service cloud.firestore {
     allow read: if logged();
     allow create: if allowedToPublish(uid, request.resource.data.name, request.resource.data.outlet)
       && publicFieldsOk(uid)
-      && publicIncrement(zeroRank(), uid);
+      && publicIncrement(zeroRank(), uid) || (admin() && restorePublicRank(uid));
     allow update: if (allowedToPublish(uid, request.resource.data.name, request.resource.data.outlet)
       && publicFieldsOk(uid)
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outletAccuracy','weeklyAccuracy','lastEventId','totalPoints','weeklyPoints','monthlyPoints','outletPoints','outletWeeklyPoints','outletMonthlyPoints','outletAnswers','outletWeeklyAnswers','outletMonthlyAnswers','correctAnswers','dailyActivity','updatedAt','name','avatar'])
@@ -206,7 +245,7 @@ service cloud.firestore {
         && request.resource.data.name.lower() != 'indika'
         && request.resource.data.name.lower() != 'udaya'
         && !admin())
-      || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outlet'])
+      || (adminOutletChange(resource.data,request.resource.data)
         && request.resource.data.outlet == getAfter(userPath(uid)).data.outlet
         && request.resource.data.outlet != 'Other');
     allow delete: if admin() || (mine(uid) && (getAfter(userPath(uid)).data.usernameLower in ['indika','udaya'] || getAfter(userPath(uid)).data.outlet == 'Other'));
@@ -274,11 +313,21 @@ service cloud.firestore {
         ? legacyEvent(uid,date,'questions',7) || legacyEvent(uid,date,'paper1',9)
         : legacyEvent(uid,date,paper,index);
   }
+  function earnedInPeriod(e,period) {
+    return period.outlet == e.outlet && period.since <= e.earnedAt && e.earnedAt < period.until;
+  }
+  function validOutletReceipt(e,person) {
+    let epoch=timestamp.date(1970,1,1);
+    return (e.earnedAt >= person.get('outletSince',epoch)
+      ? e.outlet == person.outlet && !('outletPeriod' in e)
+      : earnedInPeriod(e,person.outletHistory[e.outletPeriod]))
+      && e.get('outletCredit',e.points) == (e.earnedAt < person.get('outletResetTimes',{}).get(e.outlet,epoch) ? 0 : e.points);
+  }
   match /scoreEvents/{id} {
     allow get: if logged() && id.matches('^' + request.auth.uid + '_.*');
     allow list: if false;
     allow create: if logged()
-      && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','outletMonthKey','activityDay','earnedAt'])
+      && request.resource.data.keys().hasOnly(['uid','paper','index','selected','points','remaining','attemptId','dayKey','weekKey','monthKey','outlet','outletWeekKey','outletMonthKey','activityDay','earnedAt','outletCredit','outletPeriod'])
       && request.resource.data.uid == request.auth.uid
       && request.resource.data.paper in ['past2024','questions','paper1','paper2','paper3']
       && request.resource.data.index is int && request.resource.data.index >= 0
@@ -286,7 +335,7 @@ service cloud.firestore {
       && request.resource.data.selected is int && request.resource.data.selected >= -1 && request.resource.data.selected <= 5
       && request.resource.data.remaining is int && request.resource.data.remaining >= 0 && request.resource.data.remaining <= 60
       && request.resource.data.points is int && request.resource.data.points >= 0 && request.resource.data.points <= 70
-      && request.resource.data.outlet == get(userPath(request.auth.uid)).data.outlet
+      && validOutletReceipt(request.resource.data,get(userPath(request.auth.uid)).data)
       && request.resource.data.outletWeekKey == request.resource.data.weekKey + '__' + request.resource.data.outlet
       && request.resource.data.outletMonthKey == request.resource.data.monthKey + '__' + request.resource.data.outlet
       && request.resource.data.earnedAt is timestamp

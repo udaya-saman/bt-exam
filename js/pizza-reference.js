@@ -17,8 +17,6 @@ function homeArtwork(){
     wordmark.dataset.arenaReady='1';wordmark.setAttribute('role','img');
     wordmark.setAttribute('aria-label','Pizza Hut');wordmark.textContent='';
   }
-  icon(home.querySelector('.arena-path-icon-questions'),10);
-  icon(home.querySelector('.arena-path-icon-study'),3);
   document.querySelectorAll('#paper-select .paper-card').forEach(card=>{
     const title=card.querySelector('.pc-title')?.textContent||'';
     icon(card.querySelector('.pc-icon-big'),/paper 2|operations|model 2/i.test(title)?9:10);

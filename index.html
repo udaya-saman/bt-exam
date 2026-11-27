@@ -277,10 +277,10 @@ button { outline: none; border: none; font-family: inherit; }
 <link rel="stylesheet" href="./css/pizza-reference.css?v=3.9">
 <link rel="stylesheet" href="./css/pizza-arena-v40.css?v=4.0.1">
 <link rel="stylesheet" href="./css/player-card-v42.css?v=4.2.0">
-<link rel="stylesheet" href="./study/lesson-player.css?v=4.7.17">
+<link rel="stylesheet" href="./study/lesson-player.css?v=4.7.18">
 <link rel="stylesheet" href="./css/arena-polish-v43.css?v=4.7.17">
 <link rel="stylesheet" href="./css/assessment-practice.css?v=4.7.10">
-<link rel="stylesheet" href="./css/questions-v477.css?v=4.7.17">
+<link rel="stylesheet" href="./css/questions-v477.css?v=4.7.18">
 <link rel="stylesheet" href="./css/press-feedback-v477.css?v=4.7.16">
 </head>
 <body>
@@ -327,13 +327,13 @@ button { outline: none; border: none; font-family: inherit; }
 
     <div class="arena-paths" role="group" aria-label="Choose your activity">
       <button type="button" class="arena-path-card arena-path-questions" onclick="openQuestions()" aria-label="Questions, choose an exam paper">
-        <span class="arena-path-icon arena-path-icon-questions" aria-hidden="true">📝</span>
+        <img class="arena-path-mascot" src="./images/mascot/home-questions.png" width="80" height="80" alt="">
         <span class="arena-path-name">Questions</span>
         <span class="arena-path-desc">Choose a paper, answer questions and earn points.</span>
         <span class="arena-path-action">CHOOSE QUESTIONS <span aria-hidden="true">→</span></span>
       </button>
       <button type="button" class="arena-path-card arena-path-study" onclick="openStudy()" aria-label="Study, review the learning materials">
-        <span class="arena-path-icon arena-path-icon-study" aria-hidden="true">📚</span>
+        <img class="arena-path-mascot" src="./images/mascot/home-study.png" width="80" height="80" alt="">
         <span class="arena-path-name">Study</span>
         <span class="arena-path-desc">Explore lessons from official training materials.</span>
         <span class="arena-path-action">START STUDYING <span aria-hidden="true">→</span></span>
@@ -353,30 +353,21 @@ button { outline: none; border: none; font-family: inherit; }
       <button type="button" class="arena-library-back questions-library-back" onclick="showScreen('home')" aria-label="Back to home"><span aria-hidden="true">←</span> Back</button>
       <span class="questions-nav-brand"><img src="./images/arena/leaderboard-trophy.png" width="30" height="30" alt=""> PIZZA ARENA</span>
     </header>
-    <section class="questions-intro" aria-labelledby="questions-title">
-      <div class="questions-intro-copy">
-        <span class="questions-eyebrow"><span class="questions-eyebrow-dot" aria-hidden="true"></span> THE QUESTION ARENA</span>
-        <h1 id="questions-title">Your next challenge <span>starts here.</span></h1>
-        <p>Choose a paper, put your knowledge to the test, and keep leveling up.</p>
-        <div class="questions-quick-stats" aria-label="Exam library overview">
-          <span><strong>5</strong> exam papers</span>
-          <span><strong>214</strong> graded questions</span>
-          <span><strong>86</strong> practice questions</span>
-        </div>
+    <section class="pa-study-hero" aria-labelledby="questions-title">
+      <div class="pa-study-hero-text">
+        <div class="pa-study-eyebrow">THE QUESTION ARENA</div>
+        <h1 id="questions-title">Your next challenge</h1>
+        <p>Choose a paper and put your training into practice.</p>
       </div>
-      <img class="questions-intro-art" src="./images/arena/mascot-champion.png" width="238" height="258" alt="" decoding="async">
+      <img class="questions-hero-mascot" src="./images/mascot/home-questions.png" width="180" height="180" alt="">
     </section>
     <section class="questions-papers-section" aria-labelledby="questions-papers-title">
-      <div class="questions-section-head">
-        <div><span class="questions-section-eyebrow">CHOOSE YOUR CHALLENGE</span><h2 id="questions-papers-title">Questions &amp; practice</h2><p>Choose an exam paper or review bilingual practice questions.</p></div>
-        <span class="questions-section-count">5 EXAMS + PRACTICE</span>
+      <div class="pa-study-group-head">
+        <h2 id="questions-papers-title">Questions &amp; Practise</h2>
+        <p>Choose an exam paper or review bilingual practice questions.</p>
       </div>
       <div class="paper-grid paper-selection-grid" id="all-question-papers">
         <button type="button" class="paper-card questions-paper" data-paper="past2024" onclick="startPaper('past2024')" aria-label="Start Past Paper 2024, 29 questions">
-          <span class="questions-paper-top">
-            <span class="questions-paper-icon"><img src="./images/arena/stat-answered.png" width="58" height="58" alt=""></span>
-            <span class="questions-paper-count">29 QUESTIONS</span>
-          </span>
           <span class="questions-paper-content">
             <span class="questions-paper-kind">PAST ASSESSMENT · 2024</span>
             <strong class="pc-title">Past Paper 2024</strong>
@@ -384,15 +375,10 @@ button { outline: none; border: none; font-family: inherit; }
           </span>
           <span class="questions-paper-footer">
             <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Expert</span>
-            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
           </span>
         </button>
 
         <button type="button" class="paper-card questions-paper" data-paper="questions" onclick="startPaper('questions')" aria-label="Start Past Papers, 40 questions">
-          <span class="questions-paper-top">
-            <span class="questions-paper-icon"><img src="./images/arena/stat-points.png" width="58" height="58" alt=""></span>
-            <span class="questions-paper-count">40 QUESTIONS</span>
-          </span>
           <span class="questions-paper-content">
             <span class="questions-paper-kind">PAST ASSESSMENT · 2021–2022</span>
             <strong class="pc-title">Past Papers</strong>
@@ -400,15 +386,10 @@ button { outline: none; border: none; font-family: inherit; }
           </span>
           <span class="questions-paper-footer">
             <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Foundation</span>
-            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
           </span>
         </button>
 
         <button type="button" class="paper-card questions-paper" data-paper="paper1" onclick="startPaper('paper1')" aria-label="Start Model Paper 1, 50 questions">
-          <span class="questions-paper-top">
-            <span class="questions-paper-icon"><img src="./images/arena/stat-correct.png" width="58" height="58" alt=""></span>
-            <span class="questions-paper-count">50 QUESTIONS</span>
-          </span>
           <span class="questions-paper-content">
             <span class="questions-paper-kind">MODEL ASSESSMENT · PSM 2024</span>
             <strong class="pc-title">Model Paper 1</strong>
@@ -416,15 +397,10 @@ button { outline: none; border: none; font-family: inherit; }
           </span>
           <span class="questions-paper-footer">
             <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Intermediate</span>
-            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
           </span>
         </button>
 
         <button type="button" class="paper-card questions-paper" data-paper="paper2" onclick="startPaper('paper2')" aria-label="Start Model Paper 2, 50 questions">
-          <span class="questions-paper-top">
-            <span class="questions-paper-icon"><img src="./images/arena/leaderboard-trophy.png" width="58" height="58" alt=""></span>
-            <span class="questions-paper-count">50 QUESTIONS</span>
-          </span>
           <span class="questions-paper-content">
             <span class="questions-paper-kind">MODEL ASSESSMENT · OPERATIONS</span>
             <strong class="pc-title">Model Paper 2</strong>
@@ -432,15 +408,10 @@ button { outline: none; border: none; font-family: inherit; }
           </span>
           <span class="questions-paper-footer">
             <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Advanced</span>
-            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
           </span>
         </button>
 
         <button type="button" class="paper-card questions-paper" data-paper="paper3" onclick="startPaper('paper3')" aria-label="Start Model Paper 3, 45 questions">
-          <span class="questions-paper-top">
-            <span class="questions-paper-icon"><img src="./images/arena/mascot-avatar.png" width="58" height="58" alt=""></span>
-            <span class="questions-paper-count">45 QUESTIONS</span>
-          </span>
           <span class="questions-paper-content">
             <span class="questions-paper-kind">MODEL ASSESSMENT · CHALLENGE</span>
             <strong class="pc-title">Model Paper 3</strong>
@@ -448,14 +419,9 @@ button { outline: none; border: none; font-family: inherit; }
           </span>
           <span class="questions-paper-footer">
             <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Expert</span>
-            <span class="questions-paper-action">Start paper <span aria-hidden="true">→</span></span>
           </span>
         </button>
         <button type="button" class="paper-card questions-paper questions-assessment-paper" data-paper="assessment-practice" onclick="window.BTAssessmentPractice?.open()" aria-label="Open assessment practice, 86 questions in English and Sinhala">
-          <span class="questions-paper-top">
-            <span class="questions-paper-icon"><img src="./images/arena/stat-answered.png" width="58" height="58" alt=""></span>
-            <span class="questions-paper-count">86 UNIQUE QUESTIONS</span>
-          </span>
           <span class="questions-paper-content">
             <span class="questions-paper-kind">2025–2026 · BILINGUAL PRACTICE</span>
             <strong class="pc-title">Assessment Practice</strong>
@@ -463,7 +429,6 @@ button { outline: none; border: none; font-family: inherit; }
           </span>
           <span class="questions-paper-footer">
             <span class="questions-paper-difficulty"><span class="questions-difficulty-dot" aria-hidden="true"></span>Practice · no ranking points</span>
-            <span class="questions-paper-action">Practice now <span aria-hidden="true">→</span></span>
           </span>
         </button>
       </div>
@@ -490,7 +455,7 @@ button { outline: none; border: none; font-family: inherit; }
   <div class="quiz-body" id="assessment-practice-root">
     <div class="q-header-row">
       <div class="q-badge" id="aq-q-badge">Q1 · Assessment Practice</div>
-      <button class="translate-btn" id="aq-translate-btn" onclick="BTAssessmentPractice.translate()">🇱🇰 සිංහල</button>
+      <button class="translate-btn" id="aq-translate-btn" onclick="BTAssessmentPractice.translate()">සිංහල</button>
     </div>
     
     <div class="q-text" id="aq-q-text">Loading...</div>
@@ -536,7 +501,7 @@ button { outline: none; border: none; font-family: inherit; }
   <div class="quiz-body">
     <div class="q-header-row">
       <div class="q-badge" id="q-badge">Q1 · Questions</div>
-      <button class="translate-btn" id="translate-btn" onclick="toggleTranslate()">🇱🇰 සිංහල</button>
+      <button class="translate-btn" id="translate-btn" onclick="toggleTranslate()">සිංහල</button>
     </div>
     
     <div class="q-text" id="q-text">Loading...</div>
@@ -1532,7 +1497,7 @@ function renderQuestion() {
 
   const btnTrans = document.getElementById('translate-btn');
   btnTrans.className = 'translate-btn';
-  btnTrans.innerHTML = '🇱🇰 සිංහල';
+  btnTrans.innerHTML = 'සිංහල';
 
   const indices = Array.from({length: q.opts.length}, (_, i) => i);
   _trShuffled = shuffle([...indices]);
@@ -1567,7 +1532,7 @@ function toggleTranslate() {
       el.textContent = (q.si_opts && q.si_opts[origIdx]) ? q.si_opts[origIdx] : q.opts[origIdx];
     });
     btn.classList.add('active');
-    btn.innerHTML = '🔄 English';
+    btn.innerHTML = 'English';
   } else {
     document.getElementById('q-text').textContent = q.q;
     document.querySelectorAll('#quiz .opt-text').forEach((el, i) => {
@@ -1575,7 +1540,7 @@ function toggleTranslate() {
       el.textContent = q.opts[origIdx];
     });
     btn.classList.remove('active');
-    btn.innerHTML = '🇱🇰 සිංහල';
+    btn.innerHTML = 'සිංහල';
   }
 }
 
@@ -1863,10 +1828,10 @@ function confirmModal() {
 <script src="./firebase-config.js"></script>
 <script defer src="./js/account-profile-save.js?v=4.7.16"></script>
 <script type="module" src="./js/bt-spark.js"></script>
-<script defer src="./js/pizza-reference.js?v=4.0.0"></script>
+<script defer src="./js/pizza-reference.js?v=4.7.18"></script>
 <script defer src="./study/lesson-art.js?v=4.7.17"></script>
-<script defer src="./study/lesson-player.js?v=4.7.17"></script>
-<script defer src="./js/assessment-practice.js?v=4.7.16"></script>
+<script defer src="./study/lesson-player.js?v=4.7.18"></script>
+<script defer src="./js/assessment-practice.js?v=4.7.18"></script>
 <script defer src="./js/press-feedback-v477.js?v=4.7.7"></script>
 </body>
 </html>

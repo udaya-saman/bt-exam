@@ -31,7 +31,7 @@ assert.equal(api.achievements({totalPoints:1500},week,week).find(x=>x.id==='risi
 assert.ok(html.includes('id="paper-select"')&&html.includes('id="study-select"')&&html.includes('id="study-app"'));
 assert.ok(!html.includes('id="study-reader"')&&html.includes('PizzaStudyLessons.open()'));
 assert.ok(html.includes('class="arena-paths"'));
-assert.ok(html.includes('29 QUESTIONS'),'Past 2024 card must show actual 29 questions');
+assert.equal(expected.past2024,29);
 const questionsCss=get('css/questions-v477.css');
 const startLibrary=html.indexOf('<!-- QUESTIONS LIBRARY:'),endLibrary=html.indexOf('<!-- Bilingual assessment practice;',startLibrary);
 assert.ok(startLibrary>=0&&endLibrary>startLibrary,'Questions library section is intact');
@@ -40,14 +40,14 @@ const cardIds=[...library.matchAll(/data-paper="([^"]+)"/g)].map(x=>x[1]);
 assert.deepEqual(cardIds,[...Object.keys(expected),'assessment-practice'],'Original five scored papers and one deduplicated practice card present');
 for(const [id,size] of Object.entries(expected)){
  assert.ok(library.includes('onclick="startPaper(\''+id+'\')"'),'Original paper action retained: '+id);
- assert.ok(library.includes(size+' QUESTIONS'),'Paper count visible: '+id);
+ assert.ok(!library.includes('questions-paper-count'),'Paper counts are hidden');
 }
 assert.equal((library.match(/class="paper-card questions-paper"/g)||[]).length,5,'Five native exam buttons');
-assert.ok(library.includes('questions-intro-art')&&library.includes('mascot-champion.png'),'Brand PNG hero present');
+assert.ok(library.includes('pa-study-hero')&&library.includes('home-questions.png'),'Brand PNG hero present');
 assert.ok(!library.includes('pa-assessment-entry')&&!html.includes('id="assessment-library"'),'Old standalone Assessment Bank section removed');
-assert.ok(library.includes('Assessment Practice')&&library.includes('86 UNIQUE QUESTIONS'),'New bilingual practice card has verified unique count');
+assert.ok(library.includes('Assessment Practice')&&!library.includes('questions-paper-action'),'New bilingual practice card has no secondary CTA');
 assert.ok(html.includes('id="assessment-practice"')&&html.includes('assessment-practice-root'),'Bilingual practice page present');
-assert.ok(html.includes('css/questions-v477.css?v=4.7.17')&&sw.includes('css/questions-v477.css?v=4.7.17'),'Questions styling enabled and cached offline');
+assert.ok(html.includes('css/questions-v477.css?v=4.7.18')&&sw.includes('css/questions-v477.css?v=4.7.18'),'Questions styling enabled and cached offline');
 
 const pressStyle=get('css/press-feedback-v477.css'),pressLogic=get('js/press-feedback-v477.js');
 assert.doesNotThrow(()=>new vm.Script(pressLogic,{filename:'press-feedback-v477.js'}),'App-wide press logic parses');
@@ -81,7 +81,7 @@ assert.ok(app.includes('async function seedKeys()'));
 assert.ok(app.includes("who.append(tiny)"),'leaderboard must not reference an undefined detail variable');
 assert.ok(css.includes('arena-point-toast 4s')&&css.includes('.sound-off')&&css.includes('arena-update-now'));
 assert.ok(sw.includes('pizza-arena-v40.css?v=4.0.1'));
-assert.ok(html.includes('pizza-reference.js?v=4.0.0')&&sw.includes('pizza-reference.js?v=4.0.0'));
+assert.ok(html.includes('pizza-reference.js?v=4.7.18')&&sw.includes('pizza-reference.js?v=4.7.18'));
 assert.ok(app.includes("APP_VERSION='"+version+"'"));
 assert.doesNotMatch(css+art,/\.svg|data:image\/svg|<svg/i);
 console.log('Pizza Arena 4.0: 214 question keys, scoring, achievements, screens, account settings, version and UI contracts passed.');
