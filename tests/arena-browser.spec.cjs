@@ -1,4 +1,7 @@
 const {test,expect}=require('@playwright/test');
+// These UI fixtures supply account data locally. Keep live auth and background precaching out of their render cycle.
+test.use({serviceWorkers:'block'});
+test.beforeEach(async({page})=>{await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());});
 async function expectOutline(button){
  await expect(button).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
  await expect(button).toHaveCSS('box-shadow','none');
@@ -21,8 +24,7 @@ function noOverlap(rects,width,label){
 for(const width of widths){
  test('Home and question selection fit '+width+'px',async({page})=>{
   await page.setViewportSize({width,height:820});
-  await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
-  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
   // Firebase is intentionally blocked in these isolated visual tests. Dismiss its setup overlay.
   await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
   await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;});
@@ -32,8 +34,8 @@ for(const width of widths){
   await expect(heroControls.nth(0)).toHaveAttribute('aria-label','Notifications');
   await expect(heroControls.nth(1)).toHaveAttribute('aria-label','My Player Card');
   for(const control of await heroControls.all()){
-    const d=await control.evaluate(el=>({w:el.offsetWidth,h:el.offsetHeight,r:getComputedStyle(el).borderTopLeftRadius}));
-    expect(d.w).toBe(d.h);expect(d.r).toBe('50%');
+    const d=await control.evaluate(el=>({w:el.offsetWidth,h:el.offsetHeight}));
+    expect(d.w).toBe(d.h);await expect(control).toHaveCSS('border-top-left-radius','50%');
     await expect.poll(()=>control.locator('img').evaluate(el=>el.complete&&el.naturalWidth===96)).toBe(true);
   }
   noOverlap(await dimensions(page,'#home .arena-header-icon'),width,'Hero controls');
@@ -113,8 +115,7 @@ for(const width of widths){
 }
 test('Buttons visibly press and rebound on touch, keyboard and generated Study controls',async({page})=>{
  await page.setViewportSize({width:375,height:820});
- await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
- await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
  await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
  await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;});
  const control=page.locator('#sound-toggle');
@@ -143,7 +144,7 @@ test('Buttons visibly press and rebound on touch, keyboard and generated Study c
  await expect(studyButton).toHaveClass(/arena-pressed/);
 });
 test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})=>{
- await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
  await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
  await page.evaluate(()=>{const overlay=document.getElementById('bt-spark-root');if(overlay)overlay.hidden=true;openStudy();});
  await expect(page.locator('#study-select.active .pa-study-card')).toHaveCount(57,{timeout:12000});
@@ -169,9 +170,11 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','si');
  await expectOutline(language);
  await language.click();await expect(page.locator('.pa-study-reader')).toHaveAttribute('lang','en');
- const tip=page.locator('.pa-study-tip').first();await tip.locator('.pa-study-tip-toggle').click();
+ const tip=page.locator('.pa-study-tip').first();await expect(tip.locator('.translate-btn')).toBeHidden();await tip.locator('.pa-study-tip-toggle').click();
  await expect(tip.locator('img')).toBeVisible();
- await expect(tip.locator('.pa-study-language')).toHaveCSS('justify-content','center');
+ await expect(tip.locator('.pa-study-tip-header .translate-btn')).toBeVisible();
+ await expect(tip.locator('.pa-study-tip-detail .translate-btn')).toHaveCount(0);
+ const trickImage=await tip.locator('img').getAttribute('src');
  await expectOutline(tip.locator('.translate-btn'));
  await tip.locator('.translate-btn').click();await expect(tip.locator('.pa-study-tip-value')).toHaveAttribute('lang','si');
  await expectOutline(tip.locator('.translate-btn'));
@@ -180,6 +183,7 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
  await expect.poll(()=>page.locator('.pa-study-lesson-art img').first().evaluate(el=>el.complete&&el.naturalWidth===256)).toBe(true);
  await page.getByRole('button',{name:'Quick revision'}).click();
  await expect(page.locator('.pa-revision-card')).toBeVisible();
+ await expect(page.locator('.pa-study-revision-art')).toHaveAttribute('src',trickImage);
  await page.getByRole('button',{name:'Reveal learning point'}).click();
  await expect(page.locator('.pa-revision-card p').last()).toBeVisible();
  await page.getByRole('button',{name:'← Lesson'}).click();
@@ -200,7 +204,7 @@ test('Study Academy loads 57 PDF-based lessons and saves progress',async({page})
 });
 test('Player Card and rewards fit narrow phones',async({page})=>{
  await page.setViewportSize({width:375,height:812});
- await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
  await page.locator('#bt-spark-root').waitFor({state:'visible',timeout:3500}).catch(()=>{});
  await page.waitForTimeout(250); // allow the account overlay's initial render to finish before the fixture
  await page.evaluate(()=>{
@@ -279,8 +283,7 @@ test('Player Card and rewards fit narrow phones',async({page})=>{
 for(const width of [320,375,430,768]){
  test('Assessment workbook bilingual practice at '+width+'px',async({page})=>{
   await page.setViewportSize({width,height:820});
-  await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
-  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
   await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;openQuestions();});
   await page.locator('#paper-select .questions-assessment-paper').click();
   const practice=page.locator('#assessment-practice');
@@ -331,8 +334,7 @@ for(const width of [320,375,430,768]){
 }
 test('Assessment practice all 86 questions: mixed formats, score isolation, timeout and completion',async({page})=>{
  await page.setViewportSize({width:375,height:820});
- await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
- await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
  await page.evaluate(()=>{const root=document.getElementById('bt-spark-root');if(root)root.hidden=true;openQuestions();});
  await page.locator('.questions-assessment-paper').click();
  await expect(page.locator('#aq-quiz-q-info')).toHaveText('Question 1 of 86');
@@ -380,10 +382,9 @@ test('Assessment practice all 86 questions: mixed formats, score isolation, time
 });
 
 test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scroll',async({page})=>{
- await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
  for(const width of [320,375,430,768]){
   await page.setViewportSize({width,height:740});
-  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
   await page.waitForTimeout(250);
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');
@@ -456,10 +457,9 @@ test('Leaderboard keeps podium and equal-width actions fixed while #4+ rows scro
 });
 
 test('Player details have right-aligned return and invisible functional scrollbars',async({page})=>{
- await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
  for(const width of [320,375,430,768]){
   await page.setViewportSize({width,height:680});
-  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
   await page.waitForTimeout(250);
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');
@@ -488,10 +488,9 @@ test('Player details have right-aligned return and invisible functional scrollba
 });
 
 test('Manage Users search and all three equal-width actions stay fixed during list scroll',async({page})=>{
- await page.route('https://www.gstatic.com/firebasejs/**',route=>route.abort());
  for(const [width,height] of [[320,568],[375,740],[430,820],[768,740]]){
   await page.setViewportSize({width,height});
-  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:8765/index.html',{waitUntil:'load'});
   await page.waitForTimeout(250);
   await page.evaluate(()=>{
    const root=document.getElementById('bt-spark-root');root.hidden=false;root.className='arena-manage-users-layout';

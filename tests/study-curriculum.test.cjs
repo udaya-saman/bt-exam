@@ -32,6 +32,9 @@ docs.forEach((name,i)=>{
 });
 assert.equal(all.length,57);
 const sinhala=JSON.parse(read('study/content/si.json'));
+const memoryArt=new Set(),memoryHashes=new Set(),crypto=require('node:crypto');
+const offline=read('sw.js');
+assert.doesNotMatch(JSON.stringify(sinhala),/පසුව එක් කෙරේ/,'No placeholder translations');
 assert.deepEqual(Object.keys(sinhala).sort(),Array.from(ids).sort());
 for(const lesson of all){
  const local=sinhala[lesson.id];assert(local.title&&local.summary&&local.cue);
@@ -40,8 +43,16 @@ for(const lesson of all){
   const copy=local.sections[i];assert(copy.heading&&copy.body);
   assert.equal(copy.keyPoints.length,section.keyPoints.length);
   if(section.memoryTip)assert(copy.memoryTip);
+  for(const value of [local.title,local.summary,local.cue,copy.body,copy.memoryTip,...copy.keyPoints]){
+   assert(/[\u0D80-\u0DFF]/u.test(value)||value==='RIIT',lesson.id+' missing Sinhala text: '+value);
+  }
+  const path='study/art/memory/'+lesson.id+'-'+(i+1)+'.jpg';
+  const bytes=fs.readFileSync(path);assert.equal(bytes.readUInt16BE(0),0xffd8);
+  memoryArt.add(path);memoryHashes.add(crypto.createHash('sha256').update(bytes).digest('hex'));
+  assert(offline.includes('"./'+path+'"'),path+' must work offline');
  });
 }
+assert.equal(memoryArt.size,114);assert.equal(memoryHashes.size,114);
 const index=read('index.html');
 assert.equal((index.match(/id="study-select"/g)||[]).length,1);
 assert.doesNotMatch(index,/id="study-reader"/);
@@ -52,8 +63,8 @@ assert.match(index,/PizzaStudyLessons\.open\(\)/);
 assert.match(index,/id="paper-select"/);
 assert.match(index,/const PAPERS\s*=/);
 assert.match(index,/startPaper\(paperId\)/);
-assert.match(index,/study\/lesson-player\.js\?v=4\.7\.18/);
-assert.match(index,/study\/lesson-player\.css\?v=4\.7\.19/);
+assert.match(index,/study\/lesson-player\.js\?v=4\.7\.20/);
+assert.match(index,/study\/lesson-player\.css\?v=4\.7\.20/);
 const script=read('study/lesson-player.js');
 new vm.Script(script,{filename:'study/lesson-player.js'});
 assert.match(script,/Promise\.all\(FILES\.map/);
@@ -64,8 +75,8 @@ assert.match(style,/prefers-reduced-motion/);
 assert.doesNotMatch(style,/<svg|\.svg\b/);
 const worker=read('sw.js');
 docs.forEach(name=>assert(worker.includes('study/content/'+name+'.json')));
-assert.match(worker,/study\/lesson-player\.js\?v=4\.7\.18/);
-assert.match(worker,/study\/lesson-player\.css\?v=4\.7\.19/);
+assert.match(worker,/study\/lesson-player\.js\?v=4\.7\.20/);
+assert.match(worker,/study\/lesson-player\.css\?v=4\.7\.20/);
 new vm.Script(worker,{filename:'sw.js'});
 const ver=JSON.parse(read('version.json')).version;
 assert.match(ver,/^4\.7\.\d+-arena$/);

@@ -130,7 +130,14 @@
 .pa-study-memory .pa-study-bullets li{padding:4px 0 4px 28px}.pa-study-memory .pa-study-bullets li:before{left:0;top:6px}
 #study-select .pa-study-stages li{padding:4px 0;justify-items:start;text-align:left}
 .pa-study-tip-detail[hidden]{display:none}
-.pa-study-tip-picture{display:block;width:96px;height:96px;object-fit:contain;margin:16px auto}
+.pa-study-tip-header,.pa-revision-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pa-study-tip-header{padding-inline-end:12px}
+.pa-study-tip-header .pa-study-tip-toggle{min-width:0;flex:1}
+.pa-study-tip-header .translate-btn,.pa-revision-header .translate-btn{flex:none}
+.pa-study-tip-header .translate-btn[hidden]{display:none}
+.pa-study-tip-picture,.pa-study .pa-study-revision-art{display:block;width:min(100%,480px);height:auto;aspect-ratio:3/2;object-fit:contain;border-radius:12px;margin-inline:auto}
+.pa-study-tip-detail{padding:12px 15px 16px}
+.pa-study-tip-picture{margin-bottom:12px}
 .pa-study-tip-detail .pa-study-tip-value{padding-bottom:0}
 .pa-revision-title{font-size:1rem;line-height:1.4;margin:0;padding:18px 0 16px}
 .pa-study-lesson-footer.pa-revision-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;width:100%;margin:4px 0 0;padding:0}

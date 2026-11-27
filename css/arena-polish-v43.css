@@ -119,25 +119,25 @@ html,body,html *,body *{scrollbar-width:none!important;-ms-overflow-style:none!i
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important;background:transparent!important}
 
 /* First-place podium square: a visible numeral, soft gold pulse and periodic shimmer. */
-body #bt-spark-root .pg-podium-item.arena-rank-1{
+body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion){
  position:relative;isolation:isolate;overflow:hidden;
  background:linear-gradient(150deg,#8a5b25,#4a2728 88%)!important;
 }
-body #bt-spark-root .pg-podium-item.arena-rank-1>*{position:relative;z-index:1}
-body #bt-spark-root .pg-podium-item.arena-rank-1::after{
+body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion)>*{position:relative;z-index:1}
+body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion)::after{
  content:"";position:absolute;z-index:2;inset:0;border-radius:inherit;pointer-events:none;
  background:linear-gradient(108deg,transparent 22%,#fff1b53d 48%,transparent 66%);
  transform:translateX(-150%);
 }
-body #bt-spark-root .pg-podium-item.arena-rank-1 .arena-first-rank{
+body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion) .arena-first-rank{
  position:absolute;z-index:3;top:5px;left:6px;width:23px;height:23px;
  display:grid;place-items:center;border-radius:8px;
  font-size:13px;font-weight:1000;color:#4c290b;background:linear-gradient(150deg,#fff0b6,#e8b63f);
  border:1px solid #fff5cb;box-shadow:0 2px 8px #130c0c70;
 }
 @media(prefers-reduced-motion:no-preference){
- body #bt-spark-root .pg-podium-item.arena-rank-1{animation:arenaFirstGlow 1.9s ease-in-out infinite!important}
- body #bt-spark-root .pg-podium-item.arena-rank-1::after{animation:arenaFirstSweep 2.7s ease-in-out infinite}
+ body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion){animation:arenaFirstGlow 1.9s ease-in-out infinite!important}
+ body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion)::after{animation:arenaFirstSweep 2.7s ease-in-out infinite}
 }
 @keyframes arenaFirstGlow{
  0%,100%{box-shadow:0 0 12px #ffc83d65,inset 0 0 10px #ffcc4220}
@@ -150,8 +150,8 @@ body #bt-spark-root .pg-podium-item.arena-rank-1 .arena-first-rank{
  100%{transform:translateX(150%);opacity:0}
 }
 @media(prefers-reduced-motion:reduce){
- body #bt-spark-root .pg-podium-item.arena-rank-1,
- body #bt-spark-root .pg-podium-item.arena-rank-1::after{animation:none!important}
+ body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion),
+ body #bt-spark-root :is(.pg-podium-item.arena-rank-1,.arena-outlet-champion)::after{animation:none!important}
 }
 
 /* Player details: premium, readable gaming panel with a right-anchored return action. */
@@ -838,6 +838,9 @@ body #bt-spark-root.arena-leaderboard-layout .panel>h2{margin-bottom:4px!importa
 body #bt-spark-root.arena-leaderboard-layout .pg-nav button:last-child{background:#fff!important;color:#252428!important;border-color:#dadada!important}
 .arena-create-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:16px}
 .arena-medal{display:block;width:clamp(49px,10vw,80px);aspect-ratio:1;border-radius:18%;object-fit:contain}
-.arena-weekly-champion,.arena-crown-row{box-shadow:0 0 8px #ffdc78,0 0 19px #f9b32d99!important}
+.arena-weekly-champion{box-shadow:0 0 8px #ffdc78,0 0 19px #f9b32d99!important}
 @keyframes earnedMedalPulse{50%{transform:scale(1.08)}}
-@media(prefers-reduced-motion:no-preference){.is-earned .arena-medal{animation:earnedMedalPulse 2.5s ease-in-out infinite}.arena-crown-row{animation:arenaFirstGlow 1.9s ease-in-out infinite}}
+@media(prefers-reduced-motion:no-preference){.is-earned .arena-medal{animation:earnedMedalPulse 2.5s ease-in-out infinite}}
+
+body #bt-spark-root .arena-outlet-champion{border:2px solid #ffd45b!important}
+.arena-outlet-trophy{display:block;width:56px;height:56px;object-fit:contain;padding:5px;margin:0 auto 12px;border:2px solid #ffd45b;border-radius:50%}
